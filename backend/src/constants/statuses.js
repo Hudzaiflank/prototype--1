@@ -1,0 +1,12 @@
+export const GAME_STATUSES = Object.freeze({
+  WAITING: "WAITING",
+  PLAYING: "PLAYING",
+  PAUSED: "PAUSED",
+  FINISHED: "FINISHED",
+});
+export const ROOM_STATUSES = Object.freeze({ OPEN: "OPEN", CLOSED: "CLOSED" });
+export const PARTICIPANT_STATUSES = Object.freeze({
+  CONNECTED: "CONNECTED",
+  DISCONNECTED: "DISCONNECTED",
+  FINISHED: "FINISHED",
+});

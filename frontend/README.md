@@ -1,4 +1,23 @@
-# React + Vite
+# PhillyoGo Frontend
+
+Frontend React + Vite + Tailwind untuk PhillyoGo.
+
+## Menjalankan
+
+```bash
+npm install
+copy .env.example .env
+npm run dev
+```
+
+## Struktur
+
+- `pages` berisi komposisi layar berdasarkan role dan lifecycle room.
+- `components` berisi UI reusable dan komponen gameplay kartu.
+- `layouts` dan `routes` menangani shell role, protected route, dan student route.
+- `context`, `store`, dan `hooks` menangani auth, game state, realtime, dan participant session.
+- `services/api` dan `services/socket` adalah satu-satunya boundary REST/Socket.IO.
+- `utils` berisi storage session, validasi, formatter, dan constants.
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
