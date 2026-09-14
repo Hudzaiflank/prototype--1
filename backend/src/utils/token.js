@@ -11,3 +11,5 @@ export const signRefreshToken = (payload) =>
   jwt.sign(payload, env.jwt.refreshSecret, {
     expiresIn: env.jwt.refreshExpiresIn,
   });
+export const verifyRefreshToken = (token) =>
+  jwt.verify(token, env.jwt.refreshSecret);

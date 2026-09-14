@@ -8,6 +8,8 @@ import roomRoutes from "./room.routes.js";
 import gameRoutes from "./game.routes.js";
 import historyRoutes from "./history.routes.js";
 import publicRoutes from "./public.routes.js";
+import dashboardRoutes from "./dashboard.routes.js";
+import teacherClassRoutes from "./teacher-class.routes.js";
 
 export const router = Router();
 router.use("/auth", authRoutes);
@@ -17,5 +19,7 @@ router.use("/teachers", teacherRoutes);
 router.use("/topics", topicRoutes);
 router.use("/rooms", roomRoutes);
 router.use("/game-sessions", gameRoutes);
-router.use("/history", historyRoutes);
+router.use("/teacher", historyRoutes);
+router.use("/teacher", teacherClassRoutes);
 router.use("/public", publicRoutes);
+router.use(dashboardRoutes);
