@@ -1,0 +1,3 @@
+-- Initial schema follows PhillyoGo Database ERD v2.0.
+-- Implement tables with school isolation, unique room codes, and indexed game state.
+-- Keep game START, reveal, and complete operations transactional with row locks.

@@ -1,0 +1,21 @@
+import { Router } from "express";
+import authRoutes from "./auth.routes.js";
+import schoolRoutes from "./school.routes.js";
+import classRoutes from "./class.routes.js";
+import teacherRoutes from "./teacher.routes.js";
+import topicRoutes from "./topic.routes.js";
+import roomRoutes from "./room.routes.js";
+import gameRoutes from "./game.routes.js";
+import historyRoutes from "./history.routes.js";
+import publicRoutes from "./public.routes.js";
+
+export const router = Router();
+router.use("/auth", authRoutes);
+router.use("/schools", schoolRoutes);
+router.use("/classes", classRoutes);
+router.use("/teachers", teacherRoutes);
+router.use("/topics", topicRoutes);
+router.use("/rooms", roomRoutes);
+router.use("/game-sessions", gameRoutes);
+router.use("/history", historyRoutes);
+router.use("/public", publicRoutes);
