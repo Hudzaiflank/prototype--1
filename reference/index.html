@@ -1,0 +1,1489 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MindPlay – Anak &amp; Masalah</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-deep: #1a0f28;
+        --bg-mid: #341f4a;
+        --bg-glow: #4a2a63;
+        --gold: #ffd23f;
+        --gold-hot: #ffe98a;
+        --gold-dim: #9a7a2a;
+        --blue-1: #4f8cf0;
+        --blue-2: #1a4fc7;
+        --blue-3: #0a1f5c;
+        --red-1: #ff6b5a;
+        --red-2: #c22e2e;
+        --red-3: #5c0f0f;
+        --cream: #fdf6e3;
+        --cream-2: #f0e6c8;
+        --ink: #201a14;
+        --ink-red: #b8302a;
+        --ink-black: #221d16;
+        --pixel-font: "Press Start 2P", "Courier New", monospace;
+        --card-w: clamp(56px, 17vw, 148px);
+        --card-h: calc(var(--card-w) * 1.42);
+        --hard-shadow: 5px 5px 0 rgba(0, 0, 0, 0.6);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: var(--bg-deep);
+        font-family: var(--pixel-font);
+        color: var(--cream);
+        overflow-x: hidden;
+      }
+
+      /* ---------------- atmosphere ---------------- */
+      .backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        background:
+          radial-gradient(
+            ellipse 70% 45% at 50% 8%,
+            var(--bg-glow) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse 60% 40% at 15% 85%,
+            rgba(26, 79, 199, 0.35) 0%,
+            transparent 65%
+          ),
+          radial-gradient(
+            ellipse 60% 40% at 85% 85%,
+            rgba(194, 46, 46, 0.3) 0%,
+            transparent 65%
+          ),
+          radial-gradient(
+            circle at 50% 50%,
+            var(--bg-mid) 0%,
+            var(--bg-deep) 75%
+          );
+      }
+
+      .backdrop::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.025) 0px,
+          rgba(255, 255, 255, 0.025) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+        mix-blend-mode: overlay;
+        opacity: 0.4;
+      }
+
+      .vignette {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        background: radial-gradient(
+          ellipse 80% 80% at 50% 45%,
+          transparent 45%,
+          rgba(0, 0, 0, 0.65) 100%
+        );
+      }
+
+      .bg-particles {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        overflow: hidden;
+        pointer-events: none;
+      }
+      .bg-particle {
+        position: absolute;
+        bottom: -10%;
+        font-family: Arial, sans-serif;
+        animation: drift-up linear infinite;
+        will-change: transform, opacity;
+      }
+      @keyframes drift-up {
+        0% {
+          transform: translateY(0) rotate(0deg);
+          opacity: 0;
+        }
+        8% {
+          opacity: var(--pmax, 0.35);
+        }
+        85% {
+          opacity: var(--pmax, 0.35);
+        }
+        100% {
+          transform: translateY(-115vh) rotate(35deg);
+          opacity: 0;
+        }
+      }
+
+      .glow-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(50px);
+        opacity: 0.55;
+        animation: orb-float 14s ease-in-out infinite;
+      }
+      .orb-gold {
+        width: 340px;
+        height: 340px;
+        background: var(--gold);
+        top: -120px;
+        left: 50%;
+        margin-left: -170px;
+        animation-delay: 0s;
+      }
+      .orb-blue {
+        width: 300px;
+        height: 300px;
+        background: var(--blue-1);
+        bottom: -140px;
+        left: 8%;
+        animation-delay: -5s;
+      }
+      .orb-red {
+        width: 300px;
+        height: 300px;
+        background: var(--red-1);
+        bottom: -140px;
+        right: 8%;
+        animation-delay: -9s;
+      }
+      @keyframes orb-float {
+        0%,
+        100% {
+          transform: translate(0, 0) scale(1);
+        }
+        50% {
+          transform: translate(20px, -24px) scale(1.12);
+        }
+      }
+
+      /* ---------------- layout ---------------- */
+      .page {
+        position: relative;
+        z-index: 2;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 30px 16px 60px;
+      }
+
+      .banner {
+        position: relative;
+        background: linear-gradient(180deg, #3a2350, #241436);
+        border: 3px solid var(--gold);
+        border-radius: 10px;
+        padding: clamp(10px, 3.5vw, 14px) clamp(12px, 6vw, 30px);
+        max-width: 94vw;
+        box-shadow:
+          var(--hard-shadow),
+          inset 0 0 22px rgba(255, 210, 63, 0.12);
+        margin-bottom: 10px;
+        text-align: center;
+      }
+      .eyebrow {
+        font-size: 8px;
+        letter-spacing: 3px;
+        color: var(--gold-dim);
+        margin-bottom: 8px;
+      }
+      h1 {
+        font-size: clamp(12px, 4vw, 18px);
+        margin: 0;
+        color: var(--gold-hot);
+        text-shadow:
+          0 0 10px rgba(255, 210, 63, 0.7),
+          3px 3px 0 rgba(0, 0, 0, 0.6);
+        line-height: 1.6;
+        animation: title-pulse 2.6s ease-in-out infinite;
+      }
+      @keyframes title-pulse {
+        0%,
+        100% {
+          text-shadow:
+            0 0 8px rgba(255, 210, 63, 0.55),
+            3px 3px 0 rgba(0, 0, 0, 0.6);
+        }
+        50% {
+          text-shadow:
+            0 0 20px rgba(255, 210, 63, 0.95),
+            3px 3px 0 rgba(0, 0, 0, 0.6);
+        }
+      }
+
+      .hint {
+        font-size: 8.5px;
+        line-height: 2;
+        color: #cbb8e0;
+        text-align: center;
+        max-width: 480px;
+        margin: 16px 0 34px;
+      }
+
+      .stage {
+        position: relative;
+        width: min(960px, 96vw);
+        height: clamp(260px, 42vw, 420px);
+        margin-bottom: 30px;
+      }
+
+      /* ---------------- decks ---------------- */
+      .deck {
+        position: absolute;
+        top: 50%;
+        width: var(--card-w);
+        height: var(--card-h);
+        transform: translateY(-50%);
+      }
+      .deck.left {
+        left: 3%;
+      }
+      .deck.right {
+        right: 3%;
+      }
+
+      .deck-aura {
+        position: absolute;
+        inset: -22px;
+        border-radius: 50%;
+        filter: blur(20px);
+        opacity: 0.45;
+        animation: aura-pulse 3.2s ease-in-out infinite;
+        pointer-events: none;
+      }
+      .deck.left .deck-aura {
+        background: var(--blue-1);
+      }
+      .deck.right .deck-aura {
+        background: var(--red-1);
+      }
+      @keyframes aura-pulse {
+        0%,
+        100% {
+          opacity: 0.32;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.55;
+          transform: scale(1.08);
+        }
+      }
+
+      .deck-label {
+        position: absolute;
+        top: -28px;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        font-size: 8.5px;
+        letter-spacing: 1px;
+      }
+      .deck.left .deck-label {
+        color: #a8c6ff;
+      }
+      .deck.right .deck-label {
+        color: #ffb3a8;
+      }
+
+      .deck-count {
+        position: absolute;
+        bottom: -24px;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        font-size: 7.5px;
+        color: #b8a8d0;
+      }
+
+      .stack-card {
+        position: absolute;
+        inset: 0;
+        border-radius: 6px;
+        box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.4);
+      }
+
+      .card-back {
+        position: absolute;
+        inset: 0;
+        border-radius: 6px;
+        border: 2px solid rgba(0, 0, 0, 0.6);
+        overflow: hidden;
+      }
+      .card-back .back-fill {
+        position: absolute;
+        inset: 0;
+      }
+      .card-back .back-diamond {
+        position: absolute;
+        inset: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        border-radius: 3px;
+        background-image:
+          repeating-linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.1) 0 5px,
+            transparent 5px 10px
+          ),
+          repeating-linear-gradient(
+            -45deg,
+            rgba(0, 0, 0, 0.16) 0 5px,
+            transparent 5px 10px
+          );
+      }
+      .card-back .back-sheen {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          115deg,
+          transparent 30%,
+          rgba(255, 255, 255, 0.35) 48%,
+          transparent 66%
+        );
+        background-size: 250% 250%;
+        background-position: 0% 0%;
+        animation: sheen-sweep 3.6s ease-in-out infinite;
+        mix-blend-mode: overlay;
+      }
+      @keyframes sheen-sweep {
+        0% {
+          background-position: 130% 130%;
+        }
+        50% {
+          background-position: 0% 0%;
+        }
+        100% {
+          background-position: 130% 130%;
+        }
+      }
+      .card-back .back-emblem {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .top-card {
+        position: absolute;
+        inset: 0;
+        cursor: pointer;
+        transition:
+          transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          filter 200ms ease;
+        filter: drop-shadow(4px 4px 0 rgba(0, 0, 0, 0.55));
+      }
+      .top-card:hover {
+        transform: translateY(-14%) rotateZ(var(--tilt, -3deg)) scale(1.05);
+      }
+      .top-card.picked {
+        transform: translateY(-22%) rotateZ(0deg) scale(1.08);
+        filter: drop-shadow(4px 4px 0 rgba(0, 0, 0, 0.55))
+          drop-shadow(0 0 14px rgba(255, 210, 63, 0.85));
+      }
+      .top-card.picked .card-back {
+        box-shadow: 0 0 0 3px var(--gold);
+      }
+      .top-card.picked:hover {
+        transform: translateY(-24%) rotateZ(0deg) scale(1.08);
+      }
+
+      /* ---------------- center slots ---------------- */
+      .center-slot {
+        position: absolute;
+        top: 50%;
+        width: var(--card-w);
+        height: var(--card-h);
+        transform: translateY(-50%);
+        border: 2px dashed rgba(255, 255, 255, 0.16);
+        border-radius: 8px;
+      }
+      .center-slot.left {
+        left: calc(50% - var(--card-w) - 8px);
+      }
+      .center-slot.right {
+        left: calc(50% + 8px);
+      }
+
+      .impact-ring {
+        position: absolute;
+        inset: -6px;
+        border-radius: 8px;
+        border: 3px solid var(--gold);
+        opacity: 0;
+        pointer-events: none;
+      }
+      .impact-ring.play {
+        animation: ring-burst 620ms ease-out forwards;
+      }
+      @keyframes ring-burst {
+        0% {
+          transform: scale(0.6);
+          opacity: 0.95;
+        }
+        100% {
+          transform: scale(2.1);
+          opacity: 0;
+        }
+      }
+
+      /* ---------------- card face ---------------- */
+      .card-face {
+        position: absolute;
+        inset: 0;
+        border-radius: 6px;
+        background: linear-gradient(
+          155deg,
+          var(--cream) 0%,
+          var(--cream-2) 100%
+        );
+        border: 2px solid rgba(0, 0, 0, 0.6);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 7% 8%;
+        backface-visibility: hidden;
+        overflow: hidden;
+      }
+      .card-face .inner-frame {
+        position: absolute;
+        inset: 5px;
+        border: 1px solid rgba(0, 0, 0, 0.14);
+        border-radius: 3px;
+        pointer-events: none;
+      }
+      .card-face .foil {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          115deg,
+          transparent 20%,
+          rgba(255, 255, 255, 0.75) 42%,
+          rgba(255, 210, 63, 0.55) 50%,
+          rgba(255, 255, 255, 0.75) 58%,
+          transparent 80%
+        );
+        background-size: 300% 300%;
+        background-position: 130% 130%;
+        mix-blend-mode: overlay;
+        pointer-events: none;
+        opacity: 0;
+      }
+      .card-face.foiled .foil {
+        animation: foil-sweep 1100ms ease-out;
+      }
+      @keyframes foil-sweep {
+        0% {
+          background-position: 130% 130%;
+          opacity: 1;
+        }
+        100% {
+          background-position: -30% -30%;
+          opacity: 0;
+        }
+      }
+
+      .card-face .corner {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        line-height: 1;
+      }
+      .card-face .corner .rank {
+        font-size: clamp(9px, 1.6vw, 12px);
+      }
+      .card-face .corner .suit-small {
+        font-size: clamp(10px, 1.7vw, 13px);
+        margin-top: 3px;
+        font-family: Arial, sans-serif;
+      }
+      .card-face .corner.bottom {
+        align-self: flex-end;
+        transform: rotate(180deg);
+      }
+
+      .card-face .suit-big {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: clamp(24px, 5.4vw, 40px);
+        font-family: Arial, sans-serif;
+        filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.08));
+      }
+      .card-face .suit-glow {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 70%;
+        aspect-ratio: 1;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(255, 210, 63, 0.28) 0%,
+          transparent 70%
+        );
+      }
+
+      .card-face.red .rank,
+      .card-face.red .suit-small,
+      .card-face.red .suit-big,
+      .card-face.red .id-text {
+        color: var(--ink-red);
+      }
+      .card-face.black .rank,
+      .card-face.black .suit-small,
+      .card-face.black .suit-big,
+      .card-face.black .id-text {
+        color: var(--ink-black);
+      }
+
+      /* ---------------- identity text (nama anak / masalah) ---------------- */
+      .card-face .id-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 90%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        font-size: clamp(6.5px, 2.1vw, 11px);
+        line-height: 1.6;
+        word-break: break-word;
+        z-index: 2;
+      }
+
+      .pixel-sprite-wrap {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .flash {
+        position: absolute;
+        inset: 0;
+        background: white;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .flash.go {
+        animation: flash-pop 420ms ease-out;
+      }
+      @keyframes flash-pop {
+        0% {
+          opacity: 0.9;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+
+      /* ---------------- traveler ---------------- */
+      .traveler {
+        position: absolute;
+        z-index: 30;
+        will-change: transform;
+      }
+      .traveler-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transform-style: preserve-3d;
+        transition: transform 460ms cubic-bezier(0.34, 1.4, 0.4, 1);
+        border-radius: 6px;
+      }
+      .traveler-inner.flipped {
+        transform: rotateY(180deg);
+      }
+      .traveler-inner .face-back {
+        position: absolute;
+        inset: 0;
+        border-radius: 6px;
+        overflow: hidden;
+        backface-visibility: hidden;
+      }
+      .traveler-inner .face-front {
+        position: absolute;
+        inset: 0;
+        transform: rotateY(180deg);
+        backface-visibility: hidden;
+      }
+      .traveler.leaving {
+        transition:
+          opacity 240ms ease,
+          transform 240ms ease;
+        opacity: 0;
+        transform: scale(0.9) translateY(10px);
+      }
+
+      /* ---------------- sparkle / burst particles ---------------- */
+      .spark {
+        position: fixed;
+        width: 6px;
+        height: 6px;
+        background: var(--gold);
+        border-radius: 1px;
+        pointer-events: none;
+        z-index: 60;
+        animation: spark-fly 620ms ease-out forwards;
+      }
+      @keyframes spark-fly {
+        0% {
+          transform: translate(0, 0) scale(1) rotate(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(var(--dx), var(--dy)) scale(0.2) rotate(180deg);
+          opacity: 0;
+        }
+      }
+
+      /* ---------------- controls ---------------- */
+      .controls {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .pilih-btn {
+        position: relative;
+        overflow: hidden;
+        font-family: var(--pixel-font);
+        font-size: 13px;
+        letter-spacing: 2px;
+        color: var(--ink);
+        background: linear-gradient(180deg, var(--gold-hot), var(--gold));
+        border: 3px solid #7a5a10;
+        padding: 15px 38px;
+        border-radius: 8px;
+        box-shadow: var(--hard-shadow);
+        cursor: pointer;
+        transition:
+          transform 140ms ease,
+          box-shadow 140ms ease,
+          filter 140ms ease;
+      }
+      .pilih-btn::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -60%;
+        width: 40%;
+        height: 100%;
+        background: linear-gradient(
+          115deg,
+          transparent,
+          rgba(255, 255, 255, 0.65),
+          transparent
+        );
+        transform: skewX(-20deg);
+        animation: btn-shine 2.8s ease-in-out infinite;
+      }
+      @keyframes btn-shine {
+        0% {
+          left: -60%;
+        }
+        45% {
+          left: 130%;
+        }
+        100% {
+          left: 130%;
+        }
+      }
+      .pilih-btn:not(:disabled):hover {
+        transform: translateY(-3px);
+        box-shadow: 5px 9px 0 rgba(0, 0, 0, 0.6);
+      }
+      .pilih-btn:not(:disabled):active {
+        transform: translateY(1px);
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.6);
+      }
+      .pilih-btn:disabled {
+        background: #6c6455;
+        color: #a89f8e;
+        border-color: #45402f;
+        cursor: not-allowed;
+        box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.4);
+      }
+      .pilih-btn:disabled::after {
+        display: none;
+      }
+
+      .status {
+        font-size: 9px;
+        letter-spacing: 1px;
+        color: var(--gold);
+        min-height: 14px;
+        text-align: center;
+        text-shadow: 0 0 8px rgba(255, 210, 63, 0.5);
+      }
+
+      /* ---------------- detail modal (paragraf lengkap) ---------------- */
+      .detail-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        background: rgba(10, 6, 16, 0.78);
+        backdrop-filter: blur(2px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: overlay-fade 180ms ease-out;
+      }
+      @keyframes overlay-fade {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .detail-card {
+        font-family: var(--pixel-font);
+        position: relative;
+        width: min(92vw, 480px);
+        max-height: 82vh;
+        overflow-y: auto;
+        background: linear-gradient(180deg, #3a2350, #241436);
+        border: 3px solid var(--gold);
+        border-radius: 10px;
+        padding: clamp(20px, 5vw, 30px);
+        box-shadow:
+          var(--hard-shadow),
+          inset 0 0 22px rgba(255, 210, 63, 0.12);
+        animation: detail-pop 220ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+      }
+      @keyframes detail-pop {
+        from {
+          transform: scale(0.9);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      .detail-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 28px;
+        height: 28px;
+        border: 2px solid var(--gold);
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.35);
+        color: var(--gold-hot);
+        font-size: 16px;
+        line-height: 1;
+        cursor: pointer;
+      }
+      .detail-close:hover {
+        background: rgba(255, 210, 63, 0.2);
+      }
+      .detail-name {
+        font-family: var(--pixel-font);
+        font-size: clamp(13px, 3.6vw, 16px);
+        color: var(--gold-hot);
+        text-shadow: 0 0 8px rgba(255, 210, 63, 0.6);
+        margin-bottom: 10px;
+        padding-right: 30px;
+      }
+      .detail-label {
+        font-family: var(--pixel-font);
+        font-size: clamp(8.5px, 2.4vw, 10px);
+        color: #ffb3a8;
+        letter-spacing: 0.5px;
+        margin-bottom: 14px;
+      }
+      .detail-body {
+        /* font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; */
+        font-family: "Lexend", sans-serif;
+        font-size: clamp(13px, 3.4vw, 15px);
+        line-height: 1.7;
+        color: var(--cream);
+        white-space: pre-line;
+        text-align: justify;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .top-card,
+        .traveler-inner,
+        .traveler,
+        .pilih-btn,
+        .glow-orb,
+        .bg-particle,
+        .back-sheen,
+        .foil,
+        .title-pulse,
+        h1 {
+          transition: none;
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="backdrop"></div>
+    <div class="glow-orb orb-gold"></div>
+    <div class="glow-orb orb-blue"></div>
+    <div class="glow-orb orb-red"></div>
+    <div class="bg-particles" id="bgParticles"></div>
+    <div class="vignette"></div>
+
+    <div class="page">
+      <div class="banner">
+        <div class="eyebrow">KENALI DIRIMU</div>
+        <h1>PILIH KARTU ANAK<br />DAN SELESAIKAN MASALAHNYA</h1>
+      </div>
+
+      <div class="hint">
+        Arahkan mouse ke kartu paling atas untuk mengangkatnya. Klik kartu ANAK
+        (kiri) dan kartu MASALAH (kanan) untuk memilihnya (klik lagi untuk
+        batal). Setelah kedua sisi terpilih, tekan tombol PILIH untuk mengungkap
+        pasangannya — lalu klik kartu yang sudah terbuka untuk melihat detail
+        lengkapnya.
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="deck left" id="deckLeft">
+          <div class="deck-aura"></div>
+          <div class="deck-label">DEK ANAK</div>
+          <div
+            class="stack-card"
+            style="transform: translate(4%, 6%) rotate(-3deg)"
+          >
+            <div class="card-back">
+              <div
+                class="back-fill"
+                style="background: linear-gradient(155deg, #294f9c, #0a1f5c)"
+              ></div>
+              <div class="back-diamond"></div>
+            </div>
+          </div>
+          <div
+            class="stack-card"
+            style="transform: translate(-3%, 4%) rotate(2deg)"
+          >
+            <div class="card-back">
+              <div
+                class="back-fill"
+                style="background: linear-gradient(155deg, #3a6bd0, #123a8f)"
+              ></div>
+              <div class="back-diamond"></div>
+            </div>
+          </div>
+          <div class="top-card-slot"></div>
+          <div class="deck-count" id="countLeft"></div>
+        </div>
+
+        <div class="center-slot left" id="slotLeft">
+          <div class="impact-ring" id="ringLeft"></div>
+        </div>
+        <div class="center-slot right" id="slotRight">
+          <div class="impact-ring" id="ringRight"></div>
+        </div>
+
+        <div class="deck right" id="deckRight">
+          <div class="deck-aura"></div>
+          <div class="deck-label">DEK MASALAH</div>
+          <div
+            class="stack-card"
+            style="transform: translate(-4%, 6%) rotate(3deg)"
+          >
+            <div class="card-back">
+              <div
+                class="back-fill"
+                style="background: linear-gradient(155deg, #9c2929, #5c0f0f)"
+              ></div>
+              <div class="back-diamond"></div>
+            </div>
+          </div>
+          <div
+            class="stack-card"
+            style="transform: translate(3%, 4%) rotate(-2deg)"
+          >
+            <div class="card-back">
+              <div
+                class="back-fill"
+                style="background: linear-gradient(155deg, #d04a3a, #9c2020)"
+              ></div>
+              <div class="back-diamond"></div>
+            </div>
+          </div>
+          <div class="top-card-slot"></div>
+          <div class="deck-count" id="countRight"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="pilih-btn" id="pilihBtn" disabled>PILIH</button>
+        <div class="status" id="status"></div>
+      </div>
+    </div>
+
+    <script>
+      /* ============ pixel-art sprite builder (box-shadow technique, pure CSS/JS, no images) ============ */
+      function buildPixelArt(rows, unit, colorMap) {
+        const shadows = [];
+        let cols = 0;
+        rows.forEach((r) => (cols = Math.max(cols, r.length)));
+        rows.forEach((row, r) => {
+          for (let c = 0; c < row.length; c++) {
+            const ch = row[c];
+            if (ch === "." || ch === " ") continue;
+            const color = colorMap[ch];
+            if (!color) continue;
+            shadows.push(`${c * unit}px ${r * unit}px 0 ${color}`);
+          }
+        });
+        const w = cols * unit,
+          h = rows.length * unit;
+        return `<div style="position:absolute;left:50%;top:50%;width:${unit}px;height:${unit}px;
+      margin-left:${-w / 2}px;margin-top:${-h / 2}px;background:transparent;box-shadow:${shadows.join(",")};"></div>`;
+      }
+
+      /* ============ data anak & masalah (pasangan TETAP berdasarkan index) ============ */
+      /* Ganti / edit dua daftar ini sesuai data asli. Anak[i] selalu berpasangan
+         dengan Masalah[i] — urutan keduanya WAJIB tetap sinkron.
+         Setiap masalah punya:
+           - label  : teks singkat yang tampil di permukaan kartu
+           - detail : paragraf lengkap, tampil saat kartu (yang sudah terbuka)
+                      diklik sekali lagi. Boleh sepanjang apa pun. */
+      const CHILDREN = [
+        "Aldo",
+        "Bila",
+        "Caca",
+        "Dimas",
+        "Eka",
+        "Fajar",
+        "Gita",
+        "Hana",
+        "Ivan",
+        "Juna",
+        "Kiki",
+        "Laras",
+        "Made",
+        "Nadia",
+        "Oki",
+        "Putri",
+        "Qori",
+        "Rafi",
+        "Sari",
+        "Tono",
+      ];
+      const PROBLEMS = [
+        {
+          label: "Cemas saat ujian",
+          detail:
+            "Anak menunjukkan kecemasan berlebihan setiap kali menghadapi ujian atau ulangan di sekolah. Gejala yang terlihat antara lain sulit tidur di malam sebelumnya, sering mengeluh sakit perut atau pusing menjelang hari-H, dan cenderung menghindar atau mencari alasan untuk tidak masuk sekolah. Kecemasan ini biasanya mulai muncul beberapa hari sebelum jadwal ujian dan memuncak pada pagi hari pelaksanaan, membuat anak tampak gelisah, mudah menangis, atau meminta ditemani terus-menerus oleh orang tua. Pendampingan yang disarankan adalah latihan relaksasi sebelum ujian dan komunikasi rutin dengan guru kelas.",
+        },
+        {
+          label: "Sulit fokus di kelas",
+          detail:
+            "Anak kesulitan mempertahankan perhatian selama pelajaran berlangsung, mudah teralihkan oleh suara atau aktivitas di sekitarnya, dan sering belum menyelesaikan tugas tepat waktu. Guru melaporkan anak perlu instruksi yang diulang beberapa kali karena tampak melamun atau kehilangan fokus di tengah penjelasan, meskipun anak sebenarnya mampu memahami materi apabila diberi pendampingan yang sesuai. Kesulitan fokus ini kadang membuat anak tertinggal dari teman sekelas dan mulai kehilangan motivasi karena merasa selalu ketinggalan. Disarankan duduk di barisan depan dan pemberian tugas dalam potongan-potongan kecil.",
+        },
+        {
+          label: "Takut berpisah ortu",
+          detail:
+            "Anak mengalami kesulitan besar setiap kali harus berpisah dari orang tua, misalnya saat diantar ke sekolah, dititipkan ke kerabat, atau bahkan saat orang tua hendak pergi ke ruangan lain di rumah. Ia sering menangis histeris, memeluk erat, atau merengek minta ikut, dan keluhan ini sudah berlangsung cukup lama sehingga mulai mengganggu rutinitas sekolah karena anak menolak masuk kelas tanpa didampingi. Pada malam hari, anak kadang terbangun dan mencari keberadaan orang tua untuk memastikan mereka masih ada di rumah. Pendekatan yang disarankan adalah perpisahan bertahap dengan durasi yang ditingkatkan sedikit demi sedikit, memberikan benda transisi seperti foto atau boneka kesayangan, serta menjaga rutinitas perpisahan yang konsisten dan dapat diprediksi setiap harinya.",
+        },
+        {
+          label: "Mudah marah",
+          detail:
+            "Anak mudah marah dalam intensitas yang tampak tidak sebanding dengan pemicunya, misalnya berteriak, membanting barang, atau menangis meledak-ledak hanya karena hal kecil seperti diminta berhenti bermain atau kalah dalam permainan. Ledakan emosi ini sering terjadi tiba-tiba dan sulit diredakan begitu sudah dimulai, membuat anak maupun orang di sekitarnya kewalahan. Setelah amarah reda, anak kadang terlihat menyesal atau bingung dengan reaksinya sendiri namun belum memiliki cara untuk mencegahnya terulang. Pendampingan yang disarankan adalah mengajarkan anak mengenali tanda-tanda awal kemarahan sebelum meledak, menyediakan cara aman untuk menyalurkan emosi seperti menggambar atau bergerak aktif, dan tetap tenang serta konsisten saat menghadapi ledakan emosi anak tanpa ikut membentak.",
+        },
+        {
+          label: "Menarik diri dari teman",
+          detail:
+            "Anak mulai menarik diri dari lingkungan pertemanannya, memilih menyendiri saat jam istirahat, menolak ajakan bermain dari teman, dan tampak kurang antusias saat harus berinteraksi dalam kegiatan kelompok. Perubahan ini biasanya terjadi secara bertahap dan sering luput dari perhatian karena anak tidak menunjukkan gejala yang mencolok, hanya semakin jarang terlihat bersama teman-temannya seperti sebelumnya. Guru maupun orang tua perlu peka terhadap perubahan pola sosial ini karena bisa menjadi tanda adanya masalah yang belum terungkap, baik berupa konflik pertemanan maupun tekanan emosional lain. Pendampingan yang disarankan adalah mengajak anak bicara secara santai tanpa memaksa, melibatkan anak kembali dalam aktivitas kelompok kecil secara bertahap, dan berkoordinasi dengan guru untuk memantau interaksi anak di sekolah.",
+        },
+        {
+          label: "Susah tidur malam",
+          detail:
+            "Anak mengalami kesulitan tidur di malam hari, baik berupa sulit memulai tidur, sering terbangun di tengah malam, maupun tidur yang tidak nyenyak sehingga anak terlihat lelah dan kurang bersemangat keesokan harinya. Pola tidur yang terganggu ini berdampak pada konsentrasi belajar dan suasana hati anak sepanjang hari, membuatnya lebih mudah rewel atau sulit fokus di kelas. Dalam beberapa kasus, gangguan tidur ini terkait dengan kecemasan atau pikiran yang mengganggu menjelang waktu tidur, seperti kekhawatiran tentang sekolah atau situasi di rumah. Pendampingan yang disarankan adalah membangun rutinitas tidur yang konsisten setiap malam, membatasi penggunaan gadget menjelang waktu tidur, dan menciptakan suasana kamar yang tenang serta nyaman untuk beristirahat.",
+        },
+        {
+          label: "Kurang percaya diri",
+          detail:
+            "Anak memiliki rasa percaya diri yang sangat rendah, sering meragukan kemampuannya sendiri bahkan untuk hal-hal sederhana yang sebenarnya bisa ia lakukan dengan baik. Ia cenderung menghindari tampil di depan kelas, enggan mencoba aktivitas baru karena takut gagal atau ditertawakan, dan sering berkata merendahkan diri sendiri seperti merasa tidak sepintar atau tidak sehebat teman-temannya. Pola ini membuatnya kehilangan banyak kesempatan untuk mengembangkan potensi karena selalu mundur lebih dulu sebelum mencoba. Pendampingan yang disarankan adalah memberikan pujian yang spesifik atas usaha bukan hasil akhir, memberi kesempatan kecil untuk sukses secara bertahap, dan menghindari perbandingan dengan anak lain baik oleh guru maupun orang tua.",
+        },
+        {
+          label: "Korban bullying",
+          detail:
+            "Anak menjadi korban perundungan dari teman sebaya, baik dalam bentuk ejekan verbal, pengucilan dari kelompok pertemanan, maupun tindakan fisik ringan seperti didorong atau barangnya disembunyikan. Anak sering enggan bercerita tentang apa yang dialaminya, namun menunjukkan tanda-tanda seperti enggan berangkat sekolah, barang-barang yang hilang atau rusak tanpa penjelasan jelas, dan penurunan rasa percaya diri secara drastis dalam waktu singkat. Kondisi ini bila dibiarkan dapat berdampak jangka panjang pada kesehatan mental dan cara anak memandang dirinya sendiri. Pendampingan yang disarankan adalah membuka komunikasi yang aman dan tidak menghakimi agar anak berani bercerita, segera berkoordinasi dengan pihak sekolah untuk menindaklanjuti kasus, serta memberikan dukungan emosional intensif selama proses pemulihan.",
+        },
+        {
+          label: "Kecanduan gadget",
+          detail:
+            "Anak menunjukkan ketergantungan tinggi terhadap gadget, menghabiskan waktu berjam-jam untuk bermain gawai hingga mengabaikan aktivitas lain seperti belajar, bermain di luar, atau berinteraksi dengan keluarga. Ketika diminta berhenti atau dibatasi waktu penggunaannya, anak bereaksi dengan marah, merajuk, atau bahkan berbohong untuk tetap bisa mengakses gadget secara diam-diam. Pola tidur dan konsentrasi belajarnya mulai terganggu akibat kebiasaan ini, dan anak semakin sulit menemukan kesenangan dalam aktivitas tanpa layar. Pendampingan yang disarankan adalah menetapkan batas waktu penggunaan gadget secara konsisten dan disepakati bersama, menyediakan alternatif kegiatan yang menarik di luar layar, serta memberi contoh langsung dari orang tua dalam mengelola penggunaan gadget di rumah.",
+        },
+        {
+          label: "Cemas berlebihan",
+          detail:
+            "Anak tampak cemas berlebihan dalam berbagai situasi sehari-hari, bukan hanya pada momen tertentu seperti ujian, melainkan meluas ke hal-hal kecil seperti takut terlambat, takut membuat kesalahan, atau khawatir berlebihan terhadap kejadian yang belum tentu terjadi. Kecemasan ini sering disertai gejala fisik seperti jantung berdebar, tangan berkeringat, dan sulit berkonsentrasi karena pikiran dipenuhi skenario terburuk. Guru maupun orang tua melaporkan anak sering bertanya berulang kali untuk memastikan sesuatu aman atau benar, bahkan setelah dijawab dengan jelas. Pendampingan yang disarankan meliputi teknik menenangkan diri yang sederhana, membangun rutinitas yang stabil dan dapat diprediksi, serta menghindari memberi label cemas secara terbuka di depan anak agar tidak menambah rasa malu atau tekanan.",
+        },
+        {
+          label: "Dampak broken home",
+          detail:
+            "Anak menunjukkan perubahan perilaku yang signifikan setelah mengalami situasi keluarga yang tidak stabil, seperti perceraian orang tua atau konflik rumah tangga yang berkepanjangan. Ia menjadi lebih pendiam, mudah cemas ketika membicarakan keluarga, dan dalam beberapa kesempatan menunjukkan kebingungan terkait rasa loyalitas antara kedua orang tuanya. Prestasi akademik dan interaksi sosialnya di sekolah juga ikut terdampak, dengan anak terlihat kurang bersemangat dan mudah lelah secara emosional. Pendampingan yang disarankan adalah menjaga agar anak tidak dilibatkan dalam konflik orang dewasa, memberikan kepastian bahwa kasih sayang kedua orang tua tidak berkurang, dan melibatkan konselor sekolah untuk membantu anak memproses perubahan besar dalam hidupnya.",
+        },
+        {
+          label: "Sedih berkepanjangan",
+          detail:
+            "Anak menunjukkan kesedihan yang berlangsung lama, bukan hanya sesaat setelah kejadian tertentu, melainkan menetap selama berminggu-minggu hingga terlihat kehilangan minat pada aktivitas yang dulunya disukai, seperti bermain atau menggambar. Ia menjadi lebih pendiam, energinya tampak menurun, dan sering terlihat melamun sendirian di kelas maupun di rumah. Guru melaporkan penurunan partisipasi anak dalam kegiatan kelompok, sementara orang tua menyadari anak lebih sering mengurung diri di kamar. Pendampingan yang disarankan adalah menciptakan ruang aman untuk anak bercerita tanpa dihakimi, menjaga rutinitas harian yang stabil termasuk waktu tidur dan makan, serta melibatkan psikolog anak apabila kesedihan ini terus berlanjut lebih dari beberapa minggu.",
+        },
+        {
+          label: "Sulit atur emosi",
+          detail:
+            "Anak kesulitan mengatur emosinya secara umum, tidak hanya marah tetapi juga kesulitan menenangkan diri saat sedih, frustrasi, atau kecewa. Perubahan suasana hatinya bisa terjadi sangat cepat, dari tenang menjadi menangis atau kesal hanya dalam hitungan menit, dan ia sering belum mampu menjelaskan dengan kata-kata apa yang sebenarnya ia rasakan. Situasi ini membuat anak kadang bereaksi berlebihan terhadap perubahan kecil dalam rutinitas, seperti perubahan jadwal atau permintaan yang mendadak. Pendampingan yang disarankan adalah membantu anak membangun kosakata emosi agar bisa mengungkapkan perasaannya, memberikan waktu jeda sebelum merespons saat emosi memuncak, dan menciptakan rutinitas yang stabil untuk mengurangi pemicu ketidakstabilan emosi.",
+        },
+        {
+          label: "Cemas nilai akademik",
+          detail:
+            "Anak menunjukkan kekhawatiran yang intens terhadap nilai akademik, sampai pada titik menganggap nilai yang kurang sempurna sebagai kegagalan besar. Ia sering membandingkan hasil belajarnya dengan teman sekelas, menjadi sangat sedih atau marah pada diri sendiri saat nilai turun sedikit saja, dan kerap meminta orang tua memeriksa berulang kali pekerjaan rumahnya karena takut salah. Tekanan ini membuat anak enggan mencoba hal baru karena takut tidak bisa melakukannya dengan sempurna, dan dalam beberapa kasus memicu keluhan fisik seperti sakit kepala menjelang pembagian rapor. Pendampingan yang disarankan adalah mengubah fokus dari hasil ke proses belajar, memberi apresiasi pada usaha bukan hanya nilai, dan berdiskusi dengan guru untuk memberikan umpan balik yang membangun tanpa memperbesar rasa takut gagal.",
+        },
+        {
+          label: "Merasa kesepian",
+          detail:
+            "Anak sering mengungkapkan perasaan kesepian meskipun berada di tengah keluarga atau teman-temannya, seolah merasa tidak ada yang benar-benar memahami dirinya. Ia cenderung menghabiskan waktu sendirian, jarang berinisiatif mengajak teman bermain, dan dalam beberapa kesempatan mengatakan hal-hal seperti tidak punya siapa-siapa untuk diajak bicara. Perasaan ini kadang muncul setelah perubahan besar dalam hidupnya, seperti pindah sekolah atau berkurangnya waktu bersama orang tua karena kesibukan kerja. Pendampingan yang disarankan meliputi meluangkan waktu berkualitas rutin bersama anak, membantu anak membangun satu atau dua pertemanan dekat secara bertahap, dan mengajak anak terlibat dalam kegiatan kelompok kecil yang sesuai minatnya agar merasa memiliki tempat.",
+        },
+        {
+          label: "Sakit fisik tanpa sebab",
+          detail:
+            "Anak berulang kali mengeluhkan sakit fisik seperti sakit perut, sakit kepala, atau mual tanpa ada penyebab medis yang jelas setelah diperiksa dokter. Keluhan ini sering muncul pada momen-momen tertentu seperti sebelum berangkat sekolah atau setelah situasi yang membuatnya tidak nyaman secara emosional, mengindikasikan adanya kaitan antara kondisi psikologis dan gejala fisik yang dirasakan. Orang tua maupun guru kadang kesulitan membedakan apakah keluhan ini nyata secara medis atau merupakan ekspresi dari tekanan emosional yang belum bisa diungkapkan anak secara verbal. Pendampingan yang disarankan adalah tetap memeriksakan kondisi fisik anak ke dokter untuk memastikan tidak ada masalah medis, sambil membuka ruang bicara yang tenang untuk membantu anak mengenali dan menamai perasaannya.",
+        },
+        {
+          label: "Sulit percaya orang",
+          detail:
+            "Anak menunjukkan kesulitan untuk percaya kepada orang lain, termasuk kepada orang dewasa yang seharusnya bisa menjadi tempatnya bergantung, seperti guru atau kerabat dekat. Ia cenderung menutup diri saat ditanya tentang perasaannya, ragu menerima bantuan meskipun sedang kesulitan, dan sering berasumsi bahwa orang lain akan mengecewakannya seperti pengalaman sebelumnya. Sikap waspada berlebihan ini biasanya terbentuk dari pengalaman kekecewaan atau pengkhianatan kepercayaan di masa lalu, baik dari keluarga maupun lingkungan pertemanan. Pendampingan yang disarankan adalah membangun kepercayaan secara perlahan melalui konsistensi kata dan tindakan, tidak memaksa anak untuk segera terbuka, dan memberi ruang bagi anak untuk menentukan kecepatannya sendiri dalam membangun kembali rasa percaya.",
+        },
+        {
+          label: "Cari perhatian berlebihan",
+          detail:
+            "Anak sering mencari perhatian secara berlebihan melalui perilaku yang mengganggu, seperti membuat keributan di kelas, menyela pembicaraan orang lain, atau melakukan hal-hal ekstrem agar diperhatikan oleh guru maupun teman sebaya. Ketika perhatian yang diinginkan tidak didapat, anak bisa meningkatkan intensitas perilakunya atau justru menarik diri dengan kecewa. Pola ini sering muncul pada anak yang merasa kurang mendapat perhatian positif di rumah atau di sekolah, sehingga mencari validasi melalui cara yang kurang tepat. Pendampingan yang disarankan adalah memberikan perhatian positif secara proaktif sebelum perilaku mengganggu muncul, mengapresiasi perilaku baik secara konsisten, dan membantu anak menemukan cara yang lebih sehat untuk mendapatkan pengakuan dari lingkungannya.",
+        },
+        {
+          label: "Sulit beradaptasi",
+          detail:
+            "Anak mengalami kesulitan beradaptasi dengan lingkungan baru, baik saat pindah sekolah, masuk ke kelas baru, maupun ketika ada perubahan besar dalam rutinitas sosialnya. Ia tampak cemas dan kaku saat harus berkenalan dengan teman baru, lebih memilih diam di sudut ruangan daripada berbaur, dan butuh waktu jauh lebih lama dibanding anak lain untuk merasa nyaman di lingkungan baru tersebut. Proses adaptasi yang lambat ini kadang disalahartikan sebagai sikap tertutup atau tidak ramah, padahal sebenarnya anak membutuhkan dukungan ekstra untuk merasa aman. Pendampingan yang disarankan adalah memperkenalkan lingkungan baru secara bertahap sebelum transisi penuh terjadi, memasangkan anak dengan satu teman pendamping di awal masa adaptasi, dan memberi waktu tanpa tekanan bagi anak untuk menyesuaikan diri.",
+        },
+        {
+          label: "Kurang motivasi belajar",
+          detail:
+            "Anak menunjukkan penurunan motivasi belajar yang cukup signifikan, terlihat dari semakin jarangnya mengerjakan pekerjaan rumah, sikap acuh saat diingatkan tentang tugas sekolah, dan kurangnya antusiasme terhadap kegiatan belajar yang dulunya ia sukai. Ia sering mengatakan bahwa belajar terasa membosankan atau tidak penting, dan lebih memilih menghabiskan waktu untuk aktivitas lain. Penurunan motivasi ini bisa dipicu oleh berbagai faktor, mulai dari tekanan akademik yang berlebihan, kurangnya dukungan di rumah, hingga metode belajar yang tidak sesuai dengan gaya belajar anak. Pendampingan yang disarankan adalah mencari tahu akar penyebab hilangnya motivasi melalui obrolan santai, mengaitkan materi belajar dengan minat pribadi anak, dan memberikan target belajar kecil yang realistis agar anak kembali merasakan pencapaian.",
+        },
+      ];
+      /* Menyeragamkan data: CHILDREN boleh berupa string biasa (nama saja),
+         PROBLEMS berupa objek {label, detail}. Keduanya dinormalisasi ke
+         bentuk {label, detail} supaya kode di bawah bisa memperlakukan
+         keduanya dengan cara yang sama. */
+      function normalizeEntry(entry) {
+        if (typeof entry === "string") return { label: entry, detail: entry };
+        return { label: entry.label, detail: entry.detail || entry.label };
+      }
+
+      function shuffledIndices(n) {
+        const arr = Array.from({ length: n }, (_, i) => i);
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      /* satu dek bersama berisi index 0..19; kedua sisi selalu menarik index
+         yang sama pada satu putaran, sehingga pasangan anak-masalah tetap benar */
+      let sharedDeck = shuffledIndices(CHILDREN.length);
+
+      const state = {
+        left: { picked: false },
+        right: { picked: false },
+      };
+
+      const stage = document.getElementById("stage");
+      const pilihBtn = document.getElementById("pilihBtn");
+      const statusEl = document.getElementById("status");
+      let currentCenterCards = [];
+
+      function updateButtonState() {
+        pilihBtn.disabled = !(state.left.picked && state.right.picked);
+      }
+
+      /* ============ ambient background particles ============ */
+      (function initParticles() {
+        const wrap = document.getElementById("bgParticles");
+        const glyphs = ["\u2660", "\u2665", "\u2666", "\u2663"];
+        const colors = ["#8fb4ff", "#ff9a90", "#ffd23f", "#cbb8e0"];
+        for (let i = 0; i < 16; i++) {
+          const el = document.createElement("span");
+          const g = glyphs[Math.floor(Math.random() * glyphs.length)];
+          const size = 10 + Math.random() * 18;
+          const duration = 10 + Math.random() * 14;
+          el.className = "bg-particle";
+          el.textContent = g;
+          el.style.left = Math.random() * 100 + "%";
+          el.style.fontSize = size + "px";
+          el.style.color = colors[Math.floor(Math.random() * colors.length)];
+          el.style.setProperty(
+            "--pmax",
+            (0.15 + Math.random() * 0.25).toFixed(2),
+          );
+          el.style.animationDuration = duration + "s";
+          el.style.animationDelay = -Math.random() * duration + "s";
+          wrap.appendChild(el);
+        }
+      })();
+
+      /* ============ deck rendering ============ */
+      function renderDeck(side) {
+        const s = state[side];
+        const deckEl = document.getElementById(
+          side === "left" ? "deckLeft" : "deckRight",
+        );
+        const slot = deckEl.querySelector(".top-card-slot");
+        slot.innerHTML = "";
+        const countEl = document.getElementById(
+          side === "left" ? "countLeft" : "countRight",
+        );
+
+        if (sharedDeck.length === 0) {
+          sharedDeck = shuffledIndices(CHILDREN.length);
+          statusEl.textContent = "Dek dikocok ulang!";
+        }
+        countEl.textContent = "Sisa: " + sharedDeck.length;
+
+        const topCard = document.createElement("div");
+        topCard.className = "top-card" + (s.picked ? " picked" : "");
+        const tilt = (Math.random() * 5 - 2.5).toFixed(1);
+        topCard.style.setProperty("--tilt", tilt + "deg");
+
+        const backGrad =
+          side === "left"
+            ? "linear-gradient(155deg,#4f8cf0,#0a1f5c)"
+            : "linear-gradient(155deg,#ff6b5a,#5c0f0f)";
+
+        topCard.innerHTML = `
+      <div class="card-back">
+        <div class="back-fill" style="background:${backGrad};"></div>
+        <div class="back-diamond"></div>
+        <div class="back-sheen"></div>
+        <div class="back-emblem">${buildPixelArt(
+          ["..G..", ".GGG.", "GGGGG", ".GGG.", "..G.."],
+          4,
+          { G: "rgba(255,255,255,0.55)" },
+        )}</div>
+      </div>
+    `;
+
+        topCard.addEventListener("click", (e) => {
+          s.picked = !s.picked;
+          renderDeck(side);
+          updateButtonState();
+          if (s.picked) spawnSparkles(e.clientX, e.clientY, 8);
+        });
+
+        slot.appendChild(topCard);
+      }
+
+      /* ============ sparkle burst (screen-space, uses fixed position) ============ */
+      function spawnSparkles(clientX, clientY, count) {
+        for (let i = 0; i < count; i++) {
+          const el = document.createElement("div");
+          el.className = "spark";
+          const angle = Math.random() * Math.PI * 2;
+          const dist = 40 + Math.random() * 50;
+          el.style.setProperty("--dx", Math.cos(angle) * dist + "px");
+          el.style.setProperty("--dy", Math.sin(angle) * dist + "px");
+          el.style.left = clientX + "px";
+          el.style.top = clientY + "px";
+          el.style.background = Math.random() > 0.5 ? "#ffd23f" : "#ffffff";
+          document.body.appendChild(el);
+          el.addEventListener("animationend", () => el.remove());
+        }
+      }
+
+      /* ============ card face + back HTML builders ============ */
+      function buildCardFaceHTML(card) {
+        const colorClass = card.kind === "problem" ? "red" : "black";
+        return `
+      <div class="card-face ${colorClass}">
+        <div class="inner-frame"></div>
+        <div class="foil"></div>
+        <div class="flash"></div>
+        <div class="suit-glow"></div>
+        <div class="id-text">${card.text}</div>
+      </div>
+    `;
+      }
+
+      function buildCardBackHTML(side) {
+        const grad =
+          side === "left"
+            ? "linear-gradient(155deg,#4f8cf0,#0a1f5c)"
+            : "linear-gradient(155deg,#ff6b5a,#5c0f0f)";
+        return `
+      <div class="card-back">
+        <div class="back-fill" style="background:${grad};"></div>
+        <div class="back-diamond"></div>
+        <div class="back-emblem">${buildPixelArt(
+          ["..G..", ".GGG.", "GGGGG", ".GGG.", "..G.."],
+          4,
+          { G: "rgba(255,255,255,0.55)" },
+        )}</div>
+      </div>
+    `;
+      }
+
+      function clearCenter() {
+        if (currentCenterCards.length === 0) return Promise.resolve();
+        return new Promise((resolve) => {
+          currentCenterCards.forEach((el) => el.classList.add("leaving"));
+          setTimeout(() => {
+            currentCenterCards.forEach((el) => el.remove());
+            currentCenterCards = [];
+            resolve();
+          }, 260);
+        });
+      }
+
+      /* ============ detail modal: paragraf lengkap muncul di sini, bukan di kartu ============ */
+      function closeDetailModal() {
+        const overlay = document.getElementById("detailOverlay");
+        if (overlay) overlay.remove();
+        document.removeEventListener("keydown", handleDetailEscape);
+      }
+
+      function handleDetailEscape(e) {
+        if (e.key === "Escape") closeDetailModal();
+      }
+
+      function openDetailModal(card) {
+        closeDetailModal(); // pastikan tidak dobel
+
+        const overlay = document.createElement("div");
+        overlay.id = "detailOverlay";
+        overlay.className = "detail-overlay";
+        overlay.innerHTML = `
+      <div class="detail-card" role="dialog" aria-modal="true">
+        <button class="detail-close" aria-label="Tutup">&times;</button>
+        <div class="detail-name">${card.childName}</div>
+        <div class="detail-label">${card.problemLabel}</div>
+        <div class="detail-body">${card.problemDetail}</div>
+      </div>
+    `;
+        overlay.addEventListener("click", (e) => {
+          if (e.target === overlay) closeDetailModal();
+        });
+        overlay
+          .querySelector(".detail-close")
+          .addEventListener("click", closeDetailModal);
+
+        document.body.appendChild(overlay);
+        document.addEventListener("keydown", handleDetailEscape);
+      }
+
+      function drawPair() {
+        const idx = sharedDeck.pop();
+        state.left.picked = false;
+        state.right.picked = false;
+        renderDeck("left");
+        renderDeck("right");
+        return idx;
+      }
+
+      function relBox(el) {
+        const s = stage.getBoundingClientRect();
+        const r = el.getBoundingClientRect();
+        return {
+          left: r.left - s.left,
+          top: r.top - s.top,
+          width: r.width,
+          height: r.height,
+        };
+      }
+
+      function easeOutCubic(t) {
+        return 1 - Math.pow(1 - t, 3);
+      }
+
+      /* ============ the big travel animation: arc + pop + flip + light burst ============ */
+      function flyCardToCenter(side, card, fromBox, toBox, slotId, ringId) {
+        return new Promise((resolve) => {
+          const el = document.createElement("div");
+          el.className = "traveler";
+          el.style.left = fromBox.left + "px";
+          el.style.top = fromBox.top + "px";
+          el.style.width = fromBox.width + "px";
+          el.style.height = fromBox.height + "px";
+
+          const inner = document.createElement("div");
+          inner.className = "traveler-inner";
+          inner.innerHTML = `
+        <div class="face-back">${buildCardBackHTML(side)}</div>
+        <div class="face-front">${buildCardFaceHTML(card)}</div>
+      `;
+          el.appendChild(inner);
+          stage.appendChild(el);
+          currentCenterCards.push(el);
+
+          const startLeft = fromBox.left,
+            startTop = fromBox.top;
+          const endLeft = toBox.left,
+            endTop = toBox.top;
+          const startRot = side === "left" ? -10 : 10;
+          const arcHeight = fromBox.height * 0.55;
+          const duration = 620;
+          const t0 = performance.now();
+
+          function frame(now) {
+            const t = Math.min(1, (now - t0) / duration);
+            const p = easeOutCubic(t);
+            const x = startLeft + (endLeft - startLeft) * p;
+            const yBase = startTop + (endTop - startTop) * p;
+            const arcLift = -arcHeight * Math.sin(Math.PI * t);
+            const scale = 1 + 0.32 * Math.sin(Math.PI * t);
+            const rot =
+              startRot * (1 - p) + Math.sin(t * Math.PI * 3) * (1 - t) * 6;
+
+            el.style.left = x + "px";
+            el.style.top = yBase + arcLift + "px";
+            el.style.transform = `rotateZ(${rot}deg) scale(${scale})`;
+            el.style.filter = `drop-shadow(0 ${10 + 18 * Math.sin(Math.PI * t)}px 10px rgba(0,0,0,0.45))`;
+
+            if (t < 1) {
+              requestAnimationFrame(frame);
+            } else {
+              // landed: quick settle bounce
+              el.animate(
+                [
+                  { transform: `rotateZ(0deg) scale(1.18)` },
+                  { transform: `rotateZ(0deg) scale(0.96)` },
+                  { transform: `rotateZ(0deg) scale(1)` },
+                ],
+                { duration: 260, easing: "ease-out" },
+              );
+              el.style.transform = "rotateZ(0deg) scale(1)";
+              el.style.filter = "drop-shadow(4px 6px 0 rgba(0,0,0,0.5))";
+
+              setTimeout(() => {
+                inner.classList.add("flipped");
+                const front = inner.querySelector(".card-face");
+                const flash = inner.querySelector(".flash");
+                front.classList.add("foiled");
+                flash.classList.add("go");
+                const ring = document.getElementById(ringId);
+                ring.classList.remove("play");
+                void ring.offsetWidth;
+                ring.classList.add("play");
+                const slotBox = relBox(document.getElementById(slotId));
+                const sRect = stage.getBoundingClientRect();
+                spawnSparkles(
+                  sRect.left + slotBox.left + slotBox.width / 2,
+                  sRect.top + slotBox.top + slotBox.height / 2,
+                  14,
+                );
+
+                /* kartu sudah terbuka: klik sekali lagi untuk lihat detail lengkap */
+                el.style.cursor = "pointer";
+                el.addEventListener("click", () => openDetailModal(card));
+
+                setTimeout(resolve, 480);
+              }, 160);
+            }
+          }
+          requestAnimationFrame(frame);
+        });
+      }
+
+      pilihBtn.addEventListener("click", async () => {
+        if (!(state.left.picked && state.right.picked)) return;
+        pilihBtn.disabled = true;
+        statusEl.textContent = "";
+        closeDetailModal();
+
+        await clearCenter();
+
+        const idx = drawPair();
+        const childEntry = normalizeEntry(CHILDREN[idx]);
+        const problemEntry = normalizeEntry(PROBLEMS[idx]);
+        const cardLeft = {
+          index: idx,
+          text: childEntry.label,
+          kind: "child",
+          childName: childEntry.label,
+          problemLabel: problemEntry.label,
+          problemDetail: problemEntry.detail,
+        };
+        const cardRight = {
+          index: idx,
+          text: problemEntry.label,
+          kind: "problem",
+          childName: childEntry.label,
+          problemLabel: problemEntry.label,
+          problemDetail: problemEntry.detail,
+        };
+
+        const deckLeftBox = relBox(document.getElementById("deckLeft"));
+        const deckRightBox = relBox(document.getElementById("deckRight"));
+        const slotLeftBox = relBox(document.getElementById("slotLeft"));
+        const slotRightBox = relBox(document.getElementById("slotRight"));
+
+        await Promise.all([
+          flyCardToCenter(
+            "left",
+            cardLeft,
+            deckLeftBox,
+            slotLeftBox,
+            "slotLeft",
+            "ringLeft",
+          ),
+          flyCardToCenter(
+            "right",
+            cardRight,
+            deckRightBox,
+            slotRightBox,
+            "slotRight",
+            "ringRight",
+          ),
+        ]);
+
+        statusEl.textContent = `${cardLeft.text} \u2192 ${cardRight.text}`;
+        updateButtonState();
+      });
+
+      renderDeck("left");
+      renderDeck("right");
+      updateButtonState();
+    </script>
+  </body>
+</html>
