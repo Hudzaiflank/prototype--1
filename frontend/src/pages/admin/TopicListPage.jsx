@@ -1,4 +1,113 @@
-import { PagePlaceholder } from "../PagePlaceholder";
+import { useCallback, useEffect, useState } from "react";
+import { topicApi } from "../../services/api/topicApi";
+
 export function TopicListPage() {
-  return <PagePlaceholder title="Topics" />;
+  const [topics, setTopics] = useState([]);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [error, setError] = useState("");
+  const load = useCallback(() =>
+    topicApi
+      .list()
+      .then(({ data }) => setTopics(data.data ?? []))
+      .catch((requestError) =>
+        setError(
+          requestError.response?.data?.message ?? "Topik belum dapat dimuat.",
+        ),
+      ),
+    [],
+  );
+  useEffect(() => {
+    load();
+  }, [load]);
+  const create = async (event) => {
+    event.preventDefault();
+    setError("");
+    try {
+      await topicApi.create({
+        title: title.trim(),
+        description: description.trim(),
+        visibility: "SCHOOL",
+      });
+      setTitle("");
+      setDescription("");
+      load();
+    } catch (requestError) {
+      setError(
+        requestError.response?.data?.message ?? "Topik belum dapat dibuat.",
+      );
+    }
+  };
+  const remove = async (id) => {
+    try {
+      await topicApi.remove(id);
+      load();
+    } catch (requestError) {
+      setError(
+        requestError.response?.data?.message ?? "Topik belum dapat dihapus.",
+      );
+    }
+  };
+  return (
+    <section className="space-y-6" aria-labelledby="topics-title">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-300">
+          School management
+        </p>
+        <h1 className="mt-3 text-3xl font-bold" id="topics-title">
+          Topik permainan
+        </h1>
+      </div>
+      <form
+        className="grid gap-3 rounded-2xl border border-slate-800 bg-slate-950/50 p-5 md:grid-cols-[1fr_1fr_auto]"
+        onSubmit={create}
+      >
+        <input
+          className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-3"
+          placeholder="Judul topik"
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+          required
+        />
+        <input
+          className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-3"
+          placeholder="Deskripsi"
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}
+        />
+        <button
+          className="rounded-lg bg-amber-300 px-4 py-3 font-bold text-slate-950"
+          type="submit"
+        >
+          Tambah topik
+        </button>
+      </form>
+      {error ? <p className="text-sm text-rose-300">{error}</p> : null}
+      <div className="space-y-3">
+        {topics.map((topic) => (
+          <div
+            className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/50 p-4"
+            key={topic.id}
+          >
+            <div>
+              <p className="font-semibold">{topic.title}</p>
+              <p className="mt-1 text-sm text-slate-400">
+                {topic.description ?? "Tanpa deskripsi"}
+              </p>
+            </div>
+            <button
+              className="text-sm text-rose-300"
+              type="button"
+              onClick={() => remove(topic.id)}
+            >
+              Hapus
+            </button>
+          </div>
+        ))}
+      </div>
+      {!topics.length && !error ? (
+        <p className="text-sm text-slate-400">Belum ada topik.</p>
+      ) : null}
+    </section>
+  );
 }

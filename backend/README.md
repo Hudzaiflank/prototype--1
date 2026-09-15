@@ -320,6 +320,46 @@ npm run test:socket
 
 Dapat dilakukan dengan HTTP client seperti Postman, curl, atau VS Code REST Client.
 
+### Automated API test runners
+
+The backend provides two explicit runtime commands:
+
+```powershell
+npm run test:api
+npm run test:api -- --cleanup
+```
+
+`test:api` runs the REST API flow across Super Admin, Admin, Teacher, and public Student endpoints. It creates isolated test fixtures with a timestamp suffix, prints green `PASS` or red `FAIL` output with method, endpoint, HTTP status, and sanitized response detail, and exits with code `1` if any check fails. Test data is kept by default. Add `--cleanup` to remove only the fixtures created by that run. Set `NO_COLOR=1` when plain output is required.
+
+When the REST run keeps its fixtures, it also prints a `SOCKET HANDOFF` block containing PowerShell commands for the generated Teacher token and active test session. Run those commands in the same terminal, then run `npm run test:api:socket`.
+
+Socket.IO is tested separately:
+
+```powershell
+$env:PHILLYOGO_ACCESS_TOKEN="<teacher-access-token>"
+$env:GAME_SESSION_ID="<active-game-session-id>"
+npm run test:api:socket
+```
+
+Optional socket URL:
+
+```powershell
+$env:SOCKET_URL="http://localhost:3000/game"
+```
+
+The socket command verifies connection/authentication and an authoritative `state-snapshot`, prints colored status and connection/state details, and exits with code `1` on missing prerequisites, connection failure, server error, timeout, or invalid snapshot shape.
+
+Prerequisites for both commands:
+
+- MySQL is running and migrated.
+- Seed data exists, including the Super Admin account.
+- Backend server is running at `http://localhost:3000` unless `API_TEST_URL` is set.
+- The test database user has permission to create and delete the test fixtures.
+
+The REST runner intentionally keeps generated data unless `--cleanup` is provided. This makes failed runs inspectable, but repeated runs will add test records to the database.
+
+The public test endpoints are rate-limited by client IP. If the command is rerun immediately after a large manual/API run and receives `429 Too many requests`, wait for the configured rate-limit window to expire or restart the local backend process before rerunning. Cleanup still runs in the runner's `finally` block even when an API assertion fails.
+
 ---
 
 ## 11. Local setup

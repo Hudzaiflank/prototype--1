@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { useAuthContext } from "../hooks/useAuthContext";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { StudentLayout } from "../layouts/StudentLayout";
 import { LoginPage } from "../pages/auth/LoginPage";
@@ -16,11 +17,32 @@ import { TeacherLayout } from "../layouts/TeacherLayout";
 import { DashboardPage as SuperAdminDashboardPage } from "../pages/super-admin/DashboardPage";
 import { DashboardPage as AdminDashboardPage } from "../pages/admin/DashboardPage";
 import { DashboardPage as TeacherDashboardPage } from "../pages/teacher/DashboardPage";
+import { RoomMonitorPage } from "../pages/teacher/RoomMonitorPage";
+import { ClassListPage as TeacherClassListPage } from "../pages/teacher/ClassListPage";
+import { ClassDetailPage as TeacherClassDetailPage } from "../pages/teacher/ClassDetailPage";
+import { RoomConfigurePage } from "../pages/teacher/RoomConfigurePage";
+import { RoomHistoryPage } from "../pages/teacher/RoomHistoryPage";
+import { SchoolListPage } from "../pages/super-admin/SchoolListPage";
+import { ClassListPage } from "../pages/admin/ClassListPage";
+import { TeacherListPage } from "../pages/admin/TeacherListPage";
+import { TopicListPage } from "../pages/admin/TopicListPage";
+import { ClassFormPage } from "../pages/admin/ClassFormPage";
+import { ClassDetailPage as AdminClassDetailPage } from "../pages/admin/ClassDetailPage";
+import { TeacherDetailPage as AdminTeacherDetailPage } from "../pages/admin/TeacherDetailPage";
+import { SchoolDetailPage } from "../pages/super-admin/SchoolDetailPage";
+import { SchoolFormPage } from "../pages/super-admin/SchoolFormPage";
+import { getRoleHome } from "./roleHome";
+
+function HomeRedirect() {
+  const { user } = useAuthContext();
+  return <Navigate to={getRoleHome(user?.role)} replace />;
+}
 
 export function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<HomeRedirect />} />
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
         </Route>
@@ -37,11 +59,26 @@ export function AppRouter() {
           <Route element={<RoleRoute roles={["SUPER_ADMIN"]} />}>
             <Route element={<SuperAdminLayout />}>
               <Route path="/dashboard" element={<SuperAdminDashboardPage />} />
+              <Route path="/schools" element={<SchoolListPage />} />
+              <Route path="/schools/new" element={<SchoolFormPage />} />
+              <Route path="/schools/:schoolId" element={<SchoolDetailPage />} />
             </Route>
           </Route>
           <Route element={<RoleRoute roles={["ADMIN"]} />}>
             <Route element={<AdminLayout />}>
               <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+              <Route path="/admin/classes" element={<ClassListPage />} />
+              <Route path="/admin/classes/new" element={<ClassFormPage />} />
+              <Route
+                path="/admin/classes/:classId"
+                element={<AdminClassDetailPage />}
+              />
+              <Route path="/admin/teachers" element={<TeacherListPage />} />
+              <Route
+                path="/admin/teachers/:teacherId"
+                element={<AdminTeacherDetailPage />}
+              />
+              <Route path="/admin/problems" element={<TopicListPage />} />
             </Route>
           </Route>
           <Route element={<RoleRoute roles={["TEACHER"]} />}>
@@ -50,6 +87,23 @@ export function AppRouter() {
                 path="/teacher/dashboard"
                 element={<TeacherDashboardPage />}
               />
+              <Route
+                path="/teacher/rooms/:roomId/monitor"
+                element={<RoomMonitorPage />}
+              />
+              <Route
+                path="/teacher/classes"
+                element={<TeacherClassListPage />}
+              />
+              <Route
+                path="/teacher/classes/:classId"
+                element={<TeacherClassDetailPage />}
+              />
+              <Route
+                path="/teacher/rooms/:roomId/configure"
+                element={<RoomConfigurePage />}
+              />
+              <Route path="/teacher/history" element={<RoomHistoryPage />} />
             </Route>
           </Route>
         </Route>

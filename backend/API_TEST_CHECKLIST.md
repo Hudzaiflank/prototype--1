@@ -45,6 +45,118 @@ sessionId =
 participantSessionId =
 ```
 
+## 2A. Recommended Ordered Postman Flow
+
+Import this collection for the complete automated handoff flow:
+
+- `PhillyoGo_Backend_Postman_Flow_Collection.json`
+
+The older `PhillyoGo_Backend_Postman_Collection.json` remains available as an endpoint reference. The ordered collection is the recommended QA runner because it saves tokens and IDs automatically.
+
+This ordered flow is a **core end-to-end release smoke flow**, not a replacement for every individual API endpoint test. The coverage matrix below identifies endpoint families that still require separate QA cases.
+
+### Exact execution order
+
+Run the folders in this order using **Collection Runner**:
+
+1. `00 - Super Admin`
+2. `01 - Preconditions`
+3. `02 - Admin setup`
+4. `03 - Teacher and session setup`
+5. `04 - Student preparation`
+6. `05 - Lifecycle and reconnect`
+7. `06 - Negative checks`
+
+Do not run `04 - Lifecycle and reconnect` before both students have registered and both problems have been submitted. The backend correctly rejects `start` when participant and problem counts do not match.
+
+### Where the bearer token goes
+
+The Admin login request saves `data.accessToken` automatically to the collection variable `adminToken`. Every Admin request uses:
+
+```http
+Authorization: Bearer {{adminToken}}
+```
+
+The Create Teacher request saves the generated teacher email and password. The Teacher login request uses those values and saves its token to `teacherToken`. Every Teacher request uses:
+
+```http
+Authorization: Bearer {{teacherToken}}
+```
+
+You do not need to copy-paste tokens manually. To inspect them, open the collection variables after running the login requests. Treat tokens as secrets and do not commit exported values.
+
+### IDs saved automatically
+
+| Request result    | Collection variable                            | Used by                           |
+| ----------------- | ---------------------------------------------- | --------------------------------- |
+| Create class      | `classId`                                      | Assign teacher, open room         |
+| Create teacher    | `teacherId`, `teacherEmail`, `teacherPassword` | Assign teacher, teacher login     |
+| Admin login       | `adminToken`                                   | Admin requests                    |
+| Teacher login     | `teacherToken`                                 | Teacher requests and lifecycle    |
+| Open room         | `roomId`, `roomCode`                           | Session creation and student join |
+| Create session    | `sessionId`                                    | Student and game requests         |
+| Register students | `participantA`, `participantB`                 | Problem submission and reconnect  |
+
+The ordered collection generates a new class number, teacher suffix, and participant UUIDs on each run to reduce duplicate-data failures.
+
+## 2B. Automated command tests
+
+For a command-line result with exit code `0` on all-pass and `1` on any failure:
+
+```powershell
+cd E:\Innovation-hub\prototype-1\backend; npm run test:api
+```
+
+The REST runner creates a timestamped test school and runs the API flow for Super Admin, Admin, Teacher, and Student/public endpoints. Data is retained by default. To delete only the fixtures created by that run:
+
+```powershell
+cd E:\Innovation-hub\prototype-1\backend; npm run test:api -- --cleanup
+```
+
+Socket.IO is intentionally a separate command:
+
+```powershell
+$env:PHILLYOGO_ACCESS_TOKEN="<teacher-access-token>"; $env:GAME_SESSION_ID="<active-game-session-id>"; npm run test:api:socket
+```
+
+The socket command checks connection, teacher JWT authentication, `join-game`, and the authoritative `state-snapshot`. Missing environment variables or any runtime mismatch result in exit code `1`.
+
+The easiest handoff is to run `npm run test:api` without `--cleanup`, copy the generated `SOCKET HANDOFF` commands printed at the end, and then run `npm run test:api:socket`. Do not use the handoff after running with `--cleanup`, because that command removes the generated session.
+
+If a repeated REST run returns `429 Too many requests`, the backend rate limiter is active for the local client IP. Wait until its window expires or restart the local backend before rerunning. With `--cleanup`, fixture deletion is attempted even when a check fails.
+
+### Coverage status
+
+Covered by the ordered collection:
+
+- Super Admin login and dashboard
+- Super Admin school list, create, detail, status, and Admin password reset
+- health check
+- admin login
+- class creation
+- teacher creation and assignment
+- teacher login
+- room creation and session creation
+- student room join
+- two-participant problem preparation
+- start, pause, resume, reconnect, state restore, and finish
+- wrong credentials, missing token, and invalid room code
+
+Covered by the endpoint reference collection or manual checklist, but not yet automatically ordered in the smoke flow:
+
+- auth `/me`, refresh, logout, and password change
+- school list/detail/create/status/admin reset-password
+- class list/detail/update/remove teacher assignment
+- teacher list/detail/import/reset-password
+- topic list/create/update/delete
+- room close and room status
+- teacher history and session history
+- dashboard endpoints for Super Admin, Admin, and Teacher
+- game configuration, teacher participant/problem entry, group list, current turn, reveal, and complete-turn endpoints
+- full negative authorization matrix and cross-school isolation cases
+
+Therefore, **Run Collection proves the core product path**, while full PRD/API sign-off still requires the remaining endpoint and authorization cases to be executed and recorded.
+
 ## 3. Preconditions
 
 Before running this checklist, confirm:

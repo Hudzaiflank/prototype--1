@@ -8,6 +8,8 @@
     "start": "node src/server.js",
     "test": "node --test",
     "test:socket": "node --test tests/socket.integration.test.js",
+    "test:api": "node scripts/api-test-runner.js",
+    "test:api:socket": "node scripts/socket-api-test-runner.js",
     "db:migrate": "node src/scripts/migrate.js",
     "db:seed": "node src/scripts/seed.js",
     "db:cleanup": "node src/scripts/cleanup-retention.js"

@@ -33,20 +33,20 @@ Excluded from this decision:
 
 ## 3. Verification Summary
 
-| Area | Result | Evidence |
-|---|---|---|
-| Automated backend tests | PASS | `npm test`: 9 passed, 0 failed, 1 skipped |
-| Game state machine | PASS | Valid and invalid transitions covered in `tests/prd-hardening.test.js` |
-| Matching algorithm | PASS | Perfect matching and impossible matching cases covered |
-| Public event privacy | PASS | Assignments and problem authors are removed from public events |
-| Rate limiting | PASS | Limit enforcement covered by automated test |
-| HTTP health/database runtime | PASS | `/health` returned successful backend status during live validation |
-| Core HTTP flow | PASS | Admin, class, teacher, assignment, room, session, participant, and problem flow completed live |
-| Game lifecycle runtime | PASS | Live `START`, `PAUSE`, `RESUME`, and `FINISH` each returned HTTP 200 |
-| Reconnect runtime | PASS | Existing participant UUID reconnected and returned HTTP 201 |
-| State restoration runtime | PASS | State endpoint returned HTTP 200 after reconnect with participant identity and current state |
-| Socket event contract | PASS | Required event constants verified automatically |
-| Live socket integration test | CONDITIONAL | Test exists but is skipped by default without `RUN_SOCKET_TEST=1` and runtime credentials |
+| Area                         | Result      | Evidence                                                                                       |
+| ---------------------------- | ----------- | ---------------------------------------------------------------------------------------------- |
+| Automated backend tests      | PASS        | `npm test`: 9 passed, 0 failed, 1 skipped                                                      |
+| Game state machine           | PASS        | Valid and invalid transitions covered in `tests/prd-hardening.test.js`                         |
+| Matching algorithm           | PASS        | Perfect matching and impossible matching cases covered                                         |
+| Public event privacy         | PASS        | Assignments and problem authors are removed from public events                                 |
+| Rate limiting                | PASS        | Limit enforcement covered by automated test                                                    |
+| HTTP health/database runtime | PASS        | `/health` returned successful backend status during live validation                            |
+| Core HTTP flow               | PASS        | Admin, class, teacher, assignment, room, session, participant, and problem flow completed live |
+| Game lifecycle runtime       | PASS        | Live `START`, `PAUSE`, `RESUME`, and `FINISH` each returned HTTP 200                           |
+| Reconnect runtime            | PASS        | Existing participant UUID reconnected and returned HTTP 201                                    |
+| State restoration runtime    | PASS        | State endpoint returned HTTP 200 after reconnect with participant identity and current state   |
+| Socket event contract        | PASS        | Required event constants verified automatically                                                |
+| Live socket integration test | CONDITIONAL | Test exists but is skipped by default without `RUN_SOCKET_TEST=1` and runtime credentials      |
 
 ## 4. Live Lifecycle Evidence
 
@@ -54,18 +54,18 @@ The final live validation used a valid session with two participants and two sub
 
 Observed results:
 
-| Step | HTTP result | Observed state |
-|---|---:|---|
-| Participant A registration | 201 | `CONNECTED` |
-| Participant B registration | 201 | `CONNECTED` |
-| Problem A submission | 201 | Accepted |
-| Problem B submission | 201 | `allSubmitted: true` |
-| Start session | 200 | `PLAYING`, state version 5 |
-| Pause session | 200 | `PAUSED`, state version 6 |
-| Resume session | 200 | `PLAYING`, state version 7 |
-| Reconnect participant A | 201 | Existing session UUID restored |
-| Get state after reconnect | 200 | Participant and current game state returned, state version 8 |
-| Finish session | 200 | `FINISHED`, state version 9 |
+| Step                       | HTTP result | Observed state                                               |
+| -------------------------- | ----------: | ------------------------------------------------------------ |
+| Participant A registration |         201 | `CONNECTED`                                                  |
+| Participant B registration |         201 | `CONNECTED`                                                  |
+| Problem A submission       |         201 | Accepted                                                     |
+| Problem B submission       |         201 | `allSubmitted: true`                                         |
+| Start session              |         200 | `PLAYING`, state version 5                                   |
+| Pause session              |         200 | `PAUSED`, state version 6                                    |
+| Resume session             |         200 | `PLAYING`, state version 7                                   |
+| Reconnect participant A    |         201 | Existing session UUID restored                               |
+| Get state after reconnect  |         200 | Participant and current game state returned, state version 8 |
+| Finish session             |         200 | `FINISHED`, state version 9                                  |
 
 The earlier failed start attempt returned `409 MATCHING_IMPOSSIBLE` because the test data was invalid or incomplete. This is expected enforcement of the matching rule and is not counted as a release defect.
 
@@ -124,6 +124,7 @@ The release is approved for controlled backend deployment provided that:
 ## 8. QA and Developer Artifacts
 
 - [API_TEST_CHECKLIST.md](API_TEST_CHECKLIST.md) - manual QA/developer API checklist
+- [PhillyoGo_Backend_Postman_Flow_Collection.json](PhillyoGo_Backend_Postman_Flow_Collection.json) - ordered end-to-end Postman smoke flow with automatic token/ID propagation
 - [PhillyoGo_Backend_Postman_Collection.json](PhillyoGo_Backend_Postman_Collection.json) - importable Postman collection
 - [README.md](README.md) - backend architecture, routes, setup, and socket overview
 - `tests/prd-hardening.test.js` - state machine, event contract, privacy, and security hardening tests

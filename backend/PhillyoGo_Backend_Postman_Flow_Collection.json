@@ -1,0 +1,836 @@
+{
+  "info": {
+    "_postman_id": "9c4d4c6f-1c5e-4e5b-8c9b-8a1f0d7f5c22",
+    "name": "PhillyoGo Backend - Ordered QA Flow",
+    "description": "Run folders in order. Login responses and created IDs are saved automatically as collection variables.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00 - Super Admin",
+      "item": [
+        {
+          "name": "Super Admin login - saves superAdminToken",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{superAdminEmail}}\",\n  \"password\": \"{{superAdminPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('super admin role', () => pm.expect(json.data.user.role).to.eql('SUPER_ADMIN'));",
+                  "pm.collectionVariables.set('superAdminToken', json.data.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Super Admin dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{superAdminToken}}" }
+            ],
+            "url": "{{baseUrl}}{{apiPrefix}}/super-admin/dashboard"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('dashboard data exists', () => pm.expect(pm.response.json().data).to.exist);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List schools",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{superAdminToken}}" }
+            ],
+            "url": "{{baseUrl}}{{apiPrefix}}/schools"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('school list exists', () => pm.expect(json.data.items).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create school - saves schoolId and admin credential",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{superAdminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"MindPlay QA {{schoolSuffix}}\",\n  \"domain\": \"mindplayqa{{schoolSuffix}}.school.id\"\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/schools"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('schoolSuffix', String(Date.now()));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.expect(json.data.school.id).to.exist;",
+                  "pm.collectionVariables.set('schoolId', String(json.data.school.id));",
+                  "pm.collectionVariables.set('createdAdminEmail', json.data.admin.email);",
+                  "pm.collectionVariables.set('createdAdminPassword', json.data.admin.password);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get school detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{superAdminToken}}" }
+            ],
+            "url": "{{baseUrl}}{{apiPrefix}}/schools/{{schoolId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('school id matches', () => pm.expect(String(pm.response.json().data.id)).to.eql(pm.collectionVariables.get('schoolId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Set school status active",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{superAdminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"ACTIVE\"\n}" },
+            "url": "{{baseUrl}}{{apiPrefix}}/schools/{{schoolId}}/status"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reset school admin password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{superAdminToken}}" }
+            ],
+            "url": "{{baseUrl}}{{apiPrefix}}/schools/{{schoolId}}/admin/reset-password"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.expect(json.data.email).to.be.a('string');",
+                  "pm.expect(json.data.password).to.be.a('string');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 - Preconditions",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('health success', () => pm.expect(json.success).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Admin setup",
+      "item": [
+        {
+          "name": "Admin login - saves adminToken",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('admin role', () => pm.expect(json.data.user.role).to.eql('ADMIN'));",
+                  "pm.expect(json.data.accessToken).to.be.a('string').and.not.empty;",
+                  "pm.collectionVariables.set('adminToken', json.data.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create class - saves classId",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gradeLevel\": \"XI\",\n  \"major\": \"MIPA\",\n  \"classNumber\": {{classNumber}}\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/classes"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('classNumber', String(Math.floor(Math.random() * 90) + 10));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.expect(json.data.id).to.exist;",
+                  "pm.collectionVariables.set('classId', String(json.data.id));",
+                  "pm.test('class name is generated', () => pm.expect(json.data.name).to.eql('XI-MIPA-' + pm.collectionVariables.get('classNumber')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create teacher - saves teacher credentials",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"QA Teacher {{runSuffix}}\"\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/teachers"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('runSuffix', String(Date.now()));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.expect(json.data.teacher.id).to.exist;",
+                  "pm.collectionVariables.set('teacherId', String(json.data.teacher.id));",
+                  "pm.collectionVariables.set('teacherEmail', json.data.credential.email);",
+                  "pm.collectionVariables.set('teacherPassword', json.data.credential.password);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Assign teacher to class",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"teacherId\": {{teacherId}}\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/classes/{{classId}}/teachers"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('assignment success', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Teacher and session setup",
+      "item": [
+        {
+          "name": "Teacher login - saves teacherToken",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{teacherEmail}}\",\n  \"password\": \"{{teacherPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('teacher role', () => pm.expect(json.data.user.role).to.eql('TEACHER'));",
+                  "pm.collectionVariables.set('teacherToken', json.data.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Open room - saves roomId and roomCode",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "url": "{{baseUrl}}{{apiPrefix}}/classes/{{classId}}/rooms"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.expect(json.data.code).to.match(/^[A-Z0-9]{6}$/);",
+                  "pm.collectionVariables.set('roomId', String(json.data.id));",
+                  "pm.collectionVariables.set('roomCode', json.data.code);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create game session - saves sessionId",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"inputMode\": \"STUDENT\",\n  \"gameMode\": \"GROUPS\",\n  \"problemDisplayLimit\": 1,\n  \"groupCount\": 2\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/rooms/{{roomId}}/game-sessions"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('session waiting', () => pm.expect(json.data.status).to.eql('WAITING'));",
+                  "pm.collectionVariables.set('sessionId', String(json.data.id));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 - Student preparation",
+      "item": [
+        {
+          "name": "Join room by code",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomCode\": \"{{roomCode}}\"\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/public/rooms/join"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('room open', () => pm.expect(json.data.roomStatus).to.eql('OPEN'));",
+                  "pm.test('session matches', () => pm.expect(String(json.data.gameSessionId)).to.eql(pm.collectionVariables.get('sessionId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register student A - saves participantA",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{participantA}}\",\n  \"fullName\": \"Siswa A\"\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/public/game-sessions/{{sessionId}}/participants"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('participantA', pm.variables.replaceIn('{{$guid}}'));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.expect(json.data.sessionId).to.eql(pm.collectionVariables.get('participantA'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register student B - saves participantB",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{participantB}}\",\n  \"fullName\": \"Siswa B\"\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/public/game-sessions/{{sessionId}}/participants"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('participantB', pm.variables.replaceIn('{{$guid}}'));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.expect(json.data.sessionId).to.eql(pm.collectionVariables.get('participantB'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Student A submits problem",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participantSessionId\": \"{{participantA}}\",\n  \"content\": \"Saya ingin membicarakan beban tugas.\"\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/public/game-sessions/{{sessionId}}/problems"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Student B submits problem",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participantSessionId\": \"{{participantB}}\",\n  \"content\": \"Saya sedang beradaptasi dengan lingkungan baru.\"\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/public/game-sessions/{{sessionId}}/problems"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('all participants submitted', () => pm.expect(json.data.allSubmitted).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 - Lifecycle and reconnect",
+      "item": [
+        {
+          "name": "Start game",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "url": "{{baseUrl}}{{apiPrefix}}/game-sessions/{{sessionId}}/start"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('PLAYING', () => pm.expect(json.data.status).to.eql('PLAYING'));",
+                  "pm.collectionVariables.set('stateVersion', String(json.data.stateVersion));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pause game",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "url": "{{baseUrl}}{{apiPrefix}}/game-sessions/{{sessionId}}/pause"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('PAUSED', () => pm.expect(json.data.status).to.eql('PAUSED'));",
+                  "pm.collectionVariables.set('stateVersion', String(json.data.stateVersion));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resume game",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "url": "{{baseUrl}}{{apiPrefix}}/game-sessions/{{sessionId}}/resume"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('PLAYING', () => pm.expect(json.data.status).to.eql('PLAYING'));",
+                  "pm.collectionVariables.set('stateVersion', String(json.data.stateVersion));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reconnect student A with same UUID",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{participantA}}\",\n  \"fullName\": \"Siswa A\"\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/public/game-sessions/{{sessionId}}/participants"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 201 or 200', () => pm.expect([200, 201]).to.include(pm.response.code));",
+                  "pm.test('same UUID restored', () => pm.expect(json.data.sessionId).to.eql(pm.collectionVariables.get('participantA')));",
+                  "pm.test('CONNECTED', () => pm.expect(json.data.status).to.eql('CONNECTED')); "
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get student state after reconnect",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-participant-session-id", "value": "{{participantA}}" }
+            ],
+            "url": "{{baseUrl}}{{apiPrefix}}/public/game-sessions/{{sessionId}}/state"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('state is PLAYING', () => pm.expect(json.data.status).to.eql('PLAYING'));",
+                  "pm.test('participant restored', () => pm.expect(json.data.participant).to.exist);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Finish game",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "url": "{{baseUrl}}{{apiPrefix}}/game-sessions/{{sessionId}}/finish"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('FINISHED', () => pm.expect(json.data.status).to.eql('FINISHED')); "
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 - Negative checks",
+      "item": [
+        {
+          "name": "Wrong password returns 401",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"wrong-password\"\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Protected endpoint without token returns 401",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}{{apiPrefix}}/classes"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid room code returns 404",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomCode\": \"ZZZZZZ\"\n}"
+            },
+            "url": "{{baseUrl}}{{apiPrefix}}/public/rooms/join"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "apiPrefix", "value": "/api/v1" },
+    { "key": "superAdminEmail", "value": "superadmin@gmail.com" },
+    { "key": "superAdminPassword", "value": "Bismillah" },
+    { "key": "superAdminToken", "value": "" },
+    { "key": "schoolSuffix", "value": "" },
+    { "key": "schoolId", "value": "" },
+    { "key": "createdAdminEmail", "value": "" },
+    { "key": "createdAdminPassword", "value": "" },
+    { "key": "adminEmail", "value": "admin.sma-negeri-4-bandung@phillyogo.id" },
+    { "key": "adminPassword", "value": "SMA4@2026" },
+    { "key": "classNumber", "value": "" },
+    { "key": "runSuffix", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "teacherId", "value": "" },
+    { "key": "teacherEmail", "value": "" },
+    { "key": "teacherPassword", "value": "" },
+    { "key": "teacherToken", "value": "" },
+    { "key": "classId", "value": "" },
+    { "key": "roomId", "value": "" },
+    { "key": "roomCode", "value": "" },
+    { "key": "sessionId", "value": "" },
+    { "key": "participantA", "value": "" },
+    { "key": "participantB", "value": "" },
+    { "key": "stateVersion", "value": "" }
+  ]
+}
