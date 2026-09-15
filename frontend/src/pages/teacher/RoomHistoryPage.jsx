@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { historyApi } from "../../services/api/historyApi";
 
 export function RoomHistoryPage() {
@@ -35,9 +36,10 @@ export function RoomHistoryPage() {
               <p className="font-semibold">Room {item.roomCode ?? "-"}</p>
               <p className="mt-1 text-xs text-slate-400">{item.status}</p>
             </div>
-            <span className="text-xs text-slate-400">
-              {item.finishedAt ?? item.createdAt ?? "-"}
-            </span>
+            <div className="text-right">
+              <span className="block text-xs text-slate-400">{item.finishedAt ?? item.createdAt ?? "-"}</span>
+              <Link className="mt-2 block text-xs text-amber-200" to={`/teacher/history/${item.sessionId}`}>Lihat detail</Link>
+            </div>
           </div>
         ))}
       </div>

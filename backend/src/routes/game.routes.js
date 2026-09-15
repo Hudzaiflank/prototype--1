@@ -10,9 +10,11 @@ import {
   teacherProblemSchema,
   turnActionSchema,
 } from "../validators/game.validator.js";
+import { teacherParticipantImportSchema } from "../validators/game.validator.js";
 
 const router = Router();
 router.use(requireAuth, allowRoles(ROLES.TEACHER));
+router.get("/teacher-input-template", controller.downloadTeacherParticipantTemplate);
 router.get("/:sessionId", controller.get);
 router.patch(
   "/:sessionId",
@@ -32,6 +34,16 @@ router.post(
   "/:sessionId/participants",
   validate(teacherParticipantSchema),
   controller.registerTeacherParticipant,
+);
+router.post(
+  "/:sessionId/participants/import/preview",
+  controller.uploadParticipantFile.single("file"),
+  controller.previewTeacherImport,
+);
+router.post(
+  "/:sessionId/participants/import",
+  validate(teacherParticipantImportSchema),
+  controller.importTeacherParticipants,
 );
 router.post(
   "/:sessionId/groups/:groupId/turn/reveal",

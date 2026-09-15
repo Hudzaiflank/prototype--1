@@ -21,6 +21,21 @@ export function RoomGamePage() {
     });
     const updateState = (state) =>
       setGame((current) => ({ ...current, ...state }));
+    const handleCardsRevealed = (turn) =>
+      setGame((current) => ({
+        ...current,
+        currentTurn: {
+          ...current?.currentTurn,
+          id: turn.id,
+          turnNumber: turn.turnNumber,
+          participantName: turn.participant?.displayName,
+          problemContent: turn.problem?.content,
+          participantCardState: turn.participantCardState,
+          problemCardState: turn.problemCardState,
+        },
+      }));
+    const handleTurnChanged = () => socket.emit("request-state");
+    const handleStarted = () => socket.emit("request-state");
     const handleFinished = (state) => {
       updateState(state);
       navigate("../result", { replace: true });
@@ -30,14 +45,20 @@ export function RoomGamePage() {
       SOCKET_EVENTS.GAME_STARTED,
       SOCKET_EVENTS.GAME_PAUSED,
       SOCKET_EVENTS.GAME_RESUMED,
-      SOCKET_EVENTS.CARDS_REVEALED,
-      SOCKET_EVENTS.TURN_COMPLETED,
     ];
     events.forEach((event) => socket.on(event, updateState));
+    socket.on(SOCKET_EVENTS.GAME_STARTED, handleStarted);
+    socket.on(SOCKET_EVENTS.CARDS_REVEALED, handleCardsRevealed);
+    socket.on(SOCKET_EVENTS.TURN_COMPLETED, handleTurnChanged);
+    socket.on(SOCKET_EVENTS.TURN_STARTED, handleTurnChanged);
     socket.on(SOCKET_EVENTS.GAME_FINISHED, handleFinished);
     socket.emit("request-state");
     return () => {
       events.forEach((event) => socket.off(event, updateState));
+      socket.off(SOCKET_EVENTS.GAME_STARTED, handleStarted);
+      socket.off(SOCKET_EVENTS.CARDS_REVEALED, handleCardsRevealed);
+      socket.off(SOCKET_EVENTS.TURN_COMPLETED, handleTurnChanged);
+      socket.off(SOCKET_EVENTS.TURN_STARTED, handleTurnChanged);
       socket.off(SOCKET_EVENTS.GAME_FINISHED, handleFinished);
       socketClient.disconnect();
     };

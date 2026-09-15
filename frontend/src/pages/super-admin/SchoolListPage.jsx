@@ -6,6 +6,7 @@ export function SchoolListPage() {
   const [schools, setSchools] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [error, setError] = useState("");
+  const [removingId, setRemovingId] = useState(null);
   useEffect(() => {
     schoolApi
       .list()
@@ -16,6 +17,19 @@ export function SchoolListPage() {
       })
       .catch(() => setError("Daftar sekolah belum dapat dimuat."));
   }, []);
+  const removeSchool = async (school) => {
+    if (!window.confirm(`Hapus permanen sekolah ${school.name} beserta data kelas, guru, topic, room, dan game?`)) return;
+    setRemovingId(school.id);
+    setError("");
+    try {
+      await schoolApi.remove(school.id);
+      setSchools((current) => current.filter((item) => item.id !== school.id));
+    } catch (requestError) {
+      setError(requestError.response?.data?.message ?? "Sekolah belum dapat dihapus.");
+    } finally {
+      setRemovingId(null);
+    }
+  };
   return (
     <section className="space-y-6" aria-labelledby="schools-title">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -49,6 +63,7 @@ export function SchoolListPage() {
               <th className="px-5 py-4">Domain</th>
               <th className="px-5 py-4">Status</th>
               <th className="px-5 py-4">Detail</th>
+              <th className="px-5 py-4">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -64,6 +79,13 @@ export function SchoolListPage() {
                   >
                     Buka
                   </Link>
+                </td>
+                <td className="px-5 py-4">
+                  {school.status === "ACTIVE" ? (
+                    <button className="text-rose-300 disabled:opacity-50" type="button" onClick={() => removeSchool(school)} disabled={removingId === school.id}>
+                      {removingId === school.id ? "Memproses..." : "Hapus"}
+                    </button>
+                  ) : <span className="text-slate-500">Sudah nonaktif</span>}
                 </td>
               </tr>
             ))}

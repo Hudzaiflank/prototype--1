@@ -12,15 +12,72 @@ const emailName = (name) =>
     .replace(/[^a-z0-9]+/g, ".")
     .replace(/^\.|\.$/g, "");
 
+const normalizeSchoolDomain = (domain) =>
+  String(domain ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .replace(/@/g, ".")
+    .replace(/\.+/g, ".")
+    .replace(/^\.|\.$/g, "");
+
+const generatedEmail = (name, domain, suffix = "") =>
+  `${emailName(name) || "guru"}${suffix}@${normalizeSchoolDomain(domain)}`;
+
+function readTeacherRows(buffer) {
+  const workbook = XLSX.read(buffer, { type: "buffer" });
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  if (!sheet)
+    throw new AppError("Workbook has no sheet", "IMPORT_INVALID", 400);
+  const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+  if (!rows.length)
+    throw new AppError("Workbook is empty", "IMPORT_EMPTY", 400);
+  return rows;
+}
+
+async function normalizeTeacherRows({ buffer, schoolId, schoolDomain }) {
+  const rows = readTeacherRows(buffer);
+  const usedEmails = new Set(await repository.listTeacherEmails(schoolId));
+  const preview = [];
+  const errors = [];
+  for (const [index, row] of rows.entries()) {
+    const fullName = String(row["Nama Lengkap"] ?? "").trim();
+    if (!fullName) {
+      errors.push({ row: index + 2, message: "Nama Lengkap wajib diisi" });
+      continue;
+    }
+    const baseEmail = generatedEmail(fullName, schoolDomain);
+    let suffix = 1;
+    let email = baseEmail;
+    while (usedEmails.has(email)) {
+      suffix += 1;
+      email = generatedEmail(fullName, schoolDomain, suffix);
+    }
+    usedEmails.add(email);
+    preview.push({ row: index + 2, fullName, email });
+  }
+  return { preview, errors };
+}
+
 export async function createTeacher({
   schoolId,
   schoolDomain,
   fullName,
   email,
 }) {
-  const teacherEmail =
-    email?.trim().toLowerCase() ??
-    `guru.${emailName(fullName)}@${schoolDomain}`;
+  const providedEmail = email?.trim().toLowerCase();
+  let teacherEmail = providedEmail;
+  if (!teacherEmail) {
+    const usedEmails = new Set(await repository.listTeacherEmails(schoolId));
+    const baseEmail = generatedEmail(fullName, schoolDomain);
+    let suffix = 1;
+    teacherEmail = baseEmail;
+    while (usedEmails.has(teacherEmail)) {
+      suffix += 1;
+      teacherEmail = generatedEmail(fullName, schoolDomain, suffix);
+    }
+  }
   const password = "Guru@123";
   const teacher = await repository.createTeacher({
     schoolId,
@@ -97,37 +154,20 @@ export async function importTeachers({
   schoolDomain,
   actorUserId,
 }) {
-  const workbook = XLSX.read(buffer, { type: "buffer" });
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  if (!sheet)
-    throw new AppError("Workbook has no sheet", "IMPORT_INVALID", 400);
-  const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-  if (!rows.length)
-    throw new AppError("Workbook is empty", "IMPORT_EMPTY", 400);
-  const normalized = rows.map((row) => {
-    const fullName = String(row["Nama Lengkap"] ?? row.fullName ?? "").trim();
-    const providedEmail = String(row.Email ?? row.email ?? "")
-      .trim()
-      .toLowerCase();
-    if (!fullName)
-      throw new AppError("Nama Lengkap is required", "IMPORT_INVALID", 400);
-    return {
-      fullName,
-      email: providedEmail || `guru.${emailName(fullName)}@${schoolDomain}`,
-    };
+  const { preview, errors } = await normalizeTeacherRows({
+    buffer,
+    schoolId,
+    schoolDomain,
   });
-  const emails = normalized.map((teacher) => teacher.email);
-  if (new Set(emails).size !== emails.length)
-    throw new AppError(
-      "Duplicate email in import file",
-      "TEACHER_DUPLICATE",
-      409,
-    );
+  if (errors.length)
+    throw new AppError("Import contains invalid rows", "IMPORT_INVALID", 400, {
+      rows: errors,
+    });
   const created = await repository.importTeachers({
     schoolId,
     actorUserId,
     teachers: await Promise.all(
-      normalized.map(async (teacher) => ({
+      preview.map(async (teacher) => ({
         ...teacher,
         passwordHash: await hashPassword("Guru@123"),
       })),
@@ -137,5 +177,18 @@ export async function importTeachers({
     count: created.length,
     teachers: created,
     defaultPassword: "Guru@123",
+  };
+}
+
+export async function previewTeachers({ buffer, schoolId, schoolDomain }) {
+  const result = await normalizeTeacherRows({
+    buffer,
+    schoolId,
+    schoolDomain,
+  });
+  return {
+    rows: result.preview,
+    errors: result.errors,
+    valid: result.errors.length === 0 && result.preview.length > 0,
   };
 }

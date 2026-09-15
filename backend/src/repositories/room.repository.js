@@ -67,7 +67,12 @@ export async function createGameSession({
      SELECT r.id, ?, ?, ?, ?, ?, ?, ? FROM rooms r JOIN classes c ON c.id = r.class_id
      LEFT JOIN topics t ON t.id = ?
      WHERE r.id = ? AND r.created_by = ? AND r.status = 'OPEN'
-       AND (? IS NULL OR t.school_id = c.school_id)`,
+       AND (? IS NULL OR t.school_id = c.school_id)
+       AND NOT EXISTS (
+         SELECT 1 FROM game_sessions active
+         WHERE active.room_id = r.id
+           AND active.status IN ('WAITING', 'PLAYING', 'PAUSED')
+       )`,
     [
       teacherId,
       topicId ?? null,
@@ -169,6 +174,39 @@ export async function registerTeacherParticipant({
       fullName,
       problemSubmitted: Boolean(content),
     };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function importTeacherParticipants({ sessionId, teacherId, rows }) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const [sessions] = await connection.execute(
+      "SELECT id FROM game_sessions WHERE id = ? AND created_by = ? AND status = 'WAITING' AND input_mode = 'TEACHER' LIMIT 1 FOR UPDATE",
+      [sessionId, teacherId],
+    );
+    if (!sessions.length) return null;
+    for (const row of rows) {
+      const [participant] = await connection.execute(
+        "INSERT INTO participants (game_session_id, session_uuid, full_name, status, connected_at) VALUES (?, UUID(), ?, 'CONNECTED', NOW())",
+        [sessionId, row.fullName],
+      );
+      await connection.execute(
+        "INSERT INTO problems (game_session_id, participant_id, created_by, content, source) VALUES (?, ?, ?, ?, 'TEACHER')",
+        [sessionId, participant.insertId, teacherId, row.content],
+      );
+    }
+    await connection.execute(
+      "UPDATE game_sessions SET state_version = state_version + 1 WHERE id = ?",
+      [sessionId],
+    );
+    await connection.commit();
+    return { count: rows.length };
   } catch (error) {
     await connection.rollback();
     throw error;

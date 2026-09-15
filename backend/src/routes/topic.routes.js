@@ -11,15 +11,19 @@ router.use(requireAuth, allowRoles(ROLES.ADMIN, ROLES.TEACHER));
 router.get("/", controller.list);
 router.post(
   "/",
-  allowRoles(ROLES.TEACHER),
+  allowRoles(ROLES.ADMIN, ROLES.TEACHER),
   validate(createTopicSchema),
   controller.create,
 );
 router.patch(
   "/:topicId",
-  allowRoles(ROLES.TEACHER),
+  allowRoles(ROLES.ADMIN, ROLES.TEACHER),
   validate(createTopicSchema),
   controller.update,
 );
-router.delete("/:topicId", allowRoles(ROLES.TEACHER), controller.remove);
+router.delete(
+  "/:topicId",
+  allowRoles(ROLES.ADMIN, ROLES.TEACHER),
+  controller.remove,
+);
 export default router;

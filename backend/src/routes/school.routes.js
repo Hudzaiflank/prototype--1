@@ -20,5 +20,6 @@ router.patch(
   validate(schoolStatusSchema),
   controller.updateStatus,
 );
+router.delete("/:schoolId", controller.remove);
 router.post("/:schoolId/admin/reset-password", controller.resetAdminPassword);
 export default router;

@@ -11,8 +11,8 @@ export async function updateTopic(data) {
     userId: data.userId,
   });
 }
-export async function deleteTopic(topicId, userId) {
-  if (!(await repository.deleteTopic(topicId, userId)))
+export async function deleteTopic(topicId, schoolId, userId, role) {
+  if (!(await repository.deleteTopic(topicId, schoolId, userId, role)))
     throw new AppError("Topic not found", "TOPIC_NOT_FOUND", 404);
   return { deleted: true };
 }

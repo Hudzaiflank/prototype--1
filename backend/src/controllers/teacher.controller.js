@@ -1,6 +1,7 @@
 import * as service from "../services/teacher.service.js";
 import { pool } from "../config/database.js";
 import multer from "multer";
+import XLSX from "xlsx";
 
 export const uploadTeacherFile = multer({
   storage: multer.memoryStorage(),
@@ -122,6 +123,47 @@ export async function importTeachers(request, response, next) {
         actorUserId: request.user.userId,
       }),
     });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function previewImport(request, response, next) {
+  try {
+    if (!request.file)
+      return response
+        .status(400)
+        .json({ success: false, message: "Excel file is required" });
+    const [rows] = await pool.execute(
+      "SELECT domain FROM schools WHERE id = ?",
+      [request.user.schoolId],
+    );
+    response.json({
+      success: true,
+      data: await service.previewTeachers({
+        buffer: request.file.buffer,
+        schoolId: request.user.schoolId,
+        schoolDomain: rows[0].domain,
+      }),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export function downloadTemplate(_request, response, next) {
+  try {
+    const workbook = XLSX.utils.book_new();
+    const sheet = XLSX.utils.aoa_to_sheet([
+      ["Nama Lengkap"],
+      ["Budi Santoso"],
+    ]);
+    XLSX.utils.book_append_sheet(workbook, sheet, "Guru");
+    const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+    response
+      .type("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+      .set("Content-Disposition", "attachment; filename=template-guru.xlsx")
+      .send(buffer);
   } catch (error) {
     next(error);
   }

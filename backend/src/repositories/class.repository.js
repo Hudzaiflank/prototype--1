@@ -45,8 +45,8 @@ export async function getClassDetail(id, schoolId) {
     [id],
   );
   const [rooms] = await pool.execute(
-    `SELECT r.id, r.code, r.status, r.opened_at AS openedAt, r.closed_at AS closedAt
-     FROM rooms r WHERE r.class_id = ? ORDER BY r.created_at DESC LIMIT 1`,
+    `SELECT r.id, r.code, r.status, r.created_by AS createdBy, r.opened_at AS openedAt, r.closed_at AS closedAt
+     FROM rooms r WHERE r.class_id = ? AND r.status = 'OPEN' ORDER BY r.created_at DESC LIMIT 1`,
     [id],
   );
   return {

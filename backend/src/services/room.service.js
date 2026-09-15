@@ -1,5 +1,6 @@
 import { AppError } from "../utils/errors.js";
 import * as repository from "../repositories/room.repository.js";
+import XLSX from "xlsx";
 
 export async function openRoom(data) {
   const room = await repository.openRoom(data);
@@ -84,4 +85,31 @@ export async function registerTeacherParticipant(data) {
       409,
     );
   return participant;
+}
+
+export function previewTeacherParticipants(buffer) {
+  const workbook = XLSX.read(buffer, { type: "buffer" });
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  if (!sheet) throw new AppError("Workbook has no sheet", "IMPORT_INVALID", 400);
+  const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+  if (!rows.length) throw new AppError("Workbook is empty", "IMPORT_EMPTY", 400);
+  const preview = [];
+  const errors = [];
+  for (const [index, row] of rows.entries()) {
+    const fullName = String(row["Nama Lengkap"] ?? "").trim();
+    const content = String(row["Permasalahan"] ?? "").trim();
+    if (!fullName || !content) {
+      errors.push({
+        row: index + 2,
+        message: !fullName ? "Nama Lengkap wajib diisi" : "Permasalahan wajib diisi",
+      });
+    } else preview.push({ row: index + 2, fullName, content });
+  }
+  return { rows: preview, errors, valid: errors.length === 0 && preview.length > 0 };
+}
+
+export async function importTeacherParticipants(data) {
+  const result = await repository.importTeacherParticipants(data);
+  if (!result) throw new AppError("Teacher input session is not available", "IMPORT_REJECTED", 409);
+  return result;
 }
