@@ -9,7 +9,12 @@ import { errorMiddleware } from "./middleware/error.middleware.js";
 export function createApp() {
   const app = express();
   app.use(helmet());
-  app.use(cors({ origin: env.frontendUrl, credentials: true }));
+  app.use(
+    cors({
+      origin: env.frontendUrls,
+      credentials: true,
+    }),
+  );
   app.use(express.json());
   app.use(cookieParser());
   app.get("/health", (_request, response) =>

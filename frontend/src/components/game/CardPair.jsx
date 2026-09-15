@@ -1,7 +1,7 @@
 import { GameCard } from "./GameCard";
 export function CardPair({ participant, problem, state = "hidden" }) {
   return (
-    <div>
+    <div className="grid grid-cols-2 gap-4 sm:gap-8">
       <GameCard type="participant" state={state} content={participant} />
       <GameCard type="problem" state={state} content={problem} />
     </div>

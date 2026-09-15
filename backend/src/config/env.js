@@ -5,6 +5,14 @@ export const env = {
   port: Number(process.env.PORT ?? 3000),
   apiPrefix: process.env.API_PREFIX ?? "/api/v1",
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:5173",
+  frontendUrls: (
+    process.env.FRONTEND_URLS ??
+    process.env.FRONTEND_URL ??
+    "http://localhost:5173"
+  )
+    .split(",")
+    .map((url) => url.trim())
+    .filter(Boolean),
   refreshCookieName: process.env.REFRESH_COOKIE_NAME ?? "phillyogo_refresh",
   retentionDays: Number(process.env.RETENTION_DAYS ?? 30),
   database: {
