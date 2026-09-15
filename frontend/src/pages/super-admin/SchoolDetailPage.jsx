@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { schoolApi } from "../../services/api/schoolApi";
 
 export function SchoolDetailPage() {
   const { schoolId } = useParams();
+  const navigate = useNavigate();
   const [school, setSchool] = useState(null);
   const [message, setMessage] = useState("");
   const [resetCredential, setResetCredential] = useState(null);
   const [isResetting, setIsResetting] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
   const load = useCallback(() => {
     schoolApi
       .detail(schoolId)
@@ -42,6 +44,19 @@ export function SchoolDetailPage() {
       );
     } finally {
       setIsResetting(false);
+    }
+  };
+  const removeSchool = async () => {
+    if (!school || !window.confirm(`Hapus permanen sekolah ${school.name} beserta data kelas, guru, topic, room, dan game?`)) return;
+    setIsRemoving(true);
+    setMessage("");
+    try {
+      await schoolApi.remove(schoolId);
+      navigate("/schools");
+    } catch (error) {
+      setMessage(error.response?.data?.message ?? "Sekolah belum dapat dihapus.");
+    } finally {
+      setIsRemoving(false);
     }
   };
   return (
@@ -83,6 +98,14 @@ export function SchoolDetailPage() {
             {school.status === "ACTIVE"
               ? "Nonaktifkan sekolah"
               : "Aktifkan sekolah"}
+          </button>
+          <button
+            className="rounded-lg border border-rose-300 px-4 py-3 text-sm font-bold text-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
+            type="button"
+            onClick={removeSchool}
+            disabled={isRemoving || school.status === "INACTIVE"}
+          >
+            {isRemoving ? "Menghapus..." : "Hapus permanen"}
           </button>
           <button
             className="rounded-lg bg-amber-300 px-4 py-3 text-sm font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"

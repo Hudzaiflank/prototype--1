@@ -41,6 +41,31 @@ export function DashboardPage() {
           </div>
         ))}
       </div>
+      <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
+        <h2 className="text-lg font-semibold">Game terbaru sekolah</h2>
+        <div className="mt-4 space-y-3">
+          {data?.recentGames?.length ? (
+            data.recentGames.map((game) => (
+              <div
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4"
+                key={game.id}
+              >
+                <div>
+                  <p className="font-semibold">Room {game.roomCode}</p>
+                  <p className="mt-1 text-xs text-slate-400">
+                    {game.createdAt
+                      ? new Date(game.createdAt).toLocaleString("id-ID")
+                      : "-"}
+                  </p>
+                </div>
+                <span className="text-sm text-amber-200">{game.status}</span>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-slate-400">Belum ada game sekolah.</p>
+          )}
+        </div>
+      </div>
     </section>
   );
 }

@@ -83,3 +83,99 @@ export async function updateSchoolStatus(id, status) {
   );
   return result.affectedRows > 0;
 }
+
+export async function deleteSchool(id) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const [schools] = await connection.execute(
+      "SELECT id FROM schools WHERE id = ? FOR UPDATE",
+      [id],
+    );
+    if (!schools.length) {
+      await connection.rollback();
+      return false;
+    }
+
+    await connection.execute(
+      `DELETE FROM audit_logs
+       WHERE school_id = ? OR actor_user_id IN
+         (SELECT id FROM users WHERE school_id = ?)`,
+      [id, id],
+    );
+    await connection.execute(
+      `DELETE rt FROM refresh_tokens rt
+       JOIN users u ON u.id = rt.user_id WHERE u.school_id = ?`,
+      [id],
+    );
+    await connection.execute(
+      `DELETE gt FROM game_turns gt
+       JOIN game_sessions gs ON gs.id = gt.game_session_id
+       JOIN rooms r ON r.id = gs.room_id
+       JOIN classes c ON c.id = r.class_id WHERE c.school_id = ?`,
+      [id],
+    );
+    await connection.execute(
+      `DELETE a FROM assignments a
+       JOIN game_sessions gs ON gs.id = a.game_session_id
+       JOIN rooms r ON r.id = gs.room_id
+       JOIN classes c ON c.id = r.class_id WHERE c.school_id = ?`,
+      [id],
+    );
+    await connection.execute(
+      `DELETE gm FROM group_members gm
+       JOIN \`groups\` g ON g.id = gm.group_id
+       JOIN game_sessions gs ON gs.id = g.game_session_id
+       JOIN rooms r ON r.id = gs.room_id
+       JOIN classes c ON c.id = r.class_id WHERE c.school_id = ?`,
+      [id],
+    );
+    await connection.execute(
+      `DELETE g FROM \`groups\` g
+       JOIN game_sessions gs ON gs.id = g.game_session_id
+       JOIN rooms r ON r.id = gs.room_id
+       JOIN classes c ON c.id = r.class_id WHERE c.school_id = ?`,
+      [id],
+    );
+    await connection.execute(
+      `DELETE p FROM problems p
+       JOIN game_sessions gs ON gs.id = p.game_session_id
+       JOIN rooms r ON r.id = gs.room_id
+       JOIN classes c ON c.id = r.class_id WHERE c.school_id = ?`,
+      [id],
+    );
+    await connection.execute(
+      `DELETE p FROM participants p
+       JOIN game_sessions gs ON gs.id = p.game_session_id
+       JOIN rooms r ON r.id = gs.room_id
+       JOIN classes c ON c.id = r.class_id WHERE c.school_id = ?`,
+      [id],
+    );
+    await connection.execute(
+      `DELETE gs FROM game_sessions gs
+       JOIN rooms r ON r.id = gs.room_id
+       JOIN classes c ON c.id = r.class_id WHERE c.school_id = ?`,
+      [id],
+    );
+    await connection.execute(
+      `DELETE r FROM rooms r JOIN classes c ON c.id = r.class_id WHERE c.school_id = ?`,
+      [id],
+    );
+    await connection.execute(
+      `DELETE tc FROM teacher_classes tc
+       JOIN classes c ON c.id = tc.class_id WHERE c.school_id = ?`,
+      [id],
+    );
+    await connection.execute("DELETE FROM topics WHERE school_id = ?", [id]);
+    await connection.execute("DELETE FROM classes WHERE school_id = ?", [id]);
+    await connection.execute("DELETE FROM users WHERE school_id = ?", [id]);
+    await connection.execute("DELETE FROM schools WHERE id = ?", [id]);
+    await connection.commit();
+    return true;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}

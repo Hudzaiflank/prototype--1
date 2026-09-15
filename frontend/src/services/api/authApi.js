@@ -4,4 +4,5 @@ export const authApi = {
   refresh: () => apiClient.post("/auth/refresh"),
   me: () => apiClient.get("/auth/me"),
   logout: () => apiClient.post("/auth/logout"),
+  changePassword: (payload) => apiClient.patch("/auth/password", payload),
 };

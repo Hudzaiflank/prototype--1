@@ -3,6 +3,16 @@ import { emitGameEvent, emitGroupEvent } from "../config/realtime.js";
 import { SOCKET_EVENTS } from "../constants/socketEvents.js";
 import { toPublicGameEvent } from "../utils/gameEvent.js";
 import * as roomService from "../services/room.service.js";
+import multer from "multer";
+
+export const uploadParticipantFile = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_request, file, callback) => {
+    if (/\.(xlsx|xls)$/i.test(file.originalname)) return callback(null, true);
+    callback(new Error("Only .xlsx or .xls files are supported"));
+  },
+});
 
 const action = (handler, event) => async (request, response, next) => {
   try {
@@ -70,6 +80,48 @@ export async function registerTeacherParticipant(request, response, next) {
         teacherId: request.user.userId,
       }),
     });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function previewTeacherImport(request, response, next) {
+  try {
+    if (!request.file) return response.status(400).json({ success: false, message: "Excel file is required" });
+    response.json({ success: true, data: roomService.previewTeacherParticipants(request.file.buffer) });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function importTeacherParticipants(request, response, next) {
+  try {
+    response.status(201).json({
+      success: true,
+      data: await roomService.importTeacherParticipants({
+        sessionId: request.params.sessionId,
+        teacherId: request.user.userId,
+        rows: request.validated.body.rows,
+      }),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export function downloadTeacherParticipantTemplate(_request, response, next) {
+  try {
+    const workbook = XLSX.utils.book_new();
+    const sheet = XLSX.utils.aoa_to_sheet([
+      ["Nama Lengkap", "Permasalahan"],
+      ["Budi Santoso", "Saya merasa kesulitan mengikuti pelajaran."],
+    ]);
+    XLSX.utils.book_append_sheet(workbook, sheet, "Data Murid");
+    const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+    response
+      .type("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+      .set("Content-Disposition", "attachment; filename=template-input-murid.xlsx")
+      .send(buffer);
   } catch (error) {
     next(error);
   }

@@ -38,6 +38,7 @@ export async function update(request, response, next) {
         topicId: request.params.topicId,
         schoolId: request.user.schoolId,
         userId: request.user.userId,
+        role: request.user.role,
       }),
     });
   } catch (error) {
@@ -51,7 +52,9 @@ export async function remove(request, response, next) {
       success: true,
       data: await service.deleteTopic(
         request.params.topicId,
+        request.user.schoolId,
         request.user.userId,
+        request.user.role,
       ),
     });
   } catch (error) {

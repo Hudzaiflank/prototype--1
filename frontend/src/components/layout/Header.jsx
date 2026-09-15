@@ -1,4 +1,5 @@
 import { useAuthContext } from "../../hooks/useAuthContext";
+import { Link } from "react-router-dom";
 
 const ROLE_LABELS = {
   SUPER_ADMIN: "Super Admin",
@@ -38,6 +39,14 @@ export function Header({ onMenuClick }) {
             {ROLE_LABELS[user?.role] ?? user?.role}
           </p>
         </div>
+        {user?.role === "ADMIN" || user?.role === "TEACHER" ? (
+          <Link
+            className="hidden rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200 transition hover:border-amber-300 hover:text-amber-200 sm:block"
+            to={user.role === "ADMIN" ? "/admin/change-password" : "/teacher/change-password"}
+          >
+            Ganti password
+          </Link>
+        ) : null}
         <button
           className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200 transition hover:border-amber-300 hover:text-amber-200"
           type="button"

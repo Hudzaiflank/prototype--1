@@ -3,6 +3,7 @@ import { useAuthContext } from "../hooks/useAuthContext";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { StudentLayout } from "../layouts/StudentLayout";
 import { LoginPage } from "../pages/auth/LoginPage";
+import { ChangePasswordPage } from "../pages/auth/ChangePasswordPage";
 import { JoinRoomPage } from "../pages/student/JoinRoomPage";
 import { StudentRoomPage } from "../pages/student/StudentRoomPage";
 import { RoomInputPage } from "../pages/student/RoomInputPage";
@@ -22,9 +23,11 @@ import { ClassListPage as TeacherClassListPage } from "../pages/teacher/ClassLis
 import { ClassDetailPage as TeacherClassDetailPage } from "../pages/teacher/ClassDetailPage";
 import { RoomConfigurePage } from "../pages/teacher/RoomConfigurePage";
 import { RoomHistoryPage } from "../pages/teacher/RoomHistoryPage";
+import { HistoryDetailPage } from "../pages/teacher/HistoryDetailPage";
 import { SchoolListPage } from "../pages/super-admin/SchoolListPage";
 import { ClassListPage } from "../pages/admin/ClassListPage";
 import { TeacherListPage } from "../pages/admin/TeacherListPage";
+import { TeacherFormPage } from "../pages/admin/TeacherFormPage";
 import { TopicListPage } from "../pages/admin/TopicListPage";
 import { ClassFormPage } from "../pages/admin/ClassFormPage";
 import { ClassDetailPage as AdminClassDetailPage } from "../pages/admin/ClassDetailPage";
@@ -74,11 +77,13 @@ export function AppRouter() {
                 element={<AdminClassDetailPage />}
               />
               <Route path="/admin/teachers" element={<TeacherListPage />} />
+              <Route path="/admin/teachers/new" element={<TeacherFormPage />} />
               <Route
                 path="/admin/teachers/:teacherId"
                 element={<AdminTeacherDetailPage />}
               />
               <Route path="/admin/problems" element={<TopicListPage />} />
+              <Route path="/admin/change-password" element={<ChangePasswordPage />} />
             </Route>
           </Route>
           <Route element={<RoleRoute roles={["TEACHER"]} />}>
@@ -104,6 +109,8 @@ export function AppRouter() {
                 element={<RoomConfigurePage />}
               />
               <Route path="/teacher/history" element={<RoomHistoryPage />} />
+              <Route path="/teacher/history/:sessionId" element={<HistoryDetailPage />} />
+              <Route path="/teacher/change-password" element={<ChangePasswordPage />} />
             </Route>
           </Route>
         </Route>

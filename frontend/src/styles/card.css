@@ -2,7 +2,7 @@
   perspective: 1000px;
   width: min(42vw, 190px);
   aspect-ratio: 0.7;
-  min-width: 122px;
+  min-width: 110px;
 }
 
 .game-card__inner {
@@ -26,21 +26,30 @@
   justify-content: center;
   overflow: hidden;
   border: 3px solid rgba(0, 0, 0, 0.65);
-  border-radius: 10px;
+  border-radius: 6px;
   backface-visibility: hidden;
   box-shadow: 7px 7px 0 rgba(0, 0, 0, 0.45);
 }
 
 .game-card__back {
+  border: 2px solid rgba(0, 0, 0, 0.6);
+  border-radius: 6px;
+  overflow: hidden;
   color: #ffd23f;
-  background: linear-gradient(145deg, #1a4fc7, #0a1f5c);
+  background: #0a1f5c;
 }
 
-.game-card__back::before {
+.game-card__back-fill {
   position: absolute;
-  inset: 8px;
+  inset: 0;
+  background: linear-gradient(145deg, #4f8cf0, #1a4fc7 50%, #0a1f5c);
+}
+
+.game-card__back-diamond {
+  position: absolute;
+  inset: 5px;
   border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 6px;
+  border-radius: 3px;
   background:
     repeating-linear-gradient(
       45deg,
@@ -53,6 +62,20 @@
       transparent 5px 10px
     );
   content: "";
+}
+
+.game-card__back-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.35) 48%, transparent 66%);
+  background-size: 250% 250%;
+  animation: card-sheen 3.6s ease-in-out infinite;
+  mix-blend-mode: overlay;
+}
+
+@keyframes card-sheen {
+  0%, 100% { background-position: 130% 130%; }
+  50% { background-position: 0% 0%; }
 }
 
 .game-card__emblem,
@@ -75,10 +98,33 @@
 
 .game-card__front {
   transform: rotateY(180deg);
-  gap: 0.8rem;
-  padding: 1rem;
+  padding: 7% 8%;
   color: #201a14;
   background: linear-gradient(155deg, #fdf6e3, #f0e6c8);
+}
+
+.game-card__inner-frame {
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.game-card__foil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,.75) 42%, rgba(255,210,63,.55) 50%, rgba(255,255,255,.75) 58%, transparent 80%);
+  background-size: 300% 300%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.is-revealed .game-card__foil { animation: card-foil 1100ms ease-out; }
+
+@keyframes card-foil {
+  0% { background-position: 130% 130%; opacity: 1; }
+  100% { background-position: -30% -30%; opacity: 0; }
 }
 
 .game-card__front.is-problem {
@@ -97,12 +143,56 @@
   text-align: center;
 }
 
+.game-card__id-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 90%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  font-size: clamp(.62rem, 2.1vw, .9rem) !important;
+}
+
 .game-card__type {
   font-family: Lexend, sans-serif;
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.12em;
 }
+
+.game-card__suit-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 70%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,210,63,.28), transparent 70%);
+}
+
+.game-card__suit-big {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: Arial, sans-serif;
+  font-size: clamp(2rem, 5.4vw, 3rem);
+  opacity: .12;
+}
+
+.game-card__corner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  font-family: "Press Start 2P", monospace;
+}
+
+.game-card__corner b { font-size: clamp(.5rem, 1.6vw, .75rem); }
+.game-card__corner small { margin-top: 3px; font: clamp(.65rem, 1.7vw, .85rem) Arial, sans-serif; }
 
 .game-card__corner {
   align-self: flex-start;
@@ -111,4 +201,9 @@
 .game-card__corner--bottom {
   align-self: flex-end;
   transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-card__inner { transition-duration: 1ms; }
+  .game-card__back-sheen, .is-revealed .game-card__foil { animation: none; }
 }

@@ -124,3 +124,21 @@ export async function importTeachers({ schoolId, teachers, actorUserId }) {
     connection.release();
   }
 }
+
+export async function findExistingEmails(emails) {
+  if (!emails.length) return [];
+  const placeholders = emails.map(() => "?").join(",");
+  const [rows] = await pool.execute(
+    `SELECT email FROM users WHERE email IN (${placeholders})`,
+    emails,
+  );
+  return rows.map((row) => row.email);
+}
+
+export async function listTeacherEmails(schoolId) {
+  const [rows] = await pool.execute(
+    "SELECT email FROM users WHERE school_id = ? AND role = 'TEACHER'",
+    [schoolId],
+  );
+  return rows.map((row) => row.email);
+}

@@ -50,6 +50,19 @@ export async function updateStatus(request, response, next) {
   }
 }
 
+export async function remove(request, response, next) {
+  try {
+    response.json({
+      success: true,
+      data: await schoolService.removeSchool(
+        request.params.schoolId,
+      ),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function resetAdminPassword(request, response, next) {
   try {
     response.json({

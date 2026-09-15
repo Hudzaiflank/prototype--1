@@ -6,6 +6,7 @@ import {
   findSchoolDetail,
   listSchools,
   updateSchoolStatus,
+  deleteSchool,
 } from "../repositories/school.repository.js";
 import { resetUserPassword } from "../repositories/user.repository.js";
 
@@ -63,6 +64,12 @@ export async function setSchoolStatus(id, status) {
   if (!(await updateSchoolStatus(id, status)))
     throw new AppError("School not found", "SCHOOL_NOT_FOUND", 404);
   return getSchool(id);
+}
+
+export async function removeSchool(id) {
+  if (!(await deleteSchool(id)))
+    throw new AppError("School not found", "SCHOOL_NOT_FOUND", 404);
+  return { deleted: true, id };
 }
 
 export async function resetAdminPassword(schoolId, actorUserId) {

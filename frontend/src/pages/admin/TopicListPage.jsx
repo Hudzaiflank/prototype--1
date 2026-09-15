@@ -5,6 +5,7 @@ export function TopicListPage() {
   const [topics, setTopics] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState("");
   const load = useCallback(() =>
     topicApi
@@ -48,6 +49,20 @@ export function TopicListPage() {
       );
     }
   };
+  const edit = async (topic) => {
+    setError("");
+    try {
+      await topicApi.update(topic.id, {
+        title: topic.title,
+        description: topic.description ?? "",
+        visibility: topic.visibility,
+      });
+      setEditingId(null);
+      load();
+    } catch (requestError) {
+      setError(requestError.response?.data?.message ?? "Topik belum dapat diubah.");
+    }
+  };
   return (
     <section className="space-y-6" aria-labelledby="topics-title">
       <div>
@@ -89,19 +104,25 @@ export function TopicListPage() {
             className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/50 p-4"
             key={topic.id}
           >
-            <div>
-              <p className="font-semibold">{topic.title}</p>
-              <p className="mt-1 text-sm text-slate-400">
-                {topic.description ?? "Tanpa deskripsi"}
-              </p>
-            </div>
-            <button
-              className="text-sm text-rose-300"
-              type="button"
-              onClick={() => remove(topic.id)}
-            >
-              Hapus
-            </button>
+            {editingId === topic.id ? (
+              <div className="grid w-full gap-2 md:grid-cols-[1fr_1fr_auto_auto]">
+                <input className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2" value={topic.title} onChange={(event) => setTopics((items) => items.map((item) => item.id === topic.id ? { ...item, title: event.target.value } : item))} />
+                <input className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2" value={topic.description ?? ""} onChange={(event) => setTopics((items) => items.map((item) => item.id === topic.id ? { ...item, description: event.target.value } : item))} />
+                <button className="text-sm text-amber-200" type="button" onClick={() => edit(topic)}>Simpan</button>
+                <button className="text-sm text-slate-400" type="button" onClick={() => setEditingId(null)}>Batal</button>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <p className="font-semibold">{topic.title}</p>
+                  <p className="mt-1 text-sm text-slate-400">{topic.description ?? "Tanpa deskripsi"}</p>
+                </div>
+                <div className="flex gap-3">
+                  <button className="text-sm text-amber-200" type="button" onClick={() => setEditingId(topic.id)}>Ubah</button>
+                  <button className="text-sm text-rose-300" type="button" onClick={() => remove(topic.id)}>Hapus</button>
+                </div>
+              </>
+            )}
           </div>
         ))}
       </div>
