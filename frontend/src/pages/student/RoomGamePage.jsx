@@ -80,6 +80,17 @@ export function RoomGamePage() {
           <p className="font-[Lexend] text-xs uppercase tracking-[0.3em] text-[#9a7a2a]">
             Permainan berjalan
           </p>
+          {game?.gameMode === "GROUPS" && game?.group?.groupNumber ? (
+            <p className="mt-2 font-[Lexend] text-sm font-bold text-[#ffd23f]">
+              Kelompok {game.group.groupNumber}
+            </p>
+          ) : null}
+          {(game?.topicTitle ?? room?.topicTitle) ? (
+            <p className="mt-2 font-[Lexend] text-sm text-[#cbb8e0]">
+              Topik yang di bahas hari ini :{" "}
+              {game?.topicTitle ?? room.topicTitle}
+            </p>
+          ) : null}
           <h2
             className="mt-2 font-['Press_Start_2P'] text-sm leading-relaxed text-[#ffe98a]"
             id="game-title"

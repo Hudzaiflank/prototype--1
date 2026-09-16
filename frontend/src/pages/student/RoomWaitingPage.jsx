@@ -33,6 +33,11 @@ export function RoomWaitingPage() {
       <p className="font-[Lexend] text-xs uppercase tracking-[0.3em] text-[#9a7a2a]">
         Room {room?.code}
       </p>
+      {room?.topicTitle ? (
+        <p className="mt-3 font-[Lexend] text-sm font-bold text-[#ffd23f]">
+          Topik yang di bahas hari ini : {room.topicTitle}
+        </p>
+      ) : null}
       <h2 className="mt-5 font-['Press_Start_2P'] text-sm leading-relaxed text-[#ffe98a] sm:text-base">
         Menunggu permainan
       </h2>

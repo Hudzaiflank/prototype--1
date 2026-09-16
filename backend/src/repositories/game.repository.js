@@ -7,7 +7,7 @@ import { AppError } from "../utils/errors.js";
 
 async function sessionForUpdate(connection, sessionId, teacherId) {
   const [rows] = await connection.execute(
-      `SELECT gs.*, r.status AS room_status, r.created_by AS room_creator
+    `SELECT gs.*, r.status AS room_status, r.created_by AS room_creator
      FROM game_sessions gs LEFT JOIN rooms r ON r.id = gs.room_id
 		 WHERE gs.id = ? AND gs.created_by = ? LIMIT 1 FOR UPDATE`,
     [sessionId, teacherId],
@@ -223,8 +223,10 @@ export async function updateGameConfiguration(
 
 export async function getStudentGameState(sessionId, participantId) {
   const [sessions] = await pool.execute(
-    `SELECT id, status, state_version AS stateVersion, game_mode AS gameMode, problem_display_limit AS problemDisplayLimit
-		 FROM game_sessions WHERE id = ? LIMIT 1`,
+    `SELECT gs.id, gs.status, gs.state_version AS stateVersion, gs.game_mode AS gameMode,
+       gs.problem_display_limit AS problemDisplayLimit, t.title AS topicTitle
+		 FROM game_sessions gs LEFT JOIN topics t ON t.id = gs.topic_id
+       WHERE gs.id = ? LIMIT 1`,
     [sessionId],
   );
   if (!sessions.length)
@@ -242,15 +244,15 @@ export async function getStudentGameState(sessionId, participantId) {
      WHERE g.game_session_id = ? AND gm.participant_id = ? LIMIT 1`,
     [sessionId, participantId],
   );
-  if (!groups.length)
-    throw new AppError("Group not found", "GROUP_NOT_FOUND", 404);
-  const [members] = await pool.execute(
-    `SELECT p.id, p.full_name AS fullName, p.status FROM group_members gm
-     JOIN participants p ON p.id = gm.participant_id WHERE gm.group_id = ? ORDER BY p.full_name`,
-    [groups[0].id],
-  );
+  const [members] = groups.length
+    ? await pool.execute(
+        `SELECT p.id, p.full_name AS fullName, p.status FROM group_members gm
+         JOIN participants p ON p.id = gm.participant_id WHERE gm.group_id = ? ORDER BY p.full_name`,
+        [groups[0].id],
+      )
+    : [[]];
   const [turns] = await pool.execute(
-      `SELECT gt.id, gt.group_id AS groupId, gt.turn_number AS turnNumber, gt.status,
+    `SELECT gt.id, gt.group_id AS groupId, gt.turn_number AS turnNumber, gt.status,
       gt.participant_card_state AS participantCardState, gt.problem_card_state AS problemCardState,
       p.full_name AS participantName, pr.content AS problemContent
      FROM game_turns gt JOIN group_members gm ON gm.group_id = gt.group_id
@@ -267,11 +269,16 @@ export async function getStudentGameState(sessionId, participantId) {
       fullName: participant[0].fullName,
       status: participant[0].status,
     },
-    group: {
-      groupNumber: groups[0].groupNumber,
-      status: groups[0].status,
-      members: members.map(({ fullName, status }) => ({ fullName, status })),
-    },
+    group: groups.length
+      ? {
+          groupNumber: groups[0].groupNumber,
+          status: groups[0].status,
+          members: members.map(({ fullName, status }) => ({
+            fullName,
+            status,
+          })),
+        }
+      : null,
     currentTurn: turns[0]
       ? {
           id: turns[0].id,
@@ -423,8 +430,7 @@ export async function completeTurn(sessionId, groupId, turnId, teacherId) {
       [sessionId],
     );
     let sessionFinished = false;
-    if (remaining[0].count === 0)
-      sessionFinished = true;
+    if (remaining[0].count === 0) sessionFinished = true;
     if (sessionFinished) {
       await connection.execute(
         "UPDATE game_sessions SET status = 'FINISHED', state_version = state_version + 1, finished_at = NOW() WHERE id = ?",

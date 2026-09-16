@@ -55,6 +55,11 @@ export function RoomInputPage() {
         <h2 className="font-['Press_Start_2P'] text-sm leading-relaxed text-[#ffe98a] sm:text-base">
           Siapkan kartu kamu
         </h2>
+        {room?.topicTitle ? (
+          <p className="mt-4 font-[Lexend] text-sm font-bold text-[#ffd23f]">
+            Topik yang di bahas hari ini : {room.topicTitle}
+          </p>
+        ) : null}
         <p className="mt-4 font-[Lexend] text-sm leading-6 text-[#cbb8e0]">
           Nama kamu akan menjadi salah satu kartu permainan. Tulis satu hal yang
           ingin dibagikan dengan aman.

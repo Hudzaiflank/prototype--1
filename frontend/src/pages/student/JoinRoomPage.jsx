@@ -2,7 +2,18 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { roomApi } from "../../services/api/roomApi";
 import { isRoomCode } from "../../utils/validation";
-import { setStudentRoom } from "../../utils/storage";
+import {
+  clearStudentSession,
+  getParticipantSession,
+  getStudentRoom,
+  setStudentRoom,
+} from "../../utils/storage";
+
+const routeForGameStatus = (roomCode, status) => {
+  if (status === "WAITING") return `/room/${roomCode}/waiting`;
+  if (status === "FINISHED") return `/room/${roomCode}/result`;
+  return `/room/${roomCode}/game`;
+};
 
 export function JoinRoomPage() {
   const navigate = useNavigate();
@@ -21,7 +32,35 @@ export function JoinRoomPage() {
     setIsSubmitting(true);
     try {
       const { data } = await roomApi.join(normalizedCode);
-      setStudentRoom(data.data);
+      const room = data.data;
+      const previousRoom = getStudentRoom();
+      const participantSessionId = getParticipantSession();
+
+      if (
+        participantSessionId &&
+        previousRoom?.gameSessionId === room.gameSessionId
+      ) {
+        try {
+          const stateResponse = await roomApi.studentState(
+            room.gameSessionId,
+            participantSessionId,
+          );
+          setStudentRoom(room);
+          navigate(
+            routeForGameStatus(normalizedCode, stateResponse.data.data.status),
+            {
+              replace: true,
+            },
+          );
+          return;
+        } catch {
+          clearStudentSession();
+        }
+      } else if (participantSessionId) {
+        clearStudentSession();
+      }
+
+      setStudentRoom(room);
       navigate(`/room/${normalizedCode}/input`);
     } catch (requestError) {
       setError(

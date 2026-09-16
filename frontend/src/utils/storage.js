@@ -27,14 +27,24 @@ export const clearAuthStorage = () => {
   clearStoredUser();
 };
 
+const getStudentStorageValue = (key) => {
+  const persistentValue = localStorage.getItem(key);
+  if (persistentValue !== null) return persistentValue;
+  const sessionValue = sessionStorage.getItem(key);
+  if (sessionValue !== null) localStorage.setItem(key, sessionValue);
+  return sessionValue;
+};
+
 export const getParticipantSession = () =>
-  sessionStorage.getItem(PARTICIPANT_SESSION_KEY);
+  getStudentStorageValue(PARTICIPANT_SESSION_KEY);
 export const setParticipantSession = (value) =>
-  sessionStorage.setItem(PARTICIPANT_SESSION_KEY, value);
-export const clearParticipantSession = () =>
+  localStorage.setItem(PARTICIPANT_SESSION_KEY, value);
+export const clearParticipantSession = () => {
+  localStorage.removeItem(PARTICIPANT_SESSION_KEY);
   sessionStorage.removeItem(PARTICIPANT_SESSION_KEY);
+};
 export const getStudentRoom = () => {
-  const value = sessionStorage.getItem(STUDENT_ROOM_KEY);
+  const value = getStudentStorageValue(STUDENT_ROOM_KEY);
   if (!value) return null;
   try {
     return JSON.parse(value);
@@ -43,12 +53,14 @@ export const getStudentRoom = () => {
   }
 };
 export const setStudentRoom = (value) =>
-  sessionStorage.setItem(STUDENT_ROOM_KEY, JSON.stringify(value));
-export const getStudentName = () => sessionStorage.getItem(STUDENT_NAME_KEY);
+  localStorage.setItem(STUDENT_ROOM_KEY, JSON.stringify(value));
+export const getStudentName = () => getStudentStorageValue(STUDENT_NAME_KEY);
 export const setStudentName = (value) =>
-  sessionStorage.setItem(STUDENT_NAME_KEY, value);
+  localStorage.setItem(STUDENT_NAME_KEY, value);
 export const clearStudentSession = () => {
   clearParticipantSession();
+  localStorage.removeItem(STUDENT_ROOM_KEY);
+  localStorage.removeItem(STUDENT_NAME_KEY);
   sessionStorage.removeItem(STUDENT_ROOM_KEY);
   sessionStorage.removeItem(STUDENT_NAME_KEY);
 };

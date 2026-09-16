@@ -130,8 +130,9 @@ export async function createTeacherGameSession({
 export async function findRoomByCode(code) {
   const [rows] = await pool.execute(
     `SELECT r.id AS roomId, r.code, r.status AS roomStatus, gs.id AS gameSessionId,
-       gs.input_mode AS inputMode
+       gs.input_mode AS inputMode, t.title AS topicTitle
      FROM rooms r LEFT JOIN game_sessions gs ON gs.room_id = r.id AND gs.status IN ('WAITING', 'PLAYING', 'PAUSED')
+     LEFT JOIN topics t ON t.id = gs.topic_id
 		 WHERE r.code = ? ORDER BY gs.created_at DESC LIMIT 1`,
     [code],
   );
