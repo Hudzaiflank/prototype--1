@@ -83,7 +83,10 @@ export function AppRouter() {
                 element={<AdminTeacherDetailPage />}
               />
               <Route path="/admin/problems" element={<TopicListPage />} />
-              <Route path="/admin/change-password" element={<ChangePasswordPage />} />
+              <Route
+                path="/admin/change-password"
+                element={<ChangePasswordPage />}
+              />
             </Route>
           </Route>
           <Route element={<RoleRoute roles={["TEACHER"]} />}>
@@ -108,13 +111,19 @@ export function AppRouter() {
                 path="/teacher/rooms/:roomId/configure"
                 element={<RoomConfigurePage />}
               />
-                <Route
-                  path="/teacher/classes/:classId/configure"
-                  element={<RoomConfigurePage />}
-                />
+              <Route
+                path="/teacher/classes/:classId/configure"
+                element={<RoomConfigurePage />}
+              />
               <Route path="/teacher/history" element={<RoomHistoryPage />} />
-              <Route path="/teacher/history/:sessionId" element={<HistoryDetailPage />} />
-              <Route path="/teacher/change-password" element={<ChangePasswordPage />} />
+              <Route
+                path="/teacher/history/:sessionId"
+                element={<HistoryDetailPage />}
+              />
+              <Route
+                path="/teacher/change-password"
+                element={<ChangePasswordPage />}
+              />
             </Route>
           </Route>
         </Route>

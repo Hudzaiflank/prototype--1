@@ -5,7 +5,10 @@ export const gameApi = {
   pauseGame: (id) => apiClient.post(`/game-sessions/${id}/pause`),
   resumeGame: (id) => apiClient.post(`/game-sessions/${id}/resume`),
   revealCard: (sessionId, groupId, turnId) =>
-    apiClient.post(`/game-sessions/${sessionId}/groups/${groupId}/turn/reveal`, { turnId }),
+    apiClient.post(
+      `/game-sessions/${sessionId}/groups/${groupId}/turn/reveal`,
+      { turnId },
+    ),
   completeTurn: (sessionId, groupId, turnId) =>
     apiClient.post(
       `/game-sessions/${sessionId}/groups/${groupId}/turn/complete`,
@@ -25,5 +28,7 @@ export const gameApi = {
   importTeacherParticipants: (sessionId, rows) =>
     apiClient.post(`/game-sessions/${sessionId}/participants/import`, { rows }),
   teacherParticipantTemplate: () =>
-    apiClient.get("/game-sessions/teacher-input-template", { responseType: "blob" }),
+    apiClient.get("/game-sessions/teacher-input-template", {
+      responseType: "blob",
+    }),
 };

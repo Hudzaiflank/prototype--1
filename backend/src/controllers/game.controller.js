@@ -88,8 +88,14 @@ export async function registerTeacherParticipant(request, response, next) {
 
 export async function previewTeacherImport(request, response, next) {
   try {
-    if (!request.file) return response.status(400).json({ success: false, message: "Excel file is required" });
-    response.json({ success: true, data: roomService.previewTeacherParticipants(request.file.buffer) });
+    if (!request.file)
+      return response
+        .status(400)
+        .json({ success: false, message: "Excel file is required" });
+    response.json({
+      success: true,
+      data: roomService.previewTeacherParticipants(request.file.buffer),
+    });
   } catch (error) {
     next(error);
   }
@@ -121,7 +127,10 @@ export function downloadTeacherParticipantTemplate(_request, response, next) {
     const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
     response
       .type("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-      .set("Content-Disposition", "attachment; filename=template-input-murid.xlsx")
+      .set(
+        "Content-Disposition",
+        "attachment; filename=template-input-murid.xlsx",
+      )
       .send(buffer);
   } catch (error) {
     next(error);

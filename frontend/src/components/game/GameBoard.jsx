@@ -40,7 +40,10 @@ export function GameBoard(props) {
             >
               x
             </button>
-            <h3 className="pr-10 font-['Press_Start_2P'] text-sm leading-relaxed text-[#ffe98a]" id="problem-detail-title">
+            <h3
+              className="pr-10 font-['Press_Start_2P'] text-sm leading-relaxed text-[#ffe98a]"
+              id="problem-detail-title"
+            >
               Detail masalah
             </h3>
             <p className="mt-5 whitespace-pre-line font-[Lexend] text-sm leading-7 text-[#fdf6e3]">

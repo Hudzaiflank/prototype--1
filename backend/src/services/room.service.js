@@ -31,7 +31,11 @@ export async function createGameSession(data) {
 export async function createTeacherGameSession(data) {
   const result = await repository.createTeacherGameSession(data);
   if (!result)
-    throw new AppError("Class is not assigned to this teacher", "CLASS_NOT_ASSIGNED", 403);
+    throw new AppError(
+      "Class is not assigned to this teacher",
+      "CLASS_NOT_ASSIGNED",
+      403,
+    );
   return result;
 }
 export async function joinRoom(code) {
@@ -102,9 +106,11 @@ export async function registerTeacherParticipant(data) {
 export function previewTeacherParticipants(buffer) {
   const workbook = XLSX.read(buffer, { type: "buffer" });
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  if (!sheet) throw new AppError("Workbook has no sheet", "IMPORT_INVALID", 400);
+  if (!sheet)
+    throw new AppError("Workbook has no sheet", "IMPORT_INVALID", 400);
   const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-  if (!rows.length) throw new AppError("Workbook is empty", "IMPORT_EMPTY", 400);
+  if (!rows.length)
+    throw new AppError("Workbook is empty", "IMPORT_EMPTY", 400);
   const preview = [];
   const errors = [];
   for (const [index, row] of rows.entries()) {
@@ -121,11 +127,20 @@ export function previewTeacherParticipants(buffer) {
       });
     } else preview.push({ row: index + 2, fullName, content });
   }
-  return { rows: preview, errors, valid: errors.length === 0 && preview.length > 0 };
+  return {
+    rows: preview,
+    errors,
+    valid: errors.length === 0 && preview.length > 0,
+  };
 }
 
 export async function importTeacherParticipants(data) {
   const result = await repository.importTeacherParticipants(data);
-  if (!result) throw new AppError("Teacher input session is not available", "IMPORT_REJECTED", 409);
+  if (!result)
+    throw new AppError(
+      "Teacher input session is not available",
+      "IMPORT_REJECTED",
+      409,
+    );
   return result;
 }

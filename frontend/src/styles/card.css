@@ -76,15 +76,25 @@
 .game-card__back-sheen {
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.35) 48%, transparent 66%);
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.35) 48%,
+    transparent 66%
+  );
   background-size: 250% 250%;
   animation: card-sheen 3.6s ease-in-out infinite;
   mix-blend-mode: overlay;
 }
 
 @keyframes card-sheen {
-  0%, 100% { background-position: 130% 130%; }
-  50% { background-position: 0% 0%; }
+  0%,
+  100% {
+    background-position: 130% 130%;
+  }
+  50% {
+    background-position: 0% 0%;
+  }
 }
 
 .game-card__emblem,
@@ -123,17 +133,32 @@
 .game-card__foil {
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,.75) 42%, rgba(255,210,63,.55) 50%, rgba(255,255,255,.75) 58%, transparent 80%);
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.75) 42%,
+    rgba(255, 210, 63, 0.55) 50%,
+    rgba(255, 255, 255, 0.75) 58%,
+    transparent 80%
+  );
   background-size: 300% 300%;
   opacity: 0;
   pointer-events: none;
 }
 
-.is-revealed .game-card__foil { animation: card-foil 1100ms ease-out; }
+.is-revealed .game-card__foil {
+  animation: card-foil 1100ms ease-out;
+}
 
 @keyframes card-foil {
-  0% { background-position: 130% 130%; opacity: 1; }
-  100% { background-position: -30% -30%; opacity: 0; }
+  0% {
+    background-position: 130% 130%;
+    opacity: 1;
+  }
+  100% {
+    background-position: -30% -30%;
+    opacity: 0;
+  }
 }
 
 .game-card__front.is-problem {
@@ -159,7 +184,7 @@
   width: 90%;
   transform: translate(-50%, -50%);
   z-index: 2;
-  font-size: clamp(.62rem, 2.1vw, .9rem) !important;
+  font-size: clamp(0.62rem, 2.1vw, 0.9rem) !important;
 }
 
 .game-card__front.is-problem .game-card__id-text {
@@ -187,7 +212,11 @@
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,210,63,.28), transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 210, 63, 0.28),
+    transparent 70%
+  );
 }
 
 .game-card__suit-big {
@@ -197,7 +226,7 @@
   transform: translate(-50%, -50%);
   font-family: Arial, sans-serif;
   font-size: clamp(2rem, 5.4vw, 3rem);
-  opacity: .12;
+  opacity: 0.12;
 }
 
 .game-card__corner {
@@ -210,8 +239,15 @@
   font-family: "Press Start 2P", monospace;
 }
 
-.game-card__corner b { font-size: clamp(.5rem, 1.6vw, .75rem); }
-.game-card__corner small { margin-top: 3px; font: clamp(.65rem, 1.7vw, .85rem) Arial, sans-serif; }
+.game-card__corner b {
+  font-size: clamp(0.5rem, 1.6vw, 0.75rem);
+}
+.game-card__corner small {
+  margin-top: 3px;
+  font:
+    clamp(0.65rem, 1.7vw, 0.85rem) Arial,
+    sans-serif;
+}
 
 .game-card__corner {
   align-self: flex-start;
@@ -223,6 +259,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .game-card__inner { transition-duration: 1ms; }
-  .game-card__back-sheen, .is-revealed .game-card__foil { animation: none; }
+  .game-card__inner {
+    transition-duration: 1ms;
+  }
+  .game-card__back-sheen,
+  .is-revealed .game-card__foil {
+    animation: none;
+  }
 }

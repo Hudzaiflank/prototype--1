@@ -36,11 +36,14 @@ export const teacherParticipantSchema = z.object({
 
 export const teacherParticipantImportSchema = z.object({
   body: z.object({
-    rows: z.array(
-      z.object({
-        fullName: z.string().trim().min(1).max(150),
-        content: z.string().trim().min(1).max(500),
-      }),
-    ).min(1).max(500),
+    rows: z
+      .array(
+        z.object({
+          fullName: z.string().trim().min(1).max(150),
+          content: z.string().trim().min(1).max(500),
+        }),
+      )
+      .min(1)
+      .max(500),
   }),
 });

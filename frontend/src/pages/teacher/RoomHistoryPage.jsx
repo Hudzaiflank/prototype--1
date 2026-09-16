@@ -38,8 +38,15 @@ export function RoomHistoryPage() {
               <p className="mt-1 text-xs text-slate-400">{item.status}</p>
             </div>
             <div className="text-right">
-              <span className="block text-xs text-slate-400">{formatDateTime(item.finishedAt ?? item.createdAt)}</span>
-              <Link className="mt-2 block text-xs text-amber-200" to={`/teacher/history/${item.sessionId}`}>Lihat detail</Link>
+              <span className="block text-xs text-slate-400">
+                {formatDateTime(item.finishedAt ?? item.createdAt)}
+              </span>
+              <Link
+                className="mt-2 block text-xs text-amber-200"
+                to={`/teacher/history/${item.sessionId}`}
+              >
+                Lihat detail
+              </Link>
             </div>
           </div>
         ))}
