@@ -24,11 +24,12 @@ export function DashboardPage() {
         </p>
       </div>
       {error ? <p className="text-sm text-rose-300">{error}</p> : null}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
         {[
           ["Kelas", data?.classCount],
           ["Guru", data?.teacherCount],
           ["Room aktif", data?.activeRoomCount],
+          ["Room selesai", data?.completedRoomCount],
         ].map(([label, value]) => (
           <div
             className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5"

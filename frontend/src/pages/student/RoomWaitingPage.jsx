@@ -40,17 +40,6 @@ export function RoomWaitingPage() {
         Jawabanmu sudah tersimpan. Guru akan memulai permainan ketika semua
         peserta siap.
       </p>
-      <div className="mt-8 rounded-2xl border border-[#4f8cf0]/60 bg-[#0a1f5c]/40 px-4 py-4 font-[Lexend] text-xs text-[#cbb8e0]">
-        Session tersimpan:{" "}
-        {participantSessionId ? "siap reconnect" : "belum tersedia"}
-      </div>
-      <button
-        className="mt-7 rounded-xl border border-[#ffd23f] px-5 py-3 font-[Lexend] text-sm font-bold text-[#ffe98a] transition hover:bg-[#ffd23f] hover:text-[#201a14]"
-        type="button"
-        onClick={() => navigate("../game")}
-      >
-        Masuk ke game saat tersedia
-      </button>
     </section>
   );
 }

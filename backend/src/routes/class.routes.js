@@ -12,6 +12,7 @@ import { assignTeacherSchema } from "../validators/teacher.validator.js";
 import { assign } from "../controllers/teacher.controller.js";
 import * as teacherController from "../controllers/teacher.controller.js";
 import * as roomController from "../controllers/room.controller.js";
+import { gameSessionSchema } from "../validators/room.validator.js";
 
 const router = Router();
 router.use(requireAuth, allowRoles(ROLES.ADMIN, ROLES.TEACHER));
@@ -41,4 +42,10 @@ router.post(
   assign,
 );
 router.post("/:classId/rooms", allowRoles(ROLES.TEACHER), roomController.open);
+router.post(
+  "/:classId/teacher-game-sessions",
+  allowRoles(ROLES.TEACHER),
+  validate(gameSessionSchema),
+  roomController.createTeacherSession,
+);
 export default router;

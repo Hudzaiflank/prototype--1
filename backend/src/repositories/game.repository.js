@@ -7,8 +7,8 @@ import { AppError } from "../utils/errors.js";
 
 async function sessionForUpdate(connection, sessionId, teacherId) {
   const [rows] = await connection.execute(
-    `SELECT gs.*, r.status AS room_status, r.created_by AS room_creator
-		 FROM game_sessions gs JOIN rooms r ON r.id = gs.room_id
+      `SELECT gs.*, r.status AS room_status, r.created_by AS room_creator
+     FROM game_sessions gs LEFT JOIN rooms r ON r.id = gs.room_id
 		 WHERE gs.id = ? AND gs.created_by = ? LIMIT 1 FOR UPDATE`,
     [sessionId, teacherId],
   );
@@ -22,7 +22,7 @@ export async function startGame(sessionId, teacherId) {
   try {
     await connection.beginTransaction();
     const session = await sessionForUpdate(connection, sessionId, teacherId);
-    if (session.room_status !== "OPEN")
+    if (session.room_id && session.room_status !== "OPEN")
       throw new AppError("Room is closed", "ROOM_NOT_OPEN", 403);
     if (session.status !== "WAITING")
       throw new AppError(
@@ -149,15 +149,24 @@ export const finishGame = (sessionId, teacherId) =>
     ["PLAYING", "PAUSED"],
     "FINISHED",
     "finished_at",
-  );
+  ).then(async (state) => {
+    await pool.execute(
+      `UPDATE rooms r JOIN game_sessions gs ON gs.room_id = r.id
+       SET r.status = 'CLOSED', r.closed_at = NOW()
+       WHERE gs.id = ? AND gs.created_by = ? AND r.status = 'OPEN'`,
+      [sessionId, teacherId],
+    );
+    return state;
+  });
 
 export async function getGameSession(sessionId, teacherId) {
   const [sessions] = await pool.execute(
-    `SELECT gs.id, gs.room_id AS roomId, gs.status, gs.state_version AS stateVersion, gs.input_mode AS inputMode,
+    `SELECT gs.id, gs.room_id AS roomId, r.code AS roomCode, gs.status, gs.state_version AS stateVersion, gs.input_mode AS inputMode,
 			gs.game_mode AS gameMode, gs.problem_display_limit AS problemDisplayLimit,
 			gs.group_count AS groupCount, gs.started_at AS startedAt, gs.paused_at AS pausedAt,
 			gs.resumed_at AS resumedAt, gs.finished_at AS finishedAt
-		 FROM game_sessions gs WHERE gs.id = ? AND gs.created_by = ? LIMIT 1`,
+     FROM game_sessions gs LEFT JOIN rooms r ON r.id = gs.room_id
+     WHERE gs.id = ? AND gs.created_by = ? LIMIT 1`,
     [sessionId, teacherId],
   );
   if (!sessions.length)
@@ -241,9 +250,13 @@ export async function getStudentGameState(sessionId, participantId) {
     [groups[0].id],
   );
   const [turns] = await pool.execute(
-    `SELECT gt.id, gt.group_id AS groupId, gt.turn_number AS turnNumber, gt.status,
-			gt.participant_card_state AS participantCardState, gt.problem_card_state AS problemCardState
-		 FROM game_turns gt JOIN group_members gm ON gm.group_id = gt.group_id
+      `SELECT gt.id, gt.group_id AS groupId, gt.turn_number AS turnNumber, gt.status,
+      gt.participant_card_state AS participantCardState, gt.problem_card_state AS problemCardState,
+      p.full_name AS participantName, pr.content AS problemContent
+     FROM game_turns gt JOIN group_members gm ON gm.group_id = gt.group_id
+     JOIN assignments a ON a.id = gt.assignment_id
+     JOIN participants p ON p.id = a.participant_id
+     JOIN problems pr ON pr.id = a.problem_id
 		 WHERE gt.game_session_id = ? AND gm.participant_id = ? AND gt.status IN ('ACTIVE', 'PENDING')
 		 ORDER BY gt.turn_number LIMIT 1`,
     [sessionId, participantId],
@@ -261,8 +274,11 @@ export async function getStudentGameState(sessionId, participantId) {
     },
     currentTurn: turns[0]
       ? {
+          id: turns[0].id,
           turnNumber: turns[0].turnNumber,
           status: turns[0].status,
+          participantName: turns[0].participantName,
+          problemContent: turns[0].problemContent,
           participantCardState: turns[0].participantCardState,
           problemCardState: turns[0].problemCardState,
         }
@@ -406,12 +422,21 @@ export async function completeTurn(sessionId, groupId, turnId, teacherId) {
       "SELECT COUNT(*) AS count FROM `groups` WHERE game_session_id = ? AND status != 'FINISHED'",
       [sessionId],
     );
+    let sessionFinished = false;
     if (remaining[0].count === 0)
+      sessionFinished = true;
+    if (sessionFinished) {
       await connection.execute(
         "UPDATE game_sessions SET status = 'FINISHED', state_version = state_version + 1, finished_at = NOW() WHERE id = ?",
         [sessionId],
       );
-    else
+      await connection.execute(
+        `UPDATE rooms r JOIN game_sessions gs ON gs.room_id = r.id
+         SET r.status = 'CLOSED', r.closed_at = NOW()
+         WHERE gs.id = ? AND r.status = 'OPEN'`,
+        [sessionId],
+      );
+    } else
       await connection.execute(
         "UPDATE game_sessions SET state_version = state_version + 1 WHERE id = ?",
         [sessionId],
@@ -420,6 +445,7 @@ export async function completeTurn(sessionId, groupId, turnId, teacherId) {
     return {
       completedTurn: publicTurn({ ...turn, status: "COMPLETED" }),
       nextTurn,
+      sessionFinished,
     };
   } catch (error) {
     await connection.rollback();
@@ -450,7 +476,9 @@ export async function getCurrentTurn(sessionId, groupId, teacherId) {
 export async function getGroups(sessionId, teacherId) {
   const [rows] = await pool.execute(
     `SELECT g.id, g.group_number AS groupNumber, g.status,
-			g.active_turn_id AS activeTurnId, gt.turn_number AS currentTurnNumber
+			g.active_turn_id AS activeTurnId, gt.turn_number AS currentTurnNumber,
+      (SELECT COUNT(*) FROM game_turns all_turns WHERE all_turns.group_id = g.id) AS totalTurnCount,
+      (SELECT COUNT(*) FROM game_turns completed_turns WHERE completed_turns.group_id = g.id AND completed_turns.status = 'COMPLETED') AS completedTurnCount
 		 FROM \`groups\` g JOIN game_sessions gs ON gs.id = g.game_session_id
 		 LEFT JOIN game_turns gt ON gt.id = g.active_turn_id
 		 WHERE g.game_session_id = ? AND gs.created_by = ? ORDER BY g.group_number`,

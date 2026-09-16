@@ -81,7 +81,8 @@ CREATE TABLE IF NOT EXISTS rooms (
 
 CREATE TABLE IF NOT EXISTS game_sessions (
 	id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	room_id BIGINT UNSIGNED NOT NULL,
+	room_id BIGINT UNSIGNED NULL,
+	class_id BIGINT UNSIGNED NULL,
 	created_by BIGINT UNSIGNED NOT NULL,
 	topic_id BIGINT UNSIGNED NULL,
 	input_mode ENUM('STUDENT', 'TEACHER') NOT NULL,
@@ -98,6 +99,7 @@ CREATE TABLE IF NOT EXISTS game_sessions (
 	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT fk_sessions_room FOREIGN KEY (room_id) REFERENCES rooms(id),
+	CONSTRAINT fk_sessions_class FOREIGN KEY (class_id) REFERENCES classes(id),
 	CONSTRAINT fk_sessions_creator FOREIGN KEY (created_by) REFERENCES users(id),
 	CONSTRAINT fk_sessions_topic FOREIGN KEY (topic_id) REFERENCES topics(id),
 	INDEX idx_sessions_status (status, expires_at)

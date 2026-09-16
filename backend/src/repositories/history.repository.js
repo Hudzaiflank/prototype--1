@@ -24,6 +24,14 @@ export async function getSessionHistory(sessionId, teacherId) {
   return rows;
 }
 
+export async function teacherOwnsSession(sessionId, teacherId) {
+  const [rows] = await pool.execute(
+    "SELECT id FROM game_sessions WHERE id = ? AND created_by = ? LIMIT 1",
+    [sessionId, teacherId],
+  );
+  return rows.length > 0;
+}
+
 export async function listTeacherHistory({
   teacherId,
   offset,
@@ -35,7 +43,7 @@ export async function listTeacherHistory({
   const filters = ["gs.created_by = ?"];
   const values = [teacherId];
   if (classId) {
-    filters.push("r.class_id = ?");
+    filters.push("COALESCE(gs.class_id, r.class_id) = ?");
     values.push(classId);
   }
   if (from) {
@@ -49,18 +57,19 @@ export async function listTeacherHistory({
   const where = filters.join(" AND ");
   const [rows] = await pool.execute(
     `SELECT gs.id AS sessionId, gs.status, gs.created_at AS createdAt, gs.started_at AS startedAt,
-			gs.finished_at AS finishedAt, r.id AS roomId, r.code AS roomCode,
-			c.id AS classId, c.name AS className,
+      gs.finished_at AS finishedAt, r.id AS roomId, r.code AS roomCode,
+      c.id AS classId, c.name AS className,
 			COUNT(DISTINCT p.id) AS participantCount
-		 FROM game_sessions gs JOIN rooms r ON r.id = gs.room_id
-		 JOIN classes c ON c.id = r.class_id
+     FROM game_sessions gs LEFT JOIN rooms r ON r.id = gs.room_id
+     JOIN classes c ON c.id = COALESCE(gs.class_id, r.class_id)
 		 LEFT JOIN participants p ON p.game_session_id = gs.id
 		 WHERE ${where}
 		 GROUP BY gs.id ORDER BY gs.created_at DESC LIMIT ? OFFSET ?`,
     [...values, limit, offset],
   );
   const [countRows] = await pool.execute(
-    `SELECT COUNT(*) AS total FROM game_sessions gs JOIN rooms r ON r.id = gs.room_id WHERE ${where}`,
+    `SELECT COUNT(*) AS total FROM game_sessions gs LEFT JOIN rooms r ON r.id = gs.room_id
+     JOIN classes c ON c.id = COALESCE(gs.class_id, r.class_id) WHERE ${where}`,
     values,
   );
   return { rows, total: countRows[0].total };

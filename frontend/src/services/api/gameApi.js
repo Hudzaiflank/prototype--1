@@ -17,10 +17,10 @@ export const gameApi = {
   groups: (id) => apiClient.get(`/game-sessions/${id}/groups`),
   currentTurn: (sessionId, groupId) =>
     apiClient.get(`/game-sessions/${sessionId}/groups/${groupId}/current-turn`),
-  previewTeacherImport: (sessionId, file) => {
+  previewTeacherImport: (file) => {
     const formData = new FormData();
     formData.append("file", file);
-    return apiClient.post(`/game-sessions/${sessionId}/participants/import/preview`, formData);
+    return apiClient.post("/game-sessions/teacher-input-preview", formData);
   },
   importTeacherParticipants: (sessionId, rows) =>
     apiClient.post(`/game-sessions/${sessionId}/participants/import`, { rows }),

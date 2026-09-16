@@ -76,7 +76,7 @@ export function RoomInputPage() {
           className="mt-2 min-h-36 w-full resize-y rounded-xl border border-[#4f8cf0] bg-[#0a1f5c]/50 px-4 py-3 text-[#fdf6e3] outline-none focus:border-[#ffd23f]"
           value={content}
           onChange={(event) => setContent(event.target.value)}
-          maxLength={5000}
+          maxLength={500}
           required
         />
       </label>

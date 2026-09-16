@@ -5,6 +5,15 @@
   min-width: 110px;
 }
 
+.game-card--clickable {
+  cursor: pointer;
+}
+
+.game-card--clickable:focus-visible {
+  outline: 3px solid #ffd23f;
+  outline-offset: 5px;
+}
+
 .game-card__inner {
   position: relative;
   width: 100%;
@@ -151,6 +160,16 @@
   transform: translate(-50%, -50%);
   z-index: 2;
   font-size: clamp(.62rem, 2.1vw, .9rem) !important;
+}
+
+.game-card__front.is-problem .game-card__id-text {
+  display: -webkit-box;
+  max-height: 4.5em;
+  padding: 0 4%;
+  overflow: hidden;
+  overflow-x: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .game-card__type {

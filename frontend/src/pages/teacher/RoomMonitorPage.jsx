@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { GameBoard } from "../../components/game/GameBoard";
 import { GameStatus } from "../../components/game/GameStatus";
 import { TeacherControls } from "../../components/game/TeacherControls";
@@ -10,17 +10,43 @@ import { getAccessToken } from "../../utils/storage";
 
 export function RoomMonitorPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const sessionId = searchParams.get("sessionId");
   const [game, setGame] = useState(null);
   const [error, setError] = useState("");
-  const [participantName, setParticipantName] = useState("");
-  const [problemContent, setProblemContent] = useState("");
-  const [addingParticipant, setAddingParticipant] = useState(false);
   const [groups, setGroups] = useState([]);
   const [selectedGroupId, setSelectedGroupId] = useState("");
   const [currentTurn, setCurrentTurn] = useState(null);
-  const [participantPreview, setParticipantPreview] = useState(null);
-  const [importing, setImporting] = useState(false);
+  const [completionCountdown, setCompletionCountdown] = useState(null);
+  const [completionForSession, setCompletionForSession] = useState(null);
+  const completionRedirectStarted = useRef(false);
+  const teacherInputMode = game?.inputMode === "TEACHER";
+
+  useEffect(() => {
+    if (
+      Number(game?.id) !== Number(sessionId) ||
+      game?.status !== "FINISHED"
+    )
+      {
+        completionRedirectStarted.current = false;
+        return undefined;
+      }
+    if (completionRedirectStarted.current) return undefined;
+    completionRedirectStarted.current = true;
+    setCompletionForSession(sessionId);
+    setCompletionCountdown(3);
+    const countdown = window.setInterval(() => {
+      setCompletionCountdown((current) => {
+        if (current <= 1) {
+          window.clearInterval(countdown);
+          navigate("/teacher/dashboard", { replace: true });
+          return 0;
+        }
+        return current - 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(countdown);
+  }, [game?.id, game?.status, navigate, sessionId]);
 
   useEffect(() => {
     if (!sessionId) return undefined;
@@ -47,8 +73,10 @@ export function RoomMonitorPage() {
           );
       });
     const socket = socketClient.connect({ token: getAccessToken() });
-    const updateState = (state) =>
-      setGame((current) => ({ ...current, ...state }));
+    const updateState = (state) => {
+      if (Number(state?.id) !== Number(sessionId)) return;
+      setGame(state);
+    };
     const events = [
       SOCKET_EVENTS.STATE_SNAPSHOT,
       SOCKET_EVENTS.GAME_STARTED,
@@ -58,7 +86,9 @@ export function RoomMonitorPage() {
     ];
     events.forEach((event) => socket.on(event, updateState));
     const refreshAfterTransition = () => {
-      gameApi.state(sessionId).then(({ data }) => setGame(data.data)).catch(() => {});
+      gameApi.state(sessionId).then(({ data }) => {
+        if (Number(data.data?.id) === Number(sessionId)) setGame(data.data);
+      }).catch(() => {});
     };
     socket.on(SOCKET_EVENTS.GAME_STARTED, refreshAfterTransition);
     socket.on(SOCKET_EVENTS.GAME_FINISHED, refreshAfterTransition);
@@ -92,6 +122,16 @@ export function RoomMonitorPage() {
     if (!selectedGroupId && nextGroups[0]) setSelectedGroupId(String(nextGroups[0].id));
   };
 
+  const refreshCurrentTurn = async (groupId = selectedGroupId) => {
+    if (!sessionId || !groupId || !["PLAYING", "PAUSED"].includes(game?.status)) return;
+    try {
+      const { data } = await gameApi.currentTurn(sessionId, groupId);
+      setCurrentTurn(data.data);
+    } catch {
+      setCurrentTurn(null);
+    }
+  };
+
   const handleAction = async (action) => {
     setError("");
     try {
@@ -108,75 +148,23 @@ export function RoomMonitorPage() {
         await gameApi.completeTurn(sessionId, selectedGroupId, currentTurn.id);
       }
       await refreshMonitor();
+      await refreshCurrentTurn();
     } catch (requestError) {
       setError(requestError.response?.data?.message ?? requestError.message ?? "Aksi game gagal.");
     }
   };
 
-  const addParticipant = async (event) => {
-    event.preventDefault();
-    setAddingParticipant(true);
-    setError("");
-    try {
-      await gameApi.addTeacherParticipant(sessionId, {
-        fullName: participantName.trim(),
-        content: problemContent.trim(),
-      });
-      setParticipantName("");
-      setProblemContent("");
-      const { data } = await gameApi.state(sessionId);
-      setGame(data.data);
-    } catch (requestError) {
-      setError(requestError.response?.data?.message ?? "Data murid belum dapat ditambahkan.");
-    } finally {
-      setAddingParticipant(false);
-    }
-  };
-
-  const previewParticipantFile = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    setError("");
-    try {
-      const { data } = await gameApi.previewTeacherImport(sessionId, file);
-      setParticipantPreview(data.data);
-    } catch (requestError) {
-      setError(requestError.response?.data?.message ?? "File belum dapat dipreview.");
-    } finally {
-      event.target.value = "";
-    }
-  };
-
-  const confirmParticipantImport = async () => {
-    if (!participantPreview?.valid) return;
-    setImporting(true);
-    try {
-      await gameApi.importTeacherParticipants(sessionId, participantPreview.rows.map(({ fullName, content }) => ({ fullName, content })));
-      setParticipantPreview(null);
-      await refreshMonitor();
-    } catch (requestError) {
-      setError(requestError.response?.data?.message ?? "Data Excel belum dapat diimport.");
-    } finally {
-      setImporting(false);
-    }
-  };
-
-  const downloadParticipantTemplate = async () => {
-    try {
-      const { data } = await gameApi.teacherParticipantTemplate();
-      const url = URL.createObjectURL(data);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = "template-input-murid.xlsx";
-      anchor.click();
-      URL.revokeObjectURL(url);
-    } catch (requestError) {
-      setError(requestError.response?.data?.message ?? "Template belum dapat diunduh.");
-    }
-  };
-
   return (
     <section className="space-y-6" aria-labelledby="monitor-title">
+      {completionCountdown !== null && completionForSession === sessionId ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-6" role="dialog" aria-modal="true" aria-labelledby="game-complete-title">
+          <div className="w-full max-w-sm rounded-2xl border border-amber-300/60 bg-slate-900 p-8 text-center shadow-2xl">
+            <h2 className="text-2xl font-bold text-amber-200" id="game-complete-title">Game selesai</h2>
+            <p className="mt-3 text-sm text-slate-300">Anda akan diarahkan ke dashboard Guru.</p>
+            <p className="mt-6 text-6xl font-black text-amber-300" aria-live="assertive">{completionCountdown}</p>
+          </div>
+        </div>
+      ) : null}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-300">
@@ -185,6 +173,9 @@ export function RoomMonitorPage() {
           <h1 className="mt-3 text-3xl font-bold" id="monitor-title">
             Pantau permainan
           </h1>
+          <p className="mt-2 text-sm font-semibold text-amber-200">
+            Room {game?.roomCode ?? "-"}
+          </p>
         </div>
         <GameStatus status={game?.status ?? "CONNECTING"} />
       </div>
@@ -193,23 +184,30 @@ export function RoomMonitorPage() {
           {error}
         </p>
       ) : null}
-      {game?.status === "WAITING" && game?.inputMode === "TEACHER" ? (
-        <div className="space-y-4">
-          <form className="grid gap-3 rounded-2xl border border-slate-800 bg-slate-950/50 p-5 md:grid-cols-[1fr_2fr_auto]" onSubmit={addParticipant}>
-            <input className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-3" placeholder="Nama murid" value={participantName} onChange={(event) => setParticipantName(event.target.value)} required />
-            <input className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-3" placeholder="Permasalahan" value={problemContent} onChange={(event) => setProblemContent(event.target.value)} required />
-            <button className="rounded-lg bg-amber-300 px-4 py-3 font-bold text-slate-950 disabled:opacity-60" type="submit" disabled={addingParticipant}>{addingParticipant ? "Menambah..." : "Tambah data"}</button>
-          </form>
-          <div className="flex flex-wrap gap-3">
-            <button className="rounded-lg border border-slate-600 px-4 py-3 text-sm font-bold text-slate-200" type="button" onClick={downloadParticipantTemplate}>Download template</button>
-            <label className="cursor-pointer rounded-lg border border-amber-300 px-4 py-3 text-sm font-bold text-amber-200">Import Excel<input className="hidden" type="file" accept=".xlsx,.xls" onChange={previewParticipantFile} disabled={importing} /></label>
-          </div>
+      {groups.length && teacherInputMode ? (
+        <div className="rounded-2xl border border-amber-300/40 bg-slate-950/50 p-5">
+          <p className="text-lg font-semibold text-amber-200">
+            Sisa {Math.max(Number(groups[0].totalTurnCount ?? 0) - Number(groups[0].completedTurnCount ?? 0), 0)} turn
+          </p>
         </div>
       ) : null}
-      {groups.length && game?.gameMode === "GROUPS" ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
-          <label className="text-sm font-medium">Kelompok aktif<select className="ml-3 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2" value={selectedGroupId} onChange={(event) => setSelectedGroupId(event.target.value)}>{groups.map((group) => <option value={group.id} key={group.id}>Kelompok {group.groupNumber} ({group.status})</option>)}</select></label>
-          <p className="mt-3 text-sm text-slate-400">Peserta: {groups.find((group) => String(group.id) === String(selectedGroupId))?.members?.length ?? 0}</p>
+      {groups.length && !teacherInputMode ? (
+        <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
+          <div>
+            <p className="text-sm font-medium">Semua kelompok</p>
+            <p className="mt-1 text-sm text-slate-400">Pilih kartu kelompok untuk mengatur turn yang sedang dipantau.</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {groups.map((group) => (
+              <button className={`rounded-xl border p-4 text-left ${String(group.id) === String(selectedGroupId) ? "border-amber-300" : "border-slate-700"}`} type="button" key={group.id} onClick={() => setSelectedGroupId(String(group.id))}>
+                <div className="flex items-center justify-between gap-3"><span className="font-semibold">Kelompok {group.groupNumber}</span><span className="text-xs text-slate-400">{group.status}</span></div>
+                <p className="mt-2 text-sm text-slate-400">Turn {Number(group.currentTurnNumber ?? group.completedTurnCount ?? 0)} dari {Number(group.totalTurnCount ?? 0)}</p>
+                <p className="mt-1 text-sm text-amber-200">Sisa {Math.max(Number(group.totalTurnCount ?? 0) - Number(group.completedTurnCount ?? 0), 0)} turn</p>
+                <p className="mt-1 text-sm text-slate-400">{group.members?.length ?? 0} peserta</p>
+                <ul className="mt-3 space-y-1 text-sm text-slate-300">{(group.members ?? []).map((member) => <li key={member.id}>{member.fullName}</li>)}</ul>
+              </button>
+            ))}
+          </div>
         </div>
       ) : null}
       <GameBoard
@@ -224,13 +222,6 @@ export function RoomMonitorPage() {
           disabled={!game}
         />
       </div>
-      {participantPreview ? (
-        <div className="space-y-4 rounded-2xl border border-amber-300/40 bg-slate-950/50 p-5">
-          <h2 className="text-lg font-semibold">Preview data murid</h2>
-          <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b border-slate-800 text-slate-400"><tr><th className="px-3 py-2">Baris</th><th className="px-3 py-2">Nama Lengkap</th><th className="px-3 py-2">Permasalahan</th><th className="px-3 py-2">Status</th></tr></thead><tbody>{participantPreview.rows.map((row) => <tr className="border-b border-slate-800/70" key={row.row}><td className="px-3 py-2">{row.row}</td><td className="px-3 py-2">{row.fullName}</td><td className="px-3 py-2">{row.content}</td><td className="px-3 py-2 text-emerald-300">Valid</td></tr>)}{participantPreview.errors.map((item) => <tr key={`error-${item.row}`}><td className="px-3 py-2">{item.row}</td><td colSpan="2" className="px-3 py-2">{item.message}</td><td className="px-3 py-2 text-rose-300">Error</td></tr>)}</tbody></table></div>
-          <div className="flex gap-3"><button className="rounded-lg border border-slate-600 px-4 py-2 text-sm" type="button" onClick={() => setParticipantPreview(null)}>Batal</button><button className="rounded-lg bg-amber-300 px-4 py-2 text-sm font-bold text-slate-950 disabled:opacity-50" type="button" disabled={!participantPreview.valid || importing} onClick={confirmParticipantImport}>Konfirmasi import</button></div>
-        </div>
-      ) : null}
     </section>
   );
 }

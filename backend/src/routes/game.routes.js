@@ -15,6 +15,11 @@ import { teacherParticipantImportSchema } from "../validators/game.validator.js"
 const router = Router();
 router.use(requireAuth, allowRoles(ROLES.TEACHER));
 router.get("/teacher-input-template", controller.downloadTeacherParticipantTemplate);
+router.post(
+  "/teacher-input-preview",
+  controller.uploadParticipantFile.single("file"),
+  controller.previewTeacherImport,
+);
 router.get("/:sessionId", controller.get);
 router.patch(
   "/:sessionId",
