@@ -32,6 +32,16 @@ try {
   } catch (error) {
     if (error.code !== "ER_DUP_FIELDNAME") throw error;
   }
+  await connection.query(
+    "ALTER TABLE game_sessions MODIFY COLUMN room_id BIGINT UNSIGNED NULL",
+  );
+  try {
+    await connection.query(
+      "ALTER TABLE game_sessions ADD COLUMN class_id BIGINT UNSIGNED NULL AFTER room_id",
+    );
+  } catch (error) {
+    if (error.code !== "ER_DUP_FIELDNAME") throw error;
+  }
   const [constraints] = await connection.query(
     "SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema = ? AND table_name = 'users' AND constraint_name = 'chk_user_role_school'",
     [env.database.name],

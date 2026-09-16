@@ -7,7 +7,8 @@ export async function getSuperAdminDashboard() {
    (SELECT COUNT(*) FROM schools WHERE status = 'ACTIVE') AS activeSchools,
    (SELECT COUNT(*) FROM users WHERE role = 'ADMIN' AND status = 'ACTIVE') AS totalAdmins,
    (SELECT COUNT(*) FROM users WHERE role = 'TEACHER' AND status = 'ACTIVE') AS totalTeachers,
-   (SELECT COUNT(*) FROM classes WHERE status = 'ACTIVE') AS totalClasses
+  (SELECT COUNT(*) FROM classes WHERE status = 'ACTIVE') AS totalClasses,
+  (SELECT COUNT(*) FROM rooms WHERE status = 'CLOSED') AS totalFinishedGames
  `);
   return totals;
 }
@@ -22,9 +23,10 @@ export async function getAdminDashboard(schoolId) {
   SELECT
    (SELECT COUNT(*) FROM classes WHERE school_id = ? AND status = 'ACTIVE') AS classCount,
    (SELECT COUNT(*) FROM users WHERE school_id = ? AND role = 'TEACHER' AND status = 'ACTIVE') AS teacherCount,
-   (SELECT COUNT(*) FROM rooms r JOIN classes c ON c.id = r.class_id WHERE c.school_id = ? AND r.status = 'OPEN') AS activeRoomCount
+  (SELECT COUNT(*) FROM rooms r JOIN classes c ON c.id = r.class_id WHERE c.school_id = ? AND r.status = 'OPEN') AS activeRoomCount,
+  (SELECT COUNT(*) FROM rooms r JOIN classes c ON c.id = r.class_id WHERE c.school_id = ? AND r.status = 'CLOSED') AS completedRoomCount
  `,
-    [schoolId, schoolId, schoolId],
+   [schoolId, schoolId, schoolId, schoolId],
   );
   const [recentGames] = await pool.execute(
     `
@@ -57,5 +59,9 @@ export async function getTeacherDashboard(teacherId, schoolId) {
     "SELECT id, room_id AS roomId, paused_at AS pausedAt FROM game_sessions WHERE created_by = ? AND status = 'PAUSED' ORDER BY paused_at DESC",
     [teacherId],
   );
-  return { classes, activeRooms, pausedGames };
+  const [[completedRooms]] = await pool.execute(
+    "SELECT COUNT(*) AS completedRoomCount FROM rooms r JOIN classes c ON c.id = r.class_id WHERE r.created_by = ? AND c.school_id = ? AND r.status = 'CLOSED'",
+    [teacherId, schoolId],
+  );
+  return { classes, activeRooms, pausedGames, ...completedRooms };
 }

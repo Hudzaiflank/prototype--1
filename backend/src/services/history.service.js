@@ -2,9 +2,9 @@ import { AppError } from "../utils/errors.js";
 import * as repository from "../repositories/history.repository.js";
 
 export async function getSessionHistory(sessionId, teacherId) {
-  const rows = await repository.getSessionHistory(sessionId, teacherId);
-  if (!rows.length)
+  if (!(await repository.teacherOwnsSession(sessionId, teacherId)))
     throw new AppError("Game history not found", "HISTORY_NOT_FOUND", 404);
+  const rows = await repository.getSessionHistory(sessionId, teacherId);
   return rows;
 }
 

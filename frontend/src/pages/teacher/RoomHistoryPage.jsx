@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { historyApi } from "../../services/api/historyApi";
+import { formatDateTime } from "../../utils/formatters";
 
 export function RoomHistoryPage() {
   const [history, setHistory] = useState([]);
@@ -37,7 +38,7 @@ export function RoomHistoryPage() {
               <p className="mt-1 text-xs text-slate-400">{item.status}</p>
             </div>
             <div className="text-right">
-              <span className="block text-xs text-slate-400">{item.finishedAt ?? item.createdAt ?? "-"}</span>
+              <span className="block text-xs text-slate-400">{formatDateTime(item.finishedAt ?? item.createdAt)}</span>
               <Link className="mt-2 block text-xs text-amber-200" to={`/teacher/history/${item.sessionId}`}>Lihat detail</Link>
             </div>
           </div>

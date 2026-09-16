@@ -28,6 +28,12 @@ export async function createGameSession(data) {
   if (!result) throw new AppError("Open room not found", "ROOM_NOT_FOUND", 404);
   return result;
 }
+export async function createTeacherGameSession(data) {
+  const result = await repository.createTeacherGameSession(data);
+  if (!result)
+    throw new AppError("Class is not assigned to this teacher", "CLASS_NOT_ASSIGNED", 403);
+  return result;
+}
 export async function joinRoom(code) {
   const room = await repository.findRoomByCode(code.toUpperCase());
   if (!room) throw new AppError("Room not found", "ROOM_NOT_FOUND", 404);
@@ -38,6 +44,12 @@ export async function joinRoom(code) {
       "Game session is not configured",
       "GAME_SESSION_NOT_FOUND",
       409,
+    );
+  if (room.inputMode === "TEACHER")
+    throw new AppError(
+      "Room ini hanya dapat digunakan oleh Guru",
+      "STUDENT_ACCESS_DISABLED",
+      403,
     );
   return room;
 }
@@ -98,10 +110,14 @@ export function previewTeacherParticipants(buffer) {
   for (const [index, row] of rows.entries()) {
     const fullName = String(row["Nama Lengkap"] ?? "").trim();
     const content = String(row["Permasalahan"] ?? "").trim();
-    if (!fullName || !content) {
+    if (!fullName || !content || content.length > 500) {
       errors.push({
         row: index + 2,
-        message: !fullName ? "Nama Lengkap wajib diisi" : "Permasalahan wajib diisi",
+        message: !fullName
+          ? "Nama Lengkap wajib diisi"
+          : !content
+            ? "Permasalahan wajib diisi"
+            : "Permasalahan maksimal 500 karakter",
       });
     } else preview.push({ row: index + 2, fullName, content });
   }

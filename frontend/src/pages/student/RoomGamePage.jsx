@@ -19,8 +19,13 @@ export function RoomGamePage() {
       participantSessionId,
       gameSessionId: room.gameSessionId,
     });
-    const updateState = (state) =>
-      setGame((current) => ({ ...current, ...state }));
+    const updateState = (state) => {
+      if (state.status === "WAITING") {
+        navigate("../waiting", { replace: true });
+        return;
+      }
+      setGame(state);
+    };
     const handleCardsRevealed = (turn) =>
       setGame((current) => ({
         ...current,

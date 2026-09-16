@@ -23,14 +23,14 @@ export const turnActionSchema = z.object({
 export const teacherProblemSchema = z.object({
   body: z.object({
     participantId: z.coerce.number().int().positive(),
-    content: z.string().trim().min(1).max(5000),
+    content: z.string().trim().min(1).max(500),
   }),
 });
 
 export const teacherParticipantSchema = z.object({
   body: z.object({
     fullName: z.string().trim().min(1).max(150),
-    content: z.string().trim().max(5000).optional(),
+    content: z.string().trim().max(500).optional(),
   }),
 });
 
@@ -39,7 +39,7 @@ export const teacherParticipantImportSchema = z.object({
     rows: z.array(
       z.object({
         fullName: z.string().trim().min(1).max(150),
-        content: z.string().trim().min(1).max(5000),
+        content: z.string().trim().min(1).max(500),
       }),
     ).min(1).max(500),
   }),

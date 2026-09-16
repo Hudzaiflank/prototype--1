@@ -92,10 +92,46 @@ export async function createGameSession({
     : null;
 }
 
+export async function createTeacherGameSession({
+  classId,
+  teacherId,
+  topicId,
+  inputMode,
+  gameMode,
+  problemDisplayLimit,
+  groupCount,
+  expiresAt,
+}) {
+  const [result] = await pool.execute(
+    `INSERT INTO game_sessions (room_id, class_id, created_by, topic_id, input_mode, game_mode, problem_display_limit, group_count, expires_at)
+     SELECT NULL, c.id, ?, ?, ?, ?, ?, ?, ? FROM classes c
+     JOIN teacher_classes tc ON tc.class_id = c.id AND tc.teacher_id = ? AND tc.unassigned_at IS NULL
+     LEFT JOIN topics t ON t.id = ?
+     WHERE c.id = ? AND (? IS NULL OR t.school_id = c.school_id)`,
+    [
+      teacherId,
+      topicId ?? null,
+      inputMode,
+      gameMode,
+      problemDisplayLimit,
+      groupCount ?? null,
+      expiresAt,
+      teacherId,
+      topicId ?? null,
+      classId,
+      topicId ?? null,
+    ],
+  );
+  return result.affectedRows
+    ? { id: result.insertId, classId, roomId: null, status: "WAITING" }
+    : null;
+}
+
 export async function findRoomByCode(code) {
   const [rows] = await pool.execute(
-    `SELECT r.id AS roomId, r.code, r.status AS roomStatus, gs.id AS gameSessionId
-		 FROM rooms r LEFT JOIN game_sessions gs ON gs.room_id = r.id AND gs.status IN ('WAITING', 'PLAYING', 'PAUSED')
+      `SELECT r.id AS roomId, r.code, r.status AS roomStatus, gs.id AS gameSessionId,
+       gs.input_mode AS inputMode
+     FROM rooms r LEFT JOIN game_sessions gs ON gs.room_id = r.id AND gs.status IN ('WAITING', 'PLAYING', 'PAUSED')
 		 WHERE r.code = ? ORDER BY gs.created_at DESC LIMIT 1`,
     [code],
   );

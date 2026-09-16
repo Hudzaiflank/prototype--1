@@ -4,6 +4,7 @@ import { SOCKET_EVENTS } from "../constants/socketEvents.js";
 import { toPublicGameEvent } from "../utils/gameEvent.js";
 import * as roomService from "../services/room.service.js";
 import multer from "multer";
+import XLSX from "xlsx";
 
 export const uploadParticipantFile = multer({
   storage: multer.memoryStorage(),
@@ -146,6 +147,12 @@ const turnAction = (handler, event) => async (request, response, next) => {
         request.params.groupId,
         SOCKET_EVENTS.TURN_STARTED,
         data.nextTurn,
+      );
+    if (event === SOCKET_EVENTS.TURN_COMPLETED && data.sessionFinished)
+      emitGameEvent(
+        request.params.sessionId,
+        SOCKET_EVENTS.GAME_FINISHED,
+        toPublicGameEvent({ status: "FINISHED" }),
       );
   } catch (error) {
     next(error);

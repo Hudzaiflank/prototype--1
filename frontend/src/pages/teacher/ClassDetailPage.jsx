@@ -56,7 +56,9 @@ export function ClassDetailPage() {
       const { data } = await classApi.detailAssigned(classId);
       setClassData(data.data);
     } catch (requestError) {
-      setError(requestError.response?.data?.message ?? "Room belum dapat ditutup.");
+      setError(
+        requestError.response?.data?.message ?? "Room belum dapat ditutup.",
+      );
     } finally {
       setClosing(false);
     }
@@ -79,14 +81,40 @@ export function ClassDetailPage() {
         </p>
         {classData?.currentRoom ? (
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <span className="rounded-lg border border-amber-300 px-4 py-3 text-sm font-bold text-amber-200">Room: {classData.currentRoom.code}</span>
-            {roomQr ? <img className="h-28 w-28 rounded-lg bg-white p-2" src={roomQr} alt={`QR code room ${classData.currentRoom.code}`} /> : null}
+            <span className="rounded-lg border border-amber-300 px-4 py-3 text-sm font-bold text-amber-200">
+              Room: {classData.currentRoom.code}
+            </span>
+            {roomQr ? (
+              <img
+                className="h-28 w-28 rounded-lg bg-white p-2"
+                src={roomQr}
+                alt={`QR code room ${classData.currentRoom.code}`}
+              />
+            ) : null}
             {Number(classData.currentRoom.createdBy) === Number(user?.id) ? (
-              <button className="rounded-lg border border-rose-300 px-4 py-3 text-sm font-bold text-rose-200 disabled:opacity-60" type="button" onClick={closeRoom} disabled={closing}>{closing ? "Menutup room..." : "Tutup room"}</button>
-            ) : <span className="text-sm text-slate-400">Room dibuat oleh Guru lain</span>}
+              <button
+                className="rounded-lg border border-rose-300 px-4 py-3 text-sm font-bold text-rose-200 disabled:opacity-60"
+                type="button"
+                onClick={closeRoom}
+                disabled={closing}
+              >
+                {closing ? "Menutup room..." : "Tutup room"}
+              </button>
+            ) : (
+              <span className="text-sm text-slate-400">
+                Room dibuat oleh Guru lain
+              </span>
+            )}
           </div>
         ) : (
-          <button className="mt-6 rounded-lg bg-amber-300 px-4 py-3 text-sm font-bold text-slate-950 disabled:opacity-60" type="button" onClick={openRoom} disabled={opening}>{opening ? "Membuka room..." : "Buka room baru"}</button>
+          <button
+            className="mt-6 rounded-lg bg-amber-300 px-4 py-3 text-sm font-bold text-slate-950 disabled:opacity-60"
+            type="button"
+            onClick={openRoom}
+            disabled={opening}
+          >
+            {opening ? "Membuka room..." : "Buka room baru"}
+          </button>
         )}
       </div>
     </section>

@@ -36,7 +36,7 @@ export function DashboardPage() {
           {error}
         </p>
       ) : null}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Metric label="Kelas" value={dashboard?.classes?.length ?? "-"} />
         <Metric
           label="Room aktif"
@@ -45,6 +45,10 @@ export function DashboardPage() {
         <Metric
           label="Game dijeda"
           value={dashboard?.pausedGames?.length ?? "-"}
+        />
+        <Metric
+          label="Room selesai"
+          value={dashboard?.completedRoomCount ?? "-"}
         />
       </div>
       <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
