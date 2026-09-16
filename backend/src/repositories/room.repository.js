@@ -159,7 +159,7 @@ export async function registerParticipant({
         "UPDATE game_sessions SET state_version = state_version + 1 WHERE id = ?",
         [gameSessionId],
       );
-      return existing[0];
+      return { ...existing[0], status: "CONNECTED" };
     }
     const [result] = await connection.execute(
       `INSERT INTO participants (game_session_id, session_uuid, full_name, status, connected_at)

@@ -73,6 +73,46 @@ export function RoomMonitorPage() {
       if (Number(state?.id) !== Number(sessionId)) return;
       setGame(state);
     };
+    const handleParticipantJoined = (participant) => {
+      setGame((current) => {
+        if (!current || Number(current.id) !== Number(sessionId))
+          return current;
+        const participants = current.participants ?? [];
+        const exists = participants.some(
+          (item) => Number(item.id) === Number(participant.participantId),
+        );
+        return {
+          ...current,
+          participants: exists
+            ? participants.map((item) =>
+                Number(item.id) === Number(participant.participantId)
+                  ? { ...item, status: participant.status }
+                  : item,
+              )
+            : [
+                ...participants,
+                {
+                  id: participant.participantId,
+                  fullName: participant.displayName,
+                  status: participant.status,
+                },
+              ],
+        };
+      });
+    };
+    const handleParticipantStatusChanged = ({ participantId, status }) => {
+      setGame((current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          participants: (current.participants ?? []).map((participant) =>
+            Number(participant.id) === Number(participantId)
+              ? { ...participant, status }
+              : participant,
+          ),
+        };
+      });
+    };
     const events = [
       SOCKET_EVENTS.STATE_SNAPSHOT,
       SOCKET_EVENTS.GAME_STARTED,
@@ -81,6 +121,11 @@ export function RoomMonitorPage() {
       SOCKET_EVENTS.GAME_FINISHED,
     ];
     events.forEach((event) => socket.on(event, updateState));
+    socket.on(SOCKET_EVENTS.PARTICIPANT_JOINED, handleParticipantJoined);
+    socket.on(
+      SOCKET_EVENTS.PARTICIPANT_STATUS_CHANGED,
+      handleParticipantStatusChanged,
+    );
     const refreshAfterTransition = () => {
       gameApi
         .state(sessionId)
@@ -97,6 +142,11 @@ export function RoomMonitorPage() {
     return () => {
       active = false;
       events.forEach((event) => socket.off(event, updateState));
+      socket.off(SOCKET_EVENTS.PARTICIPANT_JOINED, handleParticipantJoined);
+      socket.off(
+        SOCKET_EVENTS.PARTICIPANT_STATUS_CHANGED,
+        handleParticipantStatusChanged,
+      );
       socket.off(SOCKET_EVENTS.GAME_STARTED, refreshAfterTransition);
       socket.off(SOCKET_EVENTS.GAME_FINISHED, refreshAfterTransition);
       socketClient.disconnect();
@@ -211,6 +261,34 @@ export function RoomMonitorPage() {
         <p className="rounded-xl border border-rose-400/50 bg-rose-950/30 p-4 text-sm text-rose-200">
           {error}
         </p>
+      ) : null}
+      {game?.status === "WAITING" && !teacherInputMode ? (
+        <div className="rounded-2xl border border-amber-300/40 bg-slate-950/50 p-5">
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-lg font-semibold text-amber-200">
+              Peserta yang sudah bergabung
+            </p>
+            <span className="text-sm text-slate-400">
+              {game.participants?.length ?? 0} peserta
+            </span>
+          </div>
+          {game.participants?.length ? (
+            <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {game.participants.map((participant) => (
+                <li
+                  className="rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-3 text-sm text-slate-200"
+                  key={participant.id}
+                >
+                  {participant.fullName}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-4 text-sm text-slate-400">
+              Belum ada peserta yang bergabung.
+            </p>
+          )}
+        </div>
       ) : null}
       {groups.length && teacherInputMode ? (
         <div className="rounded-2xl border border-amber-300/40 bg-slate-950/50 p-5">
