@@ -4,7 +4,7 @@ const NAVIGATION = {
   SUPER_ADMIN: [
     { label: "Dashboard", to: "/dashboard" },
     { label: "Sekolah", to: "/schools" },
-    { label: "Request Logs", to: "/request-logs" },
+    { label: "Request Logs", to: "/request-logs", isAction: true },
   ],
   ADMIN: [
     { label: "Dashboard", to: "/admin/dashboard" },
@@ -32,11 +32,17 @@ export function Sidebar({ role, onNavigate }) {
             to={item.to}
             onClick={onNavigate}
             className={({ isActive }) =>
-              `block rounded-lg px-4 py-3 text-sm transition ${
-                isActive
-                  ? "bg-amber-300 font-semibold text-slate-950"
-                  : "text-slate-300 hover:bg-slate-900 hover:text-amber-200"
-              }`
+              item.isAction
+                ? `block rounded-lg border px-4 py-3 text-sm font-semibold transition ${
+                    isActive
+                      ? "border-amber-200 bg-amber-300 text-slate-950"
+                      : "border-amber-300/40 text-amber-200 hover:border-amber-200 hover:bg-amber-300 hover:text-slate-950"
+                  }`
+                : `block rounded-lg px-4 py-3 text-sm transition ${
+                    isActive
+                      ? "bg-amber-300 font-semibold text-slate-950"
+                      : "text-slate-300 hover:bg-slate-900 hover:text-amber-200"
+                  }`
             }
           >
             {item.label}
