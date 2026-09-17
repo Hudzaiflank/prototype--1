@@ -14,7 +14,7 @@ export const joinRoomSchema = z.object({
 export const participantSchema = z.object({
   body: z.object({
     sessionId: z.string().uuid(),
-    fullName: z.string().trim().min(1).max(150),
+    studentId: z.coerce.number().int().positive(),
   }),
 });
 export const problemSchema = z.object({

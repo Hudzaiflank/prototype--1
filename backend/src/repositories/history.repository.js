@@ -2,7 +2,8 @@ import { pool } from "../config/database.js";
 
 const historySelect = `
 	SELECT a.id AS assignmentId, a.sequence_number AS sequenceNumber, a.status AS assignmentStatus,
-		p.full_name AS participantName, p.id AS participantId,
+    p.full_name AS participantName, p.id AS participantId,
+    ap.full_name AS problemAuthorName, ast.nisn AS problemAuthorNisn,
 		pr.content AS problemContent, pr.participant_id AS problemAuthorId,
 		g.id AS groupId, g.group_number AS groupNumber,
 		gt.id AS turnId, gt.turn_number AS turnNumber, gt.status AS turnStatus,
@@ -16,6 +17,8 @@ export async function getSessionHistory(sessionId, teacherId) {
 		 FROM assignments a JOIN game_sessions gs ON gs.id = a.game_session_id
 		 JOIN participants p ON p.id = a.participant_id
 		 JOIN problems pr ON pr.id = a.problem_id
+       LEFT JOIN participants ap ON ap.id = pr.participant_id
+       LEFT JOIN students ast ON ast.id = ap.student_id
 		 LEFT JOIN \`groups\` g ON g.id = a.group_id
 		 LEFT JOIN game_turns gt ON gt.assignment_id = a.id
 		 WHERE a.game_session_id = ? AND gs.created_by = ? ORDER BY a.sequence_number`,

@@ -5,7 +5,7 @@ import { schoolApi } from "../../services/api/schoolApi";
 export function SchoolFormPage() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
-  const [domain, setDomain] = useState("");
+  const [level, setLevel] = useState("SMA");
   const [credential, setCredential] = useState(null);
   const [error, setError] = useState("");
   const submit = async (event) => {
@@ -14,7 +14,7 @@ export function SchoolFormPage() {
     try {
       const { data } = await schoolApi.create({
         name: name.trim(),
-        domain: domain.trim(),
+        level,
       });
       setCredential(data.data.admin);
     } catch (requestError) {
@@ -50,14 +50,17 @@ export function SchoolFormPage() {
           />
         </label>
         <label className="block text-sm font-medium">
-          Domain sekolah
-          <input
+          Jenjang sekolah
+          <select
             className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-3"
-            placeholder="sekolah.sch.id"
-            value={domain}
-            onChange={(event) => setDomain(event.target.value)}
+            value={level}
+            onChange={(event) => setLevel(event.target.value)}
             required
-          />
+          >
+            <option value="SMP">SMP</option>
+            <option value="SMA">SMA</option>
+            <option value="SMK">SMK</option>
+          </select>
         </label>
         {error ? <p className="text-sm text-rose-300">{error}</p> : null}
         <button

@@ -12,6 +12,7 @@
     "test:api:socket": "node scripts/socket-api-test-runner.js",
     "db:migrate": "node src/scripts/migrate.js",
     "db:seed": "node src/scripts/seed.js",
+    "db:reset-operational": "node src/scripts/reset-operational-data.js",
     "db:cleanup": "node src/scripts/cleanup-retention.js"
   },
   "dependencies": {

@@ -1,20 +1,32 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { roomApi } from "../../services/api/roomApi";
 import {
-  getStudentName,
   getStudentRoom,
   setParticipantSession,
-  setStudentName,
 } from "../../utils/storage";
 
 export function RoomInputPage() {
   const navigate = useNavigate();
   const room = getStudentRoom();
-  const [fullName, setFullName] = useState(getStudentName() ?? "");
+  const [students, setStudents] = useState([]);
+  const [studentId, setStudentId] = useState("");
+  const [studentSearch, setStudentSearch] = useState("");
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (room?.gameSessionId)
+      roomApi.students(room.gameSessionId).then(({ data }) => setStudents(data.data ?? []));
+  }, [room?.gameSessionId]);
+
+  const filteredStudents = students
+    .filter((student) => {
+      const search = studentSearch.trim().toLowerCase();
+      return !search || `${student.fullName} ${student.nisn}`.toLowerCase().includes(search);
+    })
+    .slice(0, 20);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -28,14 +40,13 @@ export function RoomInputPage() {
       const participantSessionId = crypto.randomUUID();
       await roomApi.registerParticipant(room.gameSessionId, {
         sessionId: participantSessionId,
-        fullName: fullName.trim(),
+        studentId: Number(studentId),
       });
       await roomApi.submitProblem(room.gameSessionId, {
         participantSessionId,
         content: content.trim(),
       });
       setParticipantSession(participantSessionId);
-      setStudentName(fullName.trim());
       navigate("../waiting", { replace: true });
     } catch (requestError) {
       setError(
@@ -61,19 +72,32 @@ export function RoomInputPage() {
           </p>
         ) : null}
         <p className="mt-4 font-[Lexend] text-sm leading-6 text-[#cbb8e0]">
-          Nama kamu akan menjadi salah satu kartu permainan. Tulis satu hal yang
+          Pilih nama kamu dari daftar kelas. Tulis satu hal yang
           ingin dibagikan dengan aman.
         </p>
       </div>
       <label className="block font-[Lexend] text-sm font-semibold">
-        Nama panggilan
+        Nama siswa
         <input
           className="mt-2 w-full rounded-xl border border-[#4f8cf0] bg-[#0a1f5c]/50 px-4 py-3 text-[#fdf6e3] outline-none focus:border-[#ffd23f]"
-          value={fullName}
-          onChange={(event) => setFullName(event.target.value)}
-          maxLength={150}
-          required
+          value={studentSearch}
+          onChange={(event) => setStudentSearch(event.target.value)}
+          placeholder="Cari nama atau NISN"
+          autoComplete="off"
         />
+        <select
+          className="mt-2 w-full rounded-xl border border-[#4f8cf0] bg-[#0a1f5c]/50 px-4 py-3 text-[#fdf6e3] outline-none focus:border-[#ffd23f]"
+          value={studentId}
+          onChange={(event) => setStudentId(event.target.value)}
+          required
+        >
+          <option value="">Pilih nama</option>
+          {filteredStudents.map((student) => (
+            <option key={student.studentId} value={student.studentId}>
+              {student.fullName} - {student.nisn}
+            </option>
+          ))}
+        </select>
       </label>
       <label className="block font-[Lexend] text-sm font-semibold">
         Hal yang ingin dibagikan

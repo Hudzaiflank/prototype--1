@@ -43,6 +43,7 @@ export function HistoryDetailPage() {
               <th className="px-4 py-3">Turn</th>
               <th className="px-4 py-3">Kelompok</th>
               <th className="px-4 py-3">Peserta</th>
+              <th className="px-4 py-3">Diisi oleh</th>
               <th className="px-4 py-3">Permasalahan</th>
               <th className="px-4 py-3">Waktu</th>
               <th className="px-4 py-3">Status</th>
@@ -59,6 +60,7 @@ export function HistoryDetailPage() {
                 </td>
                 <td className="px-4 py-3">{row.groupNumber ?? "-"}</td>
                 <td className="px-4 py-3">{row.participantName}</td>
+                <td className="px-4 py-3">{row.problemAuthorName ?? "-"} {row.problemAuthorNisn ? `- ${row.problemAuthorNisn}` : ""}</td>
                 <td className="max-w-md px-4 py-3">{row.problemContent}</td>
                 <td className="whitespace-nowrap px-4 py-3">
                   {formatDateTime(

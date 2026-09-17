@@ -24,8 +24,8 @@ try {
 
   const schoolSlug = slugify(env.seed.sampleSchoolName);
   await connection.execute(
-    `INSERT INTO schools (name, slug, domain)
-     VALUES (?, ?, ?)
+    `INSERT INTO schools (name, level, slug, domain)
+     VALUES (?, 'SMA', ?, ?)
      ON DUPLICATE KEY UPDATE name = VALUES(name), status = 'ACTIVE'`,
     [env.seed.sampleSchoolName, schoolSlug, env.seed.sampleSchoolDomain],
   );

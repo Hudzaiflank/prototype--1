@@ -11,6 +11,7 @@ import publicRoutes from "./public.routes.js";
 import dashboardRoutes from "./dashboard.routes.js";
 import teacherClassRoutes from "./teacher-class.routes.js";
 import requestLogRoutes from "./request-log.routes.js";
+import studentRoutes from "./student.routes.js";
 
 export const router = Router();
 router.use("/auth", authRoutes);
@@ -25,3 +26,4 @@ router.use("/teacher", teacherClassRoutes);
 router.use("/public", publicRoutes);
 router.use(dashboardRoutes);
 router.use(requestLogRoutes);
+router.use(studentRoutes);

@@ -3,6 +3,7 @@ export const roomApi = {
   join: (roomCode) => apiClient.post("/public/rooms/join", { roomCode }),
   registerParticipant: (sessionId, payload) =>
     apiClient.post(`/public/game-sessions/${sessionId}/participants`, payload),
+  students: (sessionId) => apiClient.get(`/public/game-sessions/${sessionId}/students`),
   submitProblem: (sessionId, payload) =>
     apiClient.post(`/public/game-sessions/${sessionId}/problems`, payload),
   studentState: (sessionId, participantSessionId) =>
