@@ -18,3 +18,7 @@ export function emitTeacherGameEvent(gameSessionId, event, payload) {
 export function emitGroupEvent(groupId, event, payload) {
   socketServer?.of("/game").to(`group:${groupId}`).emit(event, payload);
 }
+
+export function emitRequestLog(payload) {
+  socketServer?.of("/monitor").emit("request-log", payload);
+}

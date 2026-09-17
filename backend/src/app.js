@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import { env } from "./config/env.js";
 import { router } from "./routes/index.js";
 import { errorMiddleware } from "./middleware/error.middleware.js";
+import { requestLogMiddleware } from "./middleware/request-log.middleware.js";
 
 export function createApp() {
   const app = express();
@@ -24,6 +25,7 @@ export function createApp() {
   );
   app.use(express.json());
   app.use(cookieParser());
+  app.use(requestLogMiddleware);
   app.get("/health", (_request, response) =>
     response.json({
       success: true,

@@ -4,6 +4,7 @@ const NAVIGATION = {
   SUPER_ADMIN: [
     { label: "Dashboard", to: "/dashboard" },
     { label: "Sekolah", to: "/schools" },
+    { label: "Request Logs", to: "/request-logs" },
   ],
   ADMIN: [
     { label: "Dashboard", to: "/admin/dashboard" },

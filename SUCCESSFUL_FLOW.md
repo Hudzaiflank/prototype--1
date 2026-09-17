@@ -49,7 +49,7 @@ Pastikan tersedia:
 ### 2.2 Backend
 
 ```powershell
-cd E:\Innovation-hub\prototype-1\backend
+Set-Location E:\Innovation-hub\prototype-1\backend
 npm install
 npm run db:migrate
 npm run db:seed
@@ -74,12 +74,24 @@ Expected response:
 }
 ```
 
+Buka PowerShell baru:
+
+```powershell
+cloudflared tunnel --url http://localhost:3000
+```
+
+Cek URL publik:
+
+```powershell
+Invoke-WebRequest -UseBasicParsing https://plan-doom-attach-upper.trycloudflare.com/health
+```
+
 ### 2.3 Frontend
 
 Buka terminal lain:
 
 ```powershell
-cd E:\Innovation-hub\prototype-1\frontend
+Set-Location E:\Innovation-hub\prototype-1\frontend
 npm install
 npm run dev
 ```

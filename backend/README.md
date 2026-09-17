@@ -58,7 +58,7 @@ Folder utama:
 - `src/services`: business logic and orchestrations
 - `src/repositories`: SQL query and row-lock logic
 - `src/routes`: route registration and role enforcement
-- `src/middleware`: auth, role, validation, rate limit, error handling
+- `src/middleware`: auth, role, validation, rate limit, request logging, error handling
 - `src/sockets`: socket authentication and game event handlers
 - `src/utils`: token, password, random, game state machine, public event sanitization
 - `database/migrations`: schema definition
@@ -191,6 +191,7 @@ Base path:
 - `GET /super-admin/dashboard`
 - `GET /admin/dashboard`
 - `GET /teacher/dashboard`
+- `GET /super-admin/request-logs` (SUPER_ADMIN only)
 
 ---
 
@@ -251,6 +252,57 @@ Beberapa event utama:
 - `turn-completed`
 - `game-finished`
 - `server-error`
+
+### Monitoring request realtime
+
+Namespace monitoring:
+
+```text
+/monitor
+```
+
+Namespace ini hanya menerima koneksi dengan access token milik user ber-role
+`SUPER_ADMIN`. Event yang dikirim ke client:
+
+- `request-log`
+
+Setiap request HTTP backend dicatat setelah response selesai. Data yang dicatat:
+
+- timestamp
+- IP client (`CF-Connecting-IP`, lalu fallback ke forwarded IP atau remote address)
+- user-agent
+- HTTP method
+- path dan query string
+- status code
+- durasi request dalam milidetik
+
+Request body, password, access token, cookie, dan header sensitif tidak dicatat.
+Log hanya disimpan di memory backend dalam ring buffer maksimal 500 entry. Log
+akan hilang ketika proses backend restart atau mati; fitur ini memang ditujukan
+untuk monitoring realtime, bukan histori permanen.
+
+Endpoint snapshot:
+
+```text
+GET /api/v1/super-admin/request-logs
+Authorization: Bearer <super-admin-access-token>
+```
+
+Frontend menyediakan halaman monitoring di:
+
+```text
+https://<frontend-domain>/request-logs
+```
+
+Halaman tersebut hanya tersedia untuk `SUPER_ADMIN` dan terhubung ke namespace
+`/monitor` melalui URL Socket.IO yang sama dengan namespace `/game`. Jika
+`VITE_SOCKET_URL` bernilai `https://<backend-domain>/game`, client monitoring
+akan otomatis menggunakan `https://<backend-domain>/monitor`. URL khusus dapat
+digunakan melalui `VITE_MONITOR_SOCKET_URL`.
+
+Cloudflare Tunnel harus meneruskan koneksi WebSocket ke backend. Pastikan
+hostname tunnel yang dipakai frontend dapat mengakses endpoint API dan Socket.IO
+di backend lokal.
 
 Socket auth dikelola di:
 

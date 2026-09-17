@@ -34,6 +34,7 @@ import { ClassDetailPage as AdminClassDetailPage } from "../pages/admin/ClassDet
 import { TeacherDetailPage as AdminTeacherDetailPage } from "../pages/admin/TeacherDetailPage";
 import { SchoolDetailPage } from "../pages/super-admin/SchoolDetailPage";
 import { SchoolFormPage } from "../pages/super-admin/SchoolFormPage";
+import { RequestLogsPage } from "../pages/super-admin/RequestLogsPage";
 import { getRoleHome } from "./roleHome";
 
 function HomeRedirect() {
@@ -65,6 +66,7 @@ export function AppRouter() {
               <Route path="/schools" element={<SchoolListPage />} />
               <Route path="/schools/new" element={<SchoolFormPage />} />
               <Route path="/schools/:schoolId" element={<SchoolDetailPage />} />
+              <Route path="/request-logs" element={<RequestLogsPage />} />
             </Route>
           </Route>
           <Route element={<RoleRoute roles={["ADMIN"]} />}>
