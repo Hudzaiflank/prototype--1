@@ -2,14 +2,15 @@ import { pool } from "../config/database.js";
 
 export async function createClass({
   schoolId,
+  academicYear,
   gradeLevel,
   major,
   classNumber,
 }) {
   const name = `${gradeLevel}-${major}-${classNumber}`;
   const [result] = await pool.execute(
-    "INSERT INTO classes (school_id, grade_level, major, class_number, name) VALUES (?, ?, ?, ?, ?)",
-    [schoolId, gradeLevel, major, classNumber, name],
+    "INSERT INTO classes (school_id, academic_year, grade_level, major, class_number, name) VALUES (?, ?, ?, ?, ?, ?)",
+    [schoolId, academicYear, gradeLevel, major, classNumber, name],
   );
   return findClass(result.insertId, schoolId);
 }
@@ -20,7 +21,7 @@ export async function listClasses(schoolId, teacherId = null) {
     : "";
   const values = teacherId ? [teacherId, schoolId] : [schoolId];
   const [rows] = await pool.execute(
-    `SELECT c.id, c.grade_level AS gradeLevel, c.major, c.class_number AS classNumber, c.name, c.status
+    `SELECT c.id, c.grade_level AS gradeLevel, c.major, c.class_number AS classNumber, c.academic_year AS academicYear, c.name, c.status
 		 FROM classes c ${assignment} WHERE c.school_id = ? ORDER BY c.name`,
     values,
   );
@@ -29,8 +30,8 @@ export async function listClasses(schoolId, teacherId = null) {
 
 export async function findClass(id, schoolId) {
   const [rows] = await pool.execute(
-    `SELECT id, school_id AS schoolId, grade_level AS gradeLevel, major,
-			class_number AS classNumber, name, status FROM classes WHERE id = ? AND school_id = ? LIMIT 1`,
+    `SELECT id, school_id AS schoolId, academic_year AS academicYear, grade_level AS gradeLevel, major,
+    class_number AS classNumber, name, status FROM classes WHERE id = ? AND school_id = ? LIMIT 1`,
     [id, schoolId],
   );
   return rows[0] ?? null;

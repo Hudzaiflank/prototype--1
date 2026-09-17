@@ -5,9 +5,9 @@ import { fileURLToPath } from "node:url";
 import { env } from "../config/env.js";
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
-const migrationPath = path.resolve(
+const migrationDirectory = path.resolve(
   currentDirectory,
-  "../../database/migrations/001_initial_schema.sql",
+  "../../database/migrations",
 );
 
 const connection = await mysql.createConnection({
@@ -23,8 +23,31 @@ try {
     `CREATE DATABASE IF NOT EXISTS \`${env.database.name}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
   );
   await connection.query(`USE \`${env.database.name}\``);
-  const migration = await fs.readFile(migrationPath, "utf8");
-  await connection.query(migration);
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      filename VARCHAR(255) PRIMARY KEY,
+      applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB
+  `);
+  const migrationFiles = (await fs.readdir(migrationDirectory))
+    .filter((file) => file.endsWith(".sql"))
+    .sort();
+  for (const filename of migrationFiles) {
+    const [applied] = await connection.query(
+      "SELECT filename FROM schema_migrations WHERE filename = ?",
+      [filename],
+    );
+    if (applied.length) continue;
+    const migration = await fs.readFile(
+      path.join(migrationDirectory, filename),
+      "utf8",
+    );
+    await connection.query(migration);
+    await connection.query(
+      "INSERT INTO schema_migrations (filename) VALUES (?)",
+      [filename],
+    );
+  }
   try {
     await connection.query(
       "ALTER TABLE game_sessions ADD COLUMN state_version INT UNSIGNED NOT NULL DEFAULT 0 AFTER status",

@@ -85,6 +85,17 @@ export async function registerParticipant(request, response, next) {
     next(error);
   }
 }
+
+export async function listStudents(request, response, next) {
+  try {
+    response.json({
+      success: true,
+      data: await service.listRoomStudents(request.params.sessionId),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 export async function submitProblem(request, response, next) {
   try {
     const data = await service.submitProblem({

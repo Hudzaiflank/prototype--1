@@ -24,7 +24,7 @@ const publicUser = (user) => ({
   fullName: user.full_name,
   email: user.email,
   school: user.school_id
-    ? { id: user.school_id, name: user.school_name }
+    ? { id: user.school_id, name: user.school_name, level: user.school_level }
     : null,
 });
 

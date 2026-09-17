@@ -1,7 +1,10 @@
 import { AppError } from "../utils/errors.js";
 import * as repository from "../repositories/class.repository.js";
+import * as studentService from "./student.service.js";
 
 export const createClass = (data) => repository.createClass(data);
+export const createClassWithStudents = (data) =>
+  studentService.createClassWithStudents(data);
 export const listClasses = (schoolId, teacherId) =>
   repository.listClasses(schoolId, teacherId);
 export async function getClass(id, schoolId) {

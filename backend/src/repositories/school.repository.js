@@ -5,8 +5,8 @@ export async function createSchoolWithAdmin({ school, admin }) {
   try {
     await connection.beginTransaction();
     const [schoolResult] = await connection.execute(
-      "INSERT INTO schools (name, slug, domain) VALUES (?, ?, ?)",
-      [school.name, school.slug, school.domain],
+      "INSERT INTO schools (name, level, slug, domain) VALUES (?, ?, ?, NULL)",
+      [school.name, school.level, school.slug],
     );
     await connection.execute(
       `INSERT INTO users (school_id, role, full_name, email, password_hash)
@@ -37,8 +37,8 @@ export async function listSchools({ offset, limit, search, status }) {
   const filters = [];
   const values = [];
   if (search) {
-    filters.push("(s.name LIKE ? OR s.domain LIKE ?)");
-    values.push(`%${search}%`, `%${search}%`);
+    filters.push("s.name LIKE ?");
+    values.push(`%${search}%`);
   }
   if (status) {
     filters.push("s.status = ?");

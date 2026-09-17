@@ -63,8 +63,8 @@ export async function createGameSession({
   expiresAt,
 }) {
   const [result] = await pool.execute(
-    `INSERT INTO game_sessions (room_id, created_by, topic_id, input_mode, game_mode, problem_display_limit, group_count, expires_at)
-     SELECT r.id, ?, ?, ?, ?, ?, ?, ? FROM rooms r JOIN classes c ON c.id = r.class_id
+    `INSERT INTO game_sessions (room_id, class_id, created_by, topic_id, input_mode, game_mode, problem_display_limit, group_count, expires_at)
+     SELECT r.id, c.id, ?, ?, ?, ?, ?, ?, ? FROM rooms r JOIN classes c ON c.id = r.class_id
      LEFT JOIN topics t ON t.id = ?
      WHERE r.id = ? AND r.created_by = ? AND r.status = 'OPEN'
        AND (? IS NULL OR t.school_id = c.school_id)
@@ -142,13 +142,13 @@ export async function findRoomByCode(code) {
 export async function registerParticipant({
   sessionId,
   gameSessionId,
-  fullName,
+  studentId,
 }) {
   const connection = await pool.getConnection();
   try {
     const [existing] = await connection.execute(
-      "SELECT id, session_uuid AS sessionId, full_name AS fullName, status FROM participants WHERE game_session_id = ? AND session_uuid = ?",
-      [gameSessionId, sessionId],
+      "SELECT id, session_uuid AS sessionId, full_name AS fullName, status FROM participants WHERE game_session_id = ? AND (session_uuid = ? OR student_id = ?)",
+      [gameSessionId, sessionId, studentId],
     );
     if (existing.length) {
       await connection.execute(
@@ -161,20 +161,39 @@ export async function registerParticipant({
       );
       return { ...existing[0], status: "CONNECTED" };
     }
+    const [students] = await connection.execute(
+      `SELECT s.id, s.full_name AS fullName FROM students s
+       JOIN class_enrollments e ON e.student_id = s.id AND e.status = 'ACTIVE'
+       JOIN game_sessions gs ON gs.class_id = e.class_id
+       WHERE s.id = ? AND gs.id = ? AND gs.status = 'WAITING' LIMIT 1 FOR UPDATE`,
+      [studentId, gameSessionId],
+    );
+    if (!students.length) return null;
     const [result] = await connection.execute(
-      `INSERT INTO participants (game_session_id, session_uuid, full_name, status, connected_at)
-			 SELECT id, ?, ?, 'CONNECTED', NOW() FROM game_sessions WHERE id = ? AND status = 'WAITING'`,
-      [sessionId, fullName, gameSessionId],
+      `INSERT INTO participants (game_session_id, student_id, session_uuid, full_name, status, connected_at)
+			 VALUES (?, ?, ?, ?, 'CONNECTED', NOW())`,
+      [gameSessionId, studentId, sessionId, students[0].fullName],
     );
     if (!result.affectedRows) return null;
     await connection.execute(
       "UPDATE game_sessions SET state_version = state_version + 1 WHERE id = ?",
       [gameSessionId],
     );
-    return { id: result.insertId, sessionId, fullName, status: "CONNECTED" };
+    return { id: result.insertId, sessionId, studentId, fullName: students[0].fullName, status: "CONNECTED" };
   } finally {
     connection.release();
   }
+}
+
+export async function listRoomStudents(gameSessionId) {
+  const [rows] = await pool.execute(
+    `SELECT DISTINCT s.id AS studentId, s.full_name AS fullName, s.nisn
+     FROM students s JOIN class_enrollments e ON e.student_id = s.id AND e.status = 'ACTIVE'
+     JOIN game_sessions gs ON gs.class_id = e.class_id
+     WHERE gs.id = ? ORDER BY s.full_name, s.nisn`,
+    [gameSessionId],
+  );
+  return rows;
 }
 
 export async function registerTeacherParticipant({

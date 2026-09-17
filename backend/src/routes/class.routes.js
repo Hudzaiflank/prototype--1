@@ -6,6 +6,7 @@ import { ROLES } from "../constants/roles.js";
 import * as controller from "../controllers/class.controller.js";
 import {
   createClassSchema,
+  schoolYearActionSchema,
   updateClassSchema,
 } from "../validators/class.validator.js";
 import { assignTeacherSchema } from "../validators/teacher.validator.js";
@@ -20,9 +21,21 @@ router.get("/", controller.list);
 router.post(
   "/",
   allowRoles(ROLES.ADMIN),
+  controller.uploadStudentFile.single("file"),
   validate(createClassSchema),
   controller.create,
 );
+router.post(
+  "/preview-students",
+  allowRoles(ROLES.ADMIN),
+  controller.uploadStudentFile.single("file"),
+  controller.previewStudents,
+);
+router.get("/student-template", allowRoles(ROLES.ADMIN), controller.downloadStudentTemplate);
+router.post("/promote", allowRoles(ROLES.ADMIN), validate(schoolYearActionSchema), controller.promoteSchool);
+router.post("/reset-level", allowRoles(ROLES.ADMIN), validate(schoolYearActionSchema), controller.resetLevel);
+router.get("/:classId/students", controller.listStudents);
+router.post("/:classId/students/reset", allowRoles(ROLES.ADMIN), controller.resetStudents);
 router.delete(
   "/:classId/teachers/:teacherId",
   allowRoles(ROLES.ADMIN),

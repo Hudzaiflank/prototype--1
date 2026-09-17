@@ -7,14 +7,16 @@ export function ClassDetailPage() {
   const { classId } = useParams();
   const [classData, setClassData] = useState(null);
   const [teachers, setTeachers] = useState([]);
+  const [students, setStudents] = useState([]);
   const [form, setForm] = useState(null);
   const [selectedTeacher, setSelectedTeacher] = useState("");
   const [error, setError] = useState("");
   const load = useCallback(() =>
-    Promise.all([classApi.detail(classId), teacherApi.list()])
-      .then(([classResponse, teacherResponse]) => {
+    Promise.all([classApi.detail(classId), classApi.students(classId), teacherApi.list()])
+      .then(([classResponse, studentsResponse, teacherResponse]) => {
         const nextClass = classResponse.data.data;
         setClassData(nextClass);
+        setStudents(studentsResponse.data.data ?? []);
         setForm({
           gradeLevel: nextClass.gradeLevel,
           major: nextClass.major,
@@ -64,6 +66,15 @@ export function ClassDetailPage() {
       setError(requestError.response?.data?.message ?? "Assignment belum dapat dihapus.");
     }
   };
+  const resetStudents = async () => {
+    if (!window.confirm("Hapus semua siswa dari kelas ini?")) return;
+    try {
+      await classApi.resetStudents(classId);
+      load();
+    } catch (requestError) {
+      setError(requestError.response?.data?.message ?? "Siswa belum dapat direset.");
+    }
+  };
   return (
     <section className="space-y-6" aria-labelledby="class-detail-title">
       <div>
@@ -94,6 +105,8 @@ export function ClassDetailPage() {
           ["Tingkat", classData?.gradeLevel],
           ["Jurusan", classData?.major],
           ["Nomor", classData?.classNumber],
+          ["Tahun ajaran", classData?.academicYear],
+          ["Total siswa", students.length],
           ["Status", classData?.status],
         ].map(([label, value]) => (
           <div
@@ -104,6 +117,15 @@ export function ClassDetailPage() {
             <p className="mt-2 font-semibold">{value ?? "-"}</p>
           </div>
         ))}
+      </div>
+      <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold">Siswa ({students.length})</h2>
+          <button className="rounded-lg border border-rose-300 px-3 py-2 text-sm text-rose-300" type="button" onClick={resetStudents}>Reset siswa</button>
+        </div>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {students.map((student) => <div className="rounded-lg border border-slate-800 p-3 text-sm" key={student.id}>{student.fullName} <span className="text-slate-400">- {student.nisn}</span></div>)}
+        </div>
       </div>
       <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
         <h2 className="text-lg font-semibold">Guru terkait</h2>

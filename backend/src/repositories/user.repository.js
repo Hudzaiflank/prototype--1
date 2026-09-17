@@ -2,7 +2,7 @@ import { pool } from "../config/database.js";
 
 const userColumns = `
 	u.id, u.school_id, u.role, u.full_name, u.email, u.password_hash,
-	u.status, u.last_login_at, s.name AS school_name, s.status AS school_status
+  u.status, u.last_login_at, s.name AS school_name, s.level AS school_level, s.status AS school_status
 `;
 
 export async function findUserByEmail(email) {

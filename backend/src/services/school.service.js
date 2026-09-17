@@ -19,11 +19,11 @@ const slugify = (value) =>
 
 const temporaryPassword = () => `School@${crypto.randomInt(100000, 999999)}`;
 
-export async function createSchool({ name, domain, actorUserId }) {
+export async function createSchool({ name, level, actorUserId }) {
   const slug = slugify(name);
   const password = temporaryPassword();
   const school = await createSchoolWithAdmin({
-    school: { name, slug, domain: domain.toLowerCase().trim() },
+    school: { name, level },
     admin: {
       actorUserId,
       email: `admin.${slug}@phillyogo.id`,

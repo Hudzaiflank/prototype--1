@@ -22,6 +22,10 @@ router.post(
   validate(participantSchema),
   controller.registerParticipant,
 );
+router.get(
+  "/game-sessions/:sessionId/students",
+  controller.listStudents,
+);
 router.post(
   "/game-sessions/:sessionId/problems",
   rateLimit({ limit: 30 }),

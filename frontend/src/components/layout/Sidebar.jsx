@@ -5,12 +5,14 @@ const NAVIGATION = {
     { label: "Dashboard", to: "/dashboard" },
     { label: "Sekolah", to: "/schools" },
     { label: "Request Logs", to: "/request-logs", isAction: true },
+    { label: "Tracking Siswa", to: "/students/tracking" },
   ],
   ADMIN: [
     { label: "Dashboard", to: "/admin/dashboard" },
     { label: "Kelas", to: "/admin/classes" },
     { label: "Guru", to: "/admin/teachers" },
     { label: "Topik", to: "/admin/problems" },
+    { label: "Tracking Siswa", to: "/admin/students/tracking" },
   ],
   TEACHER: [
     { label: "Dashboard", to: "/teacher/dashboard" },

@@ -193,6 +193,31 @@ Base path:
 - `GET /teacher/dashboard`
 - `GET /super-admin/request-logs` (SUPER_ADMIN only)
 
+### Student and class management
+
+- `POST /schools` accepts `name` and `level` (`SMP`, `SMA`, or `SMK`)
+- `POST /classes` requires multipart Excel field `file`, plus `gradeLevel`, `major`, `classNumber`, and `academicYear`
+- `POST /classes/preview-students` previews `Nama Lengkap` and `NISN` validation
+- `GET /classes/student-template` downloads the required student template
+- `GET /classes/:classId/students` lists active students in a class
+- `POST /classes/:classId/students/reset` releases all students from one class
+- `POST /classes/reset-level` releases all students from one grade and academic year
+- `POST /classes/promote` advances the whole school one grade and copies active teacher assignments
+- `GET /students` lists students visible to the current Admin/Super Admin
+- `GET /students/:studentId/history` returns the student's problem history across classes and schools
+
+Student Excel format:
+
+```text
+Nama Lengkap | NISN
+Ahmad Fauzan | 0012345678
+```
+
+NISN must contain exactly 10 digits and is globally unique. A student is
+identified by NISN, not by a free-text name. Existing game/participant data is
+removed by migration `002_student_enrollment_model.sql` as part of the revised
+student model.
+
 ---
 
 ## 7. Database model

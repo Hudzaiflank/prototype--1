@@ -1,0 +1,1 @@
+ALTER TABLE classes DROP INDEX uq_class_identity;

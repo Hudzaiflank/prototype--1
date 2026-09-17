@@ -67,6 +67,10 @@ export async function registerParticipant(data) {
     );
   return participant;
 }
+
+export async function listRoomStudents(gameSessionId) {
+  return repository.listRoomStudents(gameSessionId);
+}
 export async function submitProblem(data) {
   if (!(await repository.submitProblem(data)))
     throw new AppError(
