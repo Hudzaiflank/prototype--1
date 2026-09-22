@@ -20,7 +20,7 @@ export function RulesPage() {
         event.preventDefault();
         event.stopImmediatePropagation();
         sessionStorage.setItem(RULES_ACCEPTED_KEY, "true");
-        navigate("/join", { replace: true, state: { fromRules: true } });
+        navigate("/join", { state: { fromRules: true } });
       };
 
       startButton.addEventListener("click", handleStart, true);
