@@ -10,7 +10,10 @@ export async function openRoom({ classId, teacherId }) {
 			 WHERE c.id = ? AND tc.teacher_id = ? AND tc.unassigned_at IS NULL FOR UPDATE`,
       [classId, teacherId],
     );
-    if (!classes.length) return null;
+    if (!classes.length) {
+      await connection.rollback();
+      return null;
+    }
     const [active] = await connection.execute(
       "SELECT id FROM rooms WHERE class_id = ? AND status = 'OPEN' LIMIT 1 FOR UPDATE",
       [classId],
@@ -90,6 +93,88 @@ export async function createGameSession({
   return result.affectedRows
     ? { id: result.insertId, roomId, status: "WAITING" }
     : null;
+}
+
+export async function createRoomAndGameSession({
+  classId,
+  teacherId,
+  topicId,
+  inputMode,
+  gameMode,
+  problemDisplayLimit,
+  groupCount,
+  expiresAt,
+}) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const [classes] = await connection.execute(
+      `SELECT c.id FROM classes c JOIN teacher_classes tc ON tc.class_id = c.id
+       WHERE c.id = ? AND tc.teacher_id = ? AND tc.unassigned_at IS NULL FOR UPDATE`,
+      [classId, teacherId],
+    );
+    if (!classes.length) return null;
+    const [activeRooms] = await connection.execute(
+      "SELECT id FROM rooms WHERE class_id = ? AND status = 'OPEN' LIMIT 1 FOR UPDATE",
+      [classId],
+    );
+    if (activeRooms.length) {
+      await connection.rollback();
+      return { conflict: true };
+    }
+    let code;
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const candidate = generateRoomCode();
+      const [existing] = await connection.execute(
+        "SELECT id FROM rooms WHERE code = ?",
+        [candidate],
+      );
+      if (!existing.length) {
+        code = candidate;
+        break;
+      }
+    }
+    if (!code) throw new Error("Could not generate unique room code");
+    const [roomResult] = await connection.execute(
+      "INSERT INTO rooms (class_id, created_by, code, status, opened_at) VALUES (?, ?, ?, 'OPEN', NOW())",
+      [classId, teacherId, code],
+    );
+    const [sessionResult] = await connection.execute(
+      `INSERT INTO game_sessions (room_id, class_id, created_by, topic_id, input_mode, game_mode, problem_display_limit, group_count, expires_at)
+       SELECT r.id, c.id, ?, ?, ?, ?, ?, ?, ? FROM rooms r JOIN classes c ON c.id = r.class_id
+       LEFT JOIN topics t ON t.id = ?
+       WHERE r.id = ? AND (? IS NULL OR t.school_id = c.school_id)`,
+      [
+        teacherId,
+        topicId ?? null,
+        inputMode,
+        gameMode,
+        problemDisplayLimit,
+        groupCount ?? null,
+        expiresAt,
+        topicId ?? null,
+        roomResult.insertId,
+        topicId ?? null,
+      ],
+    );
+    if (!sessionResult.affectedRows) {
+      await connection.rollback();
+      return null;
+    }
+    await connection.commit();
+    return {
+      id: sessionResult.insertId,
+      roomId: roomResult.insertId,
+      classId,
+      roomCode: code,
+      status: "WAITING",
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 export async function createTeacherGameSession({
@@ -179,7 +264,13 @@ export async function registerParticipant({
       "UPDATE game_sessions SET state_version = state_version + 1 WHERE id = ?",
       [gameSessionId],
     );
-    return { id: result.insertId, sessionId, studentId, fullName: students[0].fullName, status: "CONNECTED" };
+    return {
+      id: result.insertId,
+      sessionId,
+      studentId,
+      fullName: students[0].fullName,
+      status: "CONNECTED",
+    };
   } finally {
     connection.release();
   }
