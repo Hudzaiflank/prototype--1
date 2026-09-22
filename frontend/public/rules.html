@@ -2188,7 +2188,7 @@
           href="javascript:void(0)"
           id="startBtn"
           class="start-btn is-disabled"
-          data-target="GANTI_DENGAN_LINK_GAME.html"
+          data-target="/join"
           aria-disabled="true"
           >MULAI PERMAINAN</a
         >
@@ -2247,12 +2247,7 @@
 
       startBtn.addEventListener("click", () => {
         if (startBtn.classList.contains("is-disabled")) return;
-        // TODO: ganti baris di bawah agar mengarah ke file game-mu,
-        // atau sesuaikan atribut data-target di HTML lalu aktifkan baris ini:
-        // window.location.href = startBtn.dataset.target;
-        alert(
-          "Tombol ini masih placeholder.\nHubungkan ke file game kamu di sini.",
-        );
+        window.location.href = startBtn.dataset.target;
       });
     </script>
   </body>

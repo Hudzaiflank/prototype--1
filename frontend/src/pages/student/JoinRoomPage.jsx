@@ -82,7 +82,7 @@ export function JoinRoomPage() {
       }
 
       setStudentRoom(room);
-      navigate(`/room/${normalizedCode}/input`);
+      navigate(`/room/${normalizedCode}/input`, { replace: true });
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ?? "Room tidak dapat ditemukan.",
