@@ -16,5 +16,7 @@ export const roomApi = {
     apiClient.post(`/rooms/${roomId}/game-sessions`, payload),
   createTeacherSession: (classId, payload) =>
     apiClient.post(`/classes/${classId}/teacher-game-sessions`, payload),
+  createClassSession: (classId, payload) =>
+    apiClient.post(`/classes/${classId}/game-sessions`, payload),
   close: (roomId) => apiClient.post(`/rooms/${roomId}/close`),
 };

@@ -5,7 +5,7 @@ import { gameApi } from "../../services/api/gameApi";
 import { topicApi } from "../../services/api/topicApi";
 
 export function RoomConfigurePage() {
-  const { roomId } = useParams();
+  const { classId, roomId } = useParams();
   const navigate = useNavigate();
   const [gameMode, setGameMode] = useState("GROUPS");
   const [groupCount, setGroupCount] = useState(2);
@@ -67,11 +67,14 @@ export function RoomConfigurePage() {
         problemDisplayLimit: 1,
         groupCount: gameMode === "GROUPS" ? Number(groupCount) : null,
       };
-      const { data } = await roomApi.createSession(roomId, payload);
+      const { data } = roomId
+        ? await roomApi.createSession(roomId, payload)
+        : await roomApi.createClassSession(classId, payload);
       const createdSessionId = String(data.data.id);
       if (inputMode === "STUDENT") {
+        const createdRoomId = data.data.roomId ?? roomId;
         navigate(
-          `/teacher/rooms/${roomId}/monitor?sessionId=${createdSessionId}`,
+          `/teacher/rooms/${createdRoomId}/monitor?sessionId=${createdSessionId}`,
         );
       } else {
         setSessionId(createdSessionId);
@@ -106,13 +109,21 @@ export function RoomConfigurePage() {
     if (!topicId) {
       throw new Error("Pilih topik sebelum mengimpor data.");
     }
-    const { data } = await roomApi.createSession(roomId, {
-      topicId: Number(topicId),
-      inputMode: "TEACHER",
-      gameMode: "ALL_STUDENTS",
-      problemDisplayLimit: 1,
-      groupCount: null,
-    });
+    const { data } = roomId
+      ? await roomApi.createSession(roomId, {
+          topicId: Number(topicId),
+          inputMode: "TEACHER",
+          gameMode: "ALL_STUDENTS",
+          problemDisplayLimit: 1,
+          groupCount: null,
+        })
+      : await roomApi.createTeacherSession(classId, {
+          topicId: Number(topicId),
+          inputMode: "TEACHER",
+          gameMode: "ALL_STUDENTS",
+          problemDisplayLimit: 1,
+          groupCount: null,
+        });
     const createdSessionId = String(data.data.id);
     setSessionId(createdSessionId);
     return createdSessionId;

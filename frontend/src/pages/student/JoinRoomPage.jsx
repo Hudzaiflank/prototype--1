@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { roomApi } from "../../services/api/roomApi";
 import { isRoomCode } from "../../utils/validation";
 import {
@@ -9,6 +9,8 @@ import {
   setStudentRoom,
 } from "../../utils/storage";
 
+const RULES_ACCEPTED_KEY = "mindplay_rules_accepted";
+
 const routeForGameStatus = (roomCode, status) => {
   if (status === "WAITING") return `/room/${roomCode}/waiting`;
   if (status === "FINISHED") return `/room/${roomCode}/result`;
@@ -17,9 +19,27 @@ const routeForGameStatus = (roomCode, status) => {
 
 export function JoinRoomPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [roomCode, setRoomCode] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEnteringRoom, setIsEnteringRoom] = useState(
+    () => location.state?.fromRules === true,
+  );
+
+  useEffect(() => {
+    if (sessionStorage.getItem(RULES_ACCEPTED_KEY) !== "true")
+      navigate("/rules", { replace: true });
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!isEnteringRoom) return undefined;
+    const timer = window.setTimeout(() => {
+      setIsEnteringRoom(false);
+      navigate("/join", { replace: true, state: {} });
+    }, 650);
+    return () => window.clearTimeout(timer);
+  }, [isEnteringRoom, navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -33,6 +53,7 @@ export function JoinRoomPage() {
     try {
       const { data } = await roomApi.join(normalizedCode);
       const room = data.data;
+      sessionStorage.removeItem(RULES_ACCEPTED_KEY);
       const previousRoom = getStudentRoom();
       const participantSessionId = getParticipantSession();
 
@@ -72,10 +93,17 @@ export function JoinRoomPage() {
   };
 
   return (
-    <section
-      className="mx-auto flex min-h-screen w-full max-w-xl items-center px-5 py-10"
-      aria-labelledby="join-title"
-    >
+    <section className="relative mx-auto flex min-h-screen w-full max-w-xl items-center px-5 py-10" aria-labelledby="join-title">
+      {isEnteringRoom ? (
+        <div className="fixed inset-0 z-50 flex min-h-screen items-center justify-center bg-[#1a0f28] text-center">
+          <div>
+            <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#4f8cf0] border-t-[#ffd23f]" />
+            <p className="mt-5 font-[Lexend] text-sm font-semibold text-[#ffe98a]">
+              Menyiapkan room...
+            </p>
+          </div>
+        </div>
+      ) : null}
       <form
         className="w-full space-y-7 rounded-[28px] border-2 border-[#ffd23f] bg-[#241436]/90 p-7 shadow-[6px_6px_0_rgba(0,0,0,.5)] sm:p-10"
         onSubmit={handleSubmit}

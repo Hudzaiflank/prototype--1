@@ -11,7 +11,6 @@ export function ClassDetailPage() {
   const { user } = useAuthContext();
   const [classData, setClassData] = useState(null);
   const [error, setError] = useState("");
-  const [opening, setOpening] = useState(false);
   const [closing, setClosing] = useState(false);
   const [roomQr, setRoomQr] = useState("");
   useEffect(() => {
@@ -34,18 +33,7 @@ export function ClassDetailPage() {
       .catch(() => setRoomQr(""));
   }, [classData?.currentRoom?.code]);
   const openRoom = async () => {
-    setOpening(true);
-    setError("");
-    try {
-      const { data } = await roomApi.open(classId);
-      navigate(`/teacher/rooms/${data.data.id}/configure`);
-    } catch (requestError) {
-      setError(
-        requestError.response?.data?.message ?? "Room belum dapat dibuka.",
-      );
-    } finally {
-      setOpening(false);
-    }
+    navigate(`/teacher/classes/${classId}/configure`);
   };
   const closeRoom = async () => {
     if (!classData?.currentRoom) return;
@@ -111,9 +99,8 @@ export function ClassDetailPage() {
             className="mt-6 rounded-lg bg-amber-300 px-4 py-3 text-sm font-bold text-slate-950 disabled:opacity-60"
             type="button"
             onClick={openRoom}
-            disabled={opening}
           >
-            {opening ? "Membuka room..." : "Buka room baru"}
+            Buka room baru
           </button>
         )}
       </div>

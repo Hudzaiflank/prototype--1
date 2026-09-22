@@ -5,6 +5,7 @@ import { StudentLayout } from "../layouts/StudentLayout";
 import { LoginPage } from "../pages/auth/LoginPage";
 import { ChangePasswordPage } from "../pages/auth/ChangePasswordPage";
 import { JoinRoomPage } from "../pages/student/JoinRoomPage";
+import { RulesPage } from "../pages/student/RulesPage";
 import { StudentRoomPage } from "../pages/student/StudentRoomPage";
 import { RoomInputPage } from "../pages/student/RoomInputPage";
 import { RoomWaitingPage } from "../pages/student/RoomWaitingPage";
@@ -52,6 +53,7 @@ export function AppRouter() {
           <Route path="/login" element={<LoginPage />} />
         </Route>
         <Route element={<StudentLayout />}>
+          <Route path="/rules" element={<RulesPage />} />
           <Route path="/join" element={<JoinRoomPage />} />
           <Route path="/room/:roomCode" element={<StudentRoomPage />}>
             <Route path="input" element={<RoomInputPage />} />
