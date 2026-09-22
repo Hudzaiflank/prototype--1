@@ -31,11 +31,29 @@ router.post(
   controller.uploadStudentFile.single("file"),
   controller.previewStudents,
 );
-router.get("/student-template", allowRoles(ROLES.ADMIN), controller.downloadStudentTemplate);
-router.post("/promote", allowRoles(ROLES.ADMIN), validate(schoolYearActionSchema), controller.promoteSchool);
-router.post("/reset-level", allowRoles(ROLES.ADMIN), validate(schoolYearActionSchema), controller.resetLevel);
+router.get(
+  "/student-template",
+  allowRoles(ROLES.ADMIN),
+  controller.downloadStudentTemplate,
+);
+router.post(
+  "/promote",
+  allowRoles(ROLES.ADMIN),
+  validate(schoolYearActionSchema),
+  controller.promoteSchool,
+);
+router.post(
+  "/reset-level",
+  allowRoles(ROLES.ADMIN),
+  validate(schoolYearActionSchema),
+  controller.resetLevel,
+);
 router.get("/:classId/students", controller.listStudents);
-router.post("/:classId/students/reset", allowRoles(ROLES.ADMIN), controller.resetStudents);
+router.post(
+  "/:classId/students/reset",
+  allowRoles(ROLES.ADMIN),
+  controller.resetStudents,
+);
 router.delete(
   "/:classId/teachers/:teacherId",
   allowRoles(ROLES.ADMIN),
@@ -60,5 +78,11 @@ router.post(
   allowRoles(ROLES.TEACHER),
   validate(gameSessionSchema),
   roomController.createTeacherSession,
+);
+router.post(
+  "/:classId/game-sessions",
+  allowRoles(ROLES.TEACHER),
+  validate(gameSessionSchema),
+  roomController.createClassSession,
 );
 export default router;

@@ -1,0 +1,1852 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aturan Main – MindPlay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anton&family=Lexend:wght@400;500;600;700;800&family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* =========================================================
+         TOKEN — palet flat & bold, terinspirasi conceptcapers.com:
+         blok warna solid, border hitam tebal, tipografi condensed
+         besar. Font pixel disisakan cuma untuk badge kecil.
+         ========================================================= */
+      :root {
+        --ink: #171821;
+        --paper: #ffffff;
+        --cream: #fff8ec;
+        --sky: #79cff0;
+        --sky-deep: #3aa8dc;
+        --sun: #ffd65c;
+        --sun-deep: #f0b400;
+        --bubble: #ff9ec4;
+        --bubble-deep: #f0629a;
+        --mint: #8fe3b0;
+        --mint-deep: #2fa876;
+        --grape: #b79cf2;
+        --grape-deep: #8a63d6;
+        --coral: #ff6b5a;
+        --coral-deep: #d43f2e;
+
+        --display-font: "Anton", "Arial Narrow", sans-serif;
+        --body-font: "Lexend", sans-serif;
+        --pixel-font: "Press Start 2P", monospace;
+
+        --border: 4px solid var(--ink);
+        --border-thin: 3px solid var(--ink);
+        --pop-shadow: 6px 6px 0 var(--ink);
+        --pop-shadow-sm: 4px 4px 0 var(--ink);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 76px;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--body-font);
+        font-size: 16px;
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+      svg,
+      img {
+        display: block;
+        max-width: 100%;
+      }
+      .wrap {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      h1,
+      h2 {
+        font-family: var(--display-font);
+        font-weight: 400;
+        letter-spacing: 0.5px;
+        margin: 0;
+        color: var(--ink);
+      }
+      section {
+        position: relative;
+        padding: 80px 0;
+      }
+
+      /* label kotak hitam ala "CONCEPT CAPERS!" / "THE GAME" */
+      .label-box {
+        display: inline-block;
+        background: var(--ink);
+        color: var(--paper);
+        font-family: var(--display-font);
+        font-size: clamp(22px, 4.4vw, 40px);
+        letter-spacing: 1px;
+        padding: 6px 22px;
+        border-radius: 6px;
+        line-height: 1.3;
+      }
+      .label-box.sm {
+        font-size: clamp(14px, 2.2vw, 18px);
+        padding: 5px 14px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--paper);
+        border: var(--border-thin);
+        border-radius: 999px;
+        padding: 10px 20px;
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .pill.dark {
+        background: var(--ink);
+        color: var(--paper);
+        border-color: var(--ink);
+      }
+      a.pill,
+      button.pill {
+        cursor: pointer;
+        text-decoration: none;
+        color: var(--ink);
+        transition: transform 0.15s ease;
+      }
+      a.pill:hover,
+      button.pill:hover {
+        transform: translateY(-2px);
+      }
+
+      .eyebrow {
+        font-weight: 800;
+        font-size: 12.5px;
+        letter-spacing: 2px;
+        color: var(--ink);
+        text-transform: uppercase;
+        opacity: 0.6;
+        margin-bottom: 10px;
+        display: block;
+      }
+
+      /* =========================================================
+         reveal-on-scroll (pop-in ringan, tanpa library)
+         ========================================================= */
+      [data-reveal] {
+        opacity: 0;
+        transform: translateY(24px);
+        transition:
+          opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
+          transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      [data-reveal].is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      [data-reveal-group] > * {
+        opacity: 0;
+        transform: translateY(18px) rotate(var(--r, 0deg)) scale(0.94);
+        transition:
+          opacity 0.5s ease,
+          transform 0.5s cubic-bezier(0.2, 0.9, 0.25, 1.2);
+      }
+      [data-reveal-group].is-visible > * {
+        opacity: 1;
+        transform: translateY(0) rotate(var(--r, 0deg)) scale(1);
+      }
+      [data-reveal-group].is-visible > *:nth-child(1) {
+        transition-delay: 0.02s;
+      }
+      [data-reveal-group].is-visible > *:nth-child(2) {
+        transition-delay: 0.08s;
+      }
+      [data-reveal-group].is-visible > *:nth-child(3) {
+        transition-delay: 0.14s;
+      }
+      [data-reveal-group].is-visible > *:nth-child(4) {
+        transition-delay: 0.2s;
+      }
+      [data-reveal-group].is-visible > *:nth-child(5) {
+        transition-delay: 0.26s;
+      }
+      [data-reveal-group].is-visible > *:nth-child(6) {
+        transition-delay: 0.32s;
+      }
+      [data-reveal-group].is-visible > *:nth-child(7) {
+        transition-delay: 0.38s;
+      }
+      [data-reveal-group].is-visible > *:nth-child(n + 8) {
+        transition-delay: 0.44s;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        [data-reveal],
+        [data-reveal-group] > *,
+        .bob,
+        .marquee-track {
+          transition: none !important;
+          animation: none !important;
+          opacity: 1 !important;
+          transform: none !important;
+        }
+      }
+
+      @keyframes bob {
+        0%,
+        100% {
+          transform: translateY(0) rotate(var(--tilt, 0deg));
+        }
+        50% {
+          transform: translateY(-10px) rotate(var(--tilt, 0deg));
+        }
+      }
+      .bob {
+        animation: bob 3.4s ease-in-out infinite;
+      }
+
+      /* =========================================================
+         top pill nav
+         ========================================================= */
+      .topnav {
+        position: sticky;
+        top: 16px;
+        z-index: 40;
+        display: flex;
+        justify-content: center;
+        margin-bottom: -60px;
+      }
+      .topnav-pill {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: var(--paper);
+        border: var(--border-thin);
+        border-radius: 999px;
+        padding: 6px;
+        box-shadow: var(--pop-shadow-sm);
+      }
+      .topnav-pill a {
+        font-weight: 700;
+        font-size: 13px;
+        text-decoration: none;
+        color: var(--ink);
+        padding: 8px 14px;
+        border-radius: 999px;
+      }
+      .topnav-pill a:hover {
+        background: var(--sun);
+      }
+      .topnav-badge {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--ink);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* =========================================================
+         hero
+         ========================================================= */
+      .hero {
+        background: var(--sky);
+        padding: 110px 0 70px;
+        border-bottom: var(--border);
+        overflow: hidden;
+      }
+      .hero-inner {
+        position: relative;
+        text-align: center;
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      .hero h1 {
+        margin: 22px 0 20px;
+      }
+      .hero .lede {
+        font-size: clamp(14.5px, 2vw, 17px);
+        font-weight: 500;
+        max-width: 520px;
+        margin: 0 auto 28px;
+      }
+      .hero-cta {
+        background: var(--ink);
+        color: var(--paper);
+      }
+
+      .floaters {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      .card-fig {
+        position: absolute;
+        width: clamp(96px, 15vw, 160px);
+      }
+      .card-fig.fig-a {
+        top: -10px;
+        left: -8%;
+        --tilt: -8deg;
+      }
+      .card-fig.fig-b {
+        top: 30px;
+        right: -6%;
+        --tilt: 7deg;
+      }
+      .card-fig.fig-c {
+        bottom: -50px;
+        left: 2%;
+        --tilt: 6deg;
+      }
+      .card-fig.fig-d {
+        bottom: -40px;
+        right: 6%;
+        --tilt: -6deg;
+      }
+
+      .figcard {
+        border: var(--border-thin);
+        border-radius: 16px;
+        box-shadow: var(--pop-shadow-sm);
+        overflow: hidden;
+        background: var(--paper);
+      }
+      .figcard .plate {
+        background: var(--ink);
+        color: var(--paper);
+        font-weight: 800;
+        font-size: 10.5px;
+        letter-spacing: 0.5px;
+        text-align: center;
+        padding: 5px 4px;
+        text-transform: uppercase;
+      }
+      .figcard .badge {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid var(--ink);
+        background: var(--paper);
+        font-family: var(--pixel-font);
+        font-size: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+      }
+      .figcard-wrap {
+        position: relative;
+      }
+
+      /* =========================================================
+         marquee ticker (ala "LOREM ♦ IPSUM" strip)
+         ========================================================= */
+      .marquee {
+        background: var(--ink);
+        border-bottom: var(--border);
+        overflow: hidden;
+        padding: 14px 0;
+      }
+      .marquee-track {
+        display: flex;
+        width: max-content;
+        animation: marquee-scroll 22s linear infinite;
+      }
+      .marquee-track span {
+        font-family: var(--display-font);
+        font-size: clamp(16px, 2.6vw, 22px);
+        color: var(--paper);
+        padding: 0 22px;
+        white-space: nowrap;
+        letter-spacing: 1px;
+      }
+      .marquee-track span.dot {
+        color: var(--sun);
+      }
+      @keyframes marquee-scroll {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(-50%);
+        }
+      }
+
+      /* =========================================================
+         section: aturan main (split text + ilustrasi)
+         ========================================================= */
+      .about {
+        background: var(--cream);
+        border-bottom: var(--border);
+      }
+      .about-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 50px;
+        align-items: center;
+      }
+      .about p {
+        font-size: 15.5px;
+        max-width: 460px;
+      }
+      .about-illustration {
+        background: var(--grape);
+        border: var(--border);
+        border-radius: 20px;
+        box-shadow: var(--pop-shadow);
+        padding: 20px;
+      }
+
+      /* =========================================================
+         sticky-note cards (dipakai utk "3 hal" & "prinsip")
+         ========================================================= */
+      .note-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-top: 36px;
+      }
+      .note {
+        border: var(--border);
+        border-radius: 16px;
+        box-shadow: var(--pop-shadow-sm);
+        padding: 22px 20px;
+        transform: rotate(var(--r, 0deg));
+      }
+      .note h3 {
+        font-family: var(--display-font);
+        font-size: 17px;
+        letter-spacing: 0.5px;
+        margin: 10px 0 8px;
+      }
+      .note p {
+        font-size: 13.8px;
+        margin: 0;
+        font-weight: 500;
+      }
+      .note .icon-wrap {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--paper);
+        border: 2px solid var(--ink);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .note.c-sky {
+        background: var(--sky);
+      }
+      .note.c-sun {
+        background: var(--sun);
+      }
+      .note.c-bubble {
+        background: var(--bubble);
+      }
+      .note.c-mint {
+        background: var(--mint);
+      }
+      .note.c-grape {
+        background: var(--grape);
+      }
+      .note.c-cream {
+        background: var(--cream);
+      }
+
+      .principles {
+        background: var(--paper);
+      }
+      .note-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-top: 36px;
+      }
+
+      /* =========================================================
+         DO / DON'T (blok warna penuh + chip wrap)
+         ========================================================= */
+      .do-block {
+        background: var(--mint);
+        border-bottom: var(--border);
+      }
+      .dont-block {
+        background: var(--coral);
+        color: var(--ink);
+        border-bottom: var(--border);
+      }
+      .side-split {
+        display: grid;
+        grid-template-columns: 0.85fr 1.15fr;
+        gap: 40px;
+        align-items: center;
+      }
+      .dont-block .side-split {
+        grid-template-columns: 1.15fr 0.85fr;
+      }
+      .side-illustration {
+        background: var(--paper);
+        border: var(--border);
+        border-radius: 20px;
+        box-shadow: var(--pop-shadow);
+        padding: 18px;
+      }
+
+      .chip-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 26px;
+      }
+      .chip {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        background: var(--paper);
+        border: var(--border-thin);
+        border-radius: 14px;
+        padding: 12px 14px;
+        font-size: 13.6px;
+        font-weight: 600;
+        max-width: 260px;
+        box-shadow: var(--pop-shadow-sm);
+        transform: rotate(var(--r, 0deg));
+      }
+      .chip .dot {
+        flex: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1px;
+      }
+      .chip.ok .dot {
+        background: var(--mint-deep);
+      }
+      .chip.no .dot {
+        background: var(--coral-deep);
+      }
+
+      /* =========================================================
+         catatan aman
+         ========================================================= */
+      .safe {
+        background: var(--sun);
+        text-align: center;
+        border-bottom: var(--border);
+      }
+      .safe .wrap {
+        max-width: 760px;
+      }
+      .safe h2 {
+        font-size: clamp(20px, 3.6vw, 30px);
+        margin-bottom: 30px;
+      }
+      .safe-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      .safe-card {
+        background: var(--paper);
+        border: var(--border-thin);
+        border-radius: 14px;
+        padding: 18px 16px;
+        font-size: 13.6px;
+        font-weight: 600;
+        text-align: left;
+        box-shadow: var(--pop-shadow-sm);
+      }
+
+      /* =========================================================
+         CTA final
+         ========================================================= */
+      .cta {
+        background: var(--ink);
+        color: var(--paper);
+        text-align: center;
+        padding: 90px 0;
+      }
+      .cta .wrap {
+        max-width: 560px;
+      }
+      .cta .mascot-wrap {
+        width: 140px;
+        margin: 0 auto 10px;
+      }
+      .cta h2 {
+        color: var(--paper);
+        font-size: clamp(26px, 5vw, 44px);
+        margin-bottom: 16px;
+      }
+      .cta .lede {
+        color: #cfd0da;
+        font-size: 14.5px;
+        max-width: 420px;
+        margin: 0 auto 26px;
+      }
+
+      .agree {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        text-align: left;
+        background: #22232f;
+        border: 2px solid #383a4a;
+        border-radius: 14px;
+        padding: 16px 18px;
+        margin-bottom: 24px;
+        cursor: pointer;
+      }
+      .agree input {
+        flex: none;
+        width: 22px;
+        height: 22px;
+        margin-top: 2px;
+        accent-color: var(--sun);
+        cursor: pointer;
+      }
+      .agree span {
+        font-size: 13.8px;
+        line-height: 1.6;
+      }
+
+      .start-btn {
+        font-family: var(--display-font);
+        font-size: 18px;
+        letter-spacing: 1px;
+        color: var(--ink);
+        background: var(--sun);
+        border: var(--border);
+        border-radius: 14px;
+        padding: 16px 34px;
+        cursor: pointer;
+        box-shadow: var(--pop-shadow);
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease;
+        display: inline-block;
+        text-decoration: none;
+      }
+      .start-btn:not(.is-disabled):hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 8px 8px 0 var(--sun-deep);
+      }
+      .start-btn:not(.is-disabled):active {
+        transform: translate(2px, 2px);
+        box-shadow: 2px 2px 0 var(--ink);
+      }
+      .start-btn.is-disabled {
+        background: #4a4b58;
+        color: #8b8c99;
+        border-color: #4a4b58;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+      .start-hint {
+        margin-top: 16px;
+        font-size: 12px;
+        color: #7d7e8c;
+      }
+      .start-hint code {
+        color: var(--sun);
+      }
+
+      footer {
+        background: var(--ink);
+        color: #7d7e8c;
+        text-align: center;
+        font-size: 12.5px;
+        padding: 0 20px 40px;
+        border-top: 1px solid #2a2b38;
+        padding-top: 24px;
+      }
+
+      /* =========================================================
+         responsif
+         ========================================================= */
+      @media (max-width: 900px) {
+        .about-split,
+        .side-split,
+        .dont-block .side-split {
+          grid-template-columns: 1fr;
+        }
+        .side-illustration,
+        .about-illustration {
+          max-width: 260px;
+          margin: 0 auto;
+          order: -1;
+        }
+        .note-row,
+        .note-grid,
+        .safe-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .card-fig {
+          display: none;
+        }
+        .card-fig.fig-a,
+        .card-fig.fig-b {
+          display: block;
+          position: static;
+          display: inline-block;
+          width: 110px;
+          margin: 0 8px;
+        }
+        .floaters {
+          position: static;
+          display: flex;
+          justify-content: center;
+          margin-top: 20px;
+        }
+      }
+
+      @media (max-width: 560px) {
+        section {
+          padding: 56px 0;
+        }
+        .note-row,
+        .note-grid,
+        .safe-grid {
+          grid-template-columns: 1fr;
+        }
+        .topnav-pill a {
+          padding: 8px 10px;
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ============================= TOP NAV ============================= -->
+    <div class="topnav">
+      <nav class="topnav-pill">
+        <a href="#aturan">ATURAN</a>
+        <span class="topnav-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 3 4 6v6c0 5.2 3.4 8.4 8 9 4.6-.6 8-3.8 8-9V6Z"
+              stroke="#fff"
+              stroke-width="2.2"
+              fill="none"
+            />
+          </svg>
+        </span>
+        <a href="#mulai">MULAI</a>
+      </nav>
+    </div>
+
+    <!-- ============================= HERO ============================= -->
+    <header class="hero" id="aturan">
+      <div class="hero-inner">
+        <div class="floaters" aria-hidden="true">
+          <div class="card-fig fig-a bob">
+            <div class="figcard-wrap">
+              <span class="badge">1</span>
+              <div class="figcard">
+                <svg viewBox="0 0 200 220">
+                  <rect width="200" height="220" fill="var(--sky)" />
+                  <!-- kaki -->
+                  <rect x="76" y="178" width="18" height="34" rx="8" fill="#2b2b38" />
+                  <rect x="106" y="178" width="18" height="34" rx="8" fill="#2b2b38" />
+                  <!-- badan -->
+                  <path
+                    d="M60 120 Q100 104 140 120 L150 200 Q100 214 50 200 Z"
+                    fill="#ff9ec4"
+                  />
+                  <!-- lengan kiri (di pinggang) -->
+                  <path
+                    d="M62 128 Q40 140 46 165"
+                    stroke="#f7c9a0"
+                    stroke-width="14"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                  <!-- lengan kanan melambai -->
+                  <path
+                    d="M138 128 Q168 108 172 76"
+                    stroke="#f7c9a0"
+                    stroke-width="14"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                  <circle cx="173" cy="70" r="10" fill="#f7c9a0" />
+                  <!-- leher & kepala -->
+                  <rect x="90" y="72" width="20" height="18" fill="#f7c9a0" />
+                  <circle cx="100" cy="52" r="34" fill="#f7c9a0" />
+                  <!-- rambut -->
+                  <path
+                    d="M66 46c0-24 20-38 34-38s34 14 34 38c-8-10-16-4-20-14-6 12-16 10-22 4-6 10-16 8-26 10Z"
+                    fill="#2b2118"
+                  />
+                  <!-- wajah -->
+                  <circle cx="88" cy="54" r="4.2" fill="#171821" />
+                  <circle cx="112" cy="54" r="4.2" fill="#171821" />
+                  <circle cx="76" cy="62" r="6" fill="#ff9ec4" opacity=".5" />
+                  <circle cx="124" cy="62" r="6" fill="#ff9ec4" opacity=".5" />
+                  <path
+                    d="M86 68 Q100 80 114 68"
+                    stroke="#171821"
+                    stroke-width="3.4"
+                    fill="none"
+                    stroke-linecap="round"
+                  />
+                </svg>
+                <div class="plate">Siswa</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-fig fig-b bob" style="animation-delay: -1.2s">
+            <div class="figcard-wrap">
+              <span class="badge">2</span>
+              <div class="figcard">
+                <svg viewBox="0 0 200 220">
+                  <rect width="200" height="220" fill="var(--grape)" />
+                  <rect x="76" y="178" width="18" height="34" rx="8" fill="#2b2b38" />
+                  <rect x="106" y="178" width="18" height="34" rx="8" fill="#2b2b38" />
+                  <path
+                    d="M58 120 Q100 102 142 120 L152 200 Q100 216 48 200 Z"
+                    fill="#79cff0"
+                  />
+                  <!-- tangan di dada (menenangkan) -->
+                  <path
+                    d="M64 128 Q80 150 96 148"
+                    stroke="#c68642"
+                    stroke-width="14"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                  <path
+                    d="M136 128 Q150 140 150 165"
+                    stroke="#c68642"
+                    stroke-width="14"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                  <circle cx="151" cy="168" r="10" fill="#c68642" />
+                  <rect x="90" y="72" width="20" height="18" fill="#c68642" />
+                  <circle cx="100" cy="52" r="34" fill="#c68642" />
+                  <path
+                    d="M64 52c0-26 16-42 36-42s36 16 36 42c-4-16-14-22-36-22s-32 6-36 22Z"
+                    fill="#5a4634"
+                  />
+                  <!-- kacamata -->
+                  <circle
+                    cx="87"
+                    cy="55"
+                    r="11"
+                    fill="none"
+                    stroke="#171821"
+                    stroke-width="3"
+                  />
+                  <circle
+                    cx="113"
+                    cy="55"
+                    r="11"
+                    fill="none"
+                    stroke="#171821"
+                    stroke-width="3"
+                  />
+                  <line
+                    x1="98"
+                    y1="55"
+                    x2="102"
+                    y2="55"
+                    stroke="#171821"
+                    stroke-width="3"
+                  />
+                  <circle cx="87" cy="55" r="3.2" fill="#171821" />
+                  <circle cx="113" cy="55" r="3.2" fill="#171821" />
+                  <path
+                    d="M86 70 Q100 78 114 70"
+                    stroke="#171821"
+                    stroke-width="3.4"
+                    fill="none"
+                    stroke-linecap="round"
+                  />
+                </svg>
+                <div class="plate">Guru BK</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-fig fig-c bob" style="animation-delay: -2.1s">
+            <div class="figcard-wrap">
+              <span class="badge">3</span>
+              <div class="figcard">
+                <svg viewBox="0 0 200 220">
+                  <rect width="200" height="220" fill="var(--sun)" />
+                  <rect x="76" y="178" width="18" height="34" rx="8" fill="#2b2b38" />
+                  <rect x="106" y="178" width="18" height="34" rx="8" fill="#2b2b38" />
+                  <path
+                    d="M60 120 Q100 104 140 120 L150 200 Q100 214 50 200 Z"
+                    fill="#8fe3b0"
+                  />
+                  <!-- tangan bertaut di depan -->
+                  <path
+                    d="M64 128 Q86 150 100 150"
+                    stroke="#8d5524"
+                    stroke-width="14"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                  <path
+                    d="M136 128 Q114 150 100 150"
+                    stroke="#8d5524"
+                    stroke-width="14"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                  <circle cx="100" cy="151" r="10" fill="#8d5524" />
+                  <rect x="90" y="72" width="20" height="18" fill="#8d5524" />
+                  <circle cx="100" cy="52" r="34" fill="#8d5524" />
+                  <path
+                    d="M68 40c6-20 18-28 32-28s26 8 32 28c-10 8-8-4-16-6-4 8-12 6-16 0-4 8-14 8-18 0-6 4-10 2-14 6Z"
+                    fill="#171821"
+                  />
+                  <circle cx="88" cy="54" r="4.2" fill="#171821" />
+                  <circle cx="112" cy="54" r="4.2" fill="#171821" />
+                  <path
+                    d="M84 68 Q100 82 116 68"
+                    stroke="#171821"
+                    stroke-width="3.4"
+                    fill="none"
+                    stroke-linecap="round"
+                  />
+                </svg>
+                <div class="plate">Teman</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-fig fig-d bob" style="animation-delay: -0.6s">
+            <div class="figcard-wrap">
+              <span class="badge">4</span>
+              <div class="figcard">
+                <svg viewBox="0 0 200 220">
+                  <rect width="200" height="220" fill="var(--bubble)" />
+                  <ellipse cx="100" cy="180" rx="46" ry="14" fill="#f0e6c8" />
+                  <!-- kucing maskot -->
+                  <path
+                    d="M64 150c-8-46 8-78 36-78s44 32 36 78Z"
+                    fill="#ffe3b8"
+                  />
+                  <path d="M70 88 58 56 84 78Z" fill="#ffe3b8" />
+                  <path d="M130 88 142 56 116 78Z" fill="#ffe3b8" />
+                  <circle cx="84" cy="118" r="6" fill="#171821" />
+                  <circle cx="116" cy="118" r="6" fill="#171821" />
+                  <circle cx="72" cy="128" r="6" fill="#ff9ec4" opacity=".6" />
+                  <circle cx="128" cy="128" r="6" fill="#ff9ec4" opacity=".6" />
+                  <path
+                    d="M92 134q8 8 16 0"
+                    stroke="#171821"
+                    stroke-width="3"
+                    fill="none"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M60 130 34 124M60 136 32 136M140 130 166 124M140 136 168 136"
+                    stroke="#171821"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                  />
+                </svg>
+                <div class="plate">Maskot</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <span class="label-box">MINDPLAY!</span>
+        <h1 style="font-size: clamp(22px, 4.6vw, 36px); line-height: 1.6">
+          SEBELUM MULAI,<br />BACA INI DULU YA
+        </h1>
+        <p class="pill" style="margin-bottom: 22px">
+          Kartu untuk saling memahami, bukan untuk menang
+        </p>
+        <p class="lede">
+          MindPlay bukan lomba, dan bukan tempat menilai siapa yang paling
+          benar. Ini ruang aman untuk saling memahami — jadi sebelum kartu
+          pertama dibuka, yuk kenalan dulu sama aturan mainnya.
+        </p>
+        <a href="#tigahal" class="pill hero-cta">GULIR YUK ↓</a>
+      </div>
+    </header>
+
+    <!-- ============================= MARQUEE ============================= -->
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track" id="marqueeTrack"></div>
+    </div>
+
+    <!-- ============================= ATURAN MAIN ============================= -->
+    <section class="about">
+      <div class="wrap about-split" data-reveal>
+        <div>
+          <span class="label-box sm">ATURAN MAIN</span>
+          <p style="margin-top: 20px">
+            Di MindPlay, kamu memilih kartu Anak dan kartu Masalah, lalu
+            mendiskusikannya bersama teman kelompokmu.
+          </p>
+          <p>
+            Supaya sesi ini terasa aman dan nyaman untuk semua orang, ada
+            beberapa hal yang perlu kita sepakati bersama dulu — dibaca
+            pelan-pelan, ya.
+          </p>
+        </div>
+        <div class="about-illustration">
+          <svg viewBox="0 0 240 260">
+            <ellipse cx="120" cy="240" rx="70" ry="14" fill="#8a63d6" opacity=".4" />
+            <rect x="86" y="182" width="18" height="34" rx="8" fill="#2b2b38" />
+            <rect x="126" y="182" width="18" height="34" rx="8" fill="#2b2b38" />
+            <path
+              d="M70 122 Q120 104 170 122 L182 208 Q120 224 58 208 Z"
+              fill="#ff6b5a"
+            />
+            <path
+              d="M74 130 Q46 148 54 176"
+              stroke="#f7c9a0"
+              stroke-width="15"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <circle cx="55" cy="180" r="10.5" fill="#f7c9a0" />
+            <path
+              d="M166 130 Q198 116 202 84"
+              stroke="#f7c9a0"
+              stroke-width="15"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <circle cx="203" cy="78" r="10.5" fill="#f7c9a0" />
+            <rect x="108" y="74" width="24" height="20" fill="#f7c9a0" />
+            <circle cx="120" cy="52" r="38" fill="#f7c9a0" />
+            <path
+              d="M82 46c0-26 22-42 38-42s38 16 38 42c-10-12-20-6-24-16-6 14-18 12-26 4-8 12-18 10-26 12Z"
+              fill="#7a4b25"
+            />
+            <circle cx="106" cy="54" r="4.6" fill="#171821" />
+            <circle cx="134" cy="54" r="4.6" fill="#171821" />
+            <path
+              d="M104 70 Q120 84 136 70"
+              stroke="#171821"
+              stroke-width="3.6"
+              fill="none"
+              stroke-linecap="round"
+            />
+            <!-- ide/hati di atas kepala -->
+            <path
+              d="M120 4c8-10 24-6 24 6 0 10-14 18-24 26-10-8-24-16-24-26 0-12 16-16 24-6Z"
+              fill="var(--sun)"
+              stroke="#171821"
+              stroke-width="3"
+            />
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 3 HAL WAJIB DIINGAT ===================== -->
+    <section class="principles" id="tigahal">
+      <div class="wrap">
+        <div data-reveal>
+          <span class="eyebrow">JANGAN LUPA</span>
+          <h2 style="font-size: clamp(20px, 4vw, 30px)">
+            3 Hal yang Wajib Kamu Ingat
+          </h2>
+        </div>
+        <div class="note-row" data-reveal-group>
+          <div class="note c-sky" style="--r: -2deg">
+            <div class="icon-wrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <rect
+                  x="5"
+                  y="10"
+                  width="14"
+                  height="10"
+                  rx="2"
+                  stroke="#171821"
+                  stroke-width="2.2"
+                />
+                <path
+                  d="M8 10V7a4 4 0 0 1 8 0v3"
+                  stroke="#171821"
+                  stroke-width="2.2"
+                  fill="none"
+                />
+              </svg>
+            </div>
+            <h3>RAHASIA DI GRUP</h3>
+            <p>
+              Cerita di kelompokmu tetap di kelompok — kecuali soal
+              keselamatan, itu wajib disampaikan ke Guru BK.
+            </p>
+          </div>
+          <div class="note c-sun" style="--r: 1.5deg">
+            <div class="icon-wrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 3 4 6v6c0 5.2 3.4 8.4 8 9 4.6-.6 8-3.8 8-9V6Z"
+                  stroke="#171821"
+                  stroke-width="2.2"
+                  fill="none"
+                />
+              </svg>
+            </div>
+            <h3>GURU BK MEMANTAU</h3>
+            <p>
+              Sesi ini selalu didampingi Guru BK — ruang aman, bukan tempat
+              menghakimi.
+            </p>
+          </div>
+          <div class="note c-bubble" style="--r: -1.5deg">
+            <div class="icon-wrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M4 12l5 5L20 6"
+                  stroke="#171821"
+                  stroke-width="2.6"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </div>
+            <h3>TAK ADA YANG SALAH</h3>
+            <p>
+              Tujuan MindPlay untuk saling memahami — bukan menilai siapa
+              paling benar.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PRINSIP (RINGKAS) ===================== -->
+    <section class="about" style="border-top: var(--border)">
+      <div class="wrap">
+        <div data-reveal>
+          <span class="eyebrow">PEGANGAN KITA</span>
+          <h2 style="font-size: clamp(20px, 4vw, 30px)">
+            Prinsip yang Kita Pegang Bersama
+          </h2>
+        </div>
+        <div class="note-grid" data-reveal-group>
+          <div class="note c-cream" style="--r: -1deg">
+            <div class="icon-wrap">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <rect
+                  x="5"
+                  y="10"
+                  width="14"
+                  height="10"
+                  rx="2"
+                  stroke="#171821"
+                  stroke-width="2"
+                />
+                <path
+                  d="M8 10V7a4 4 0 0 1 8 0v3"
+                  stroke="#171821"
+                  stroke-width="2"
+                  fill="none"
+                />
+              </svg>
+            </div>
+            <h3 style="font-size: 15px">Kerahasiaan</h3>
+            <p>
+              Kasus yang dibahas itu contoh, bukan cerita satu orang. Yang
+              dibagikan di grup, tetap di grup.
+            </p>
+          </div>
+          <div class="note c-mint" style="--r: 1.2deg">
+            <div class="icon-wrap">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 20s-7-4.4-7-10a4.5 4.5 0 0 1 7-3.8A4.5 4.5 0 0 1 19 10c0 5.6-7 10-7 10Z"
+                  stroke="#171821"
+                  stroke-width="2"
+                  fill="none"
+                />
+              </svg>
+            </div>
+            <h3 style="font-size: 15px">Tidak Menghakimi</h3>
+            <p>
+              Tidak ada label seperti "anak nakal". Kita fokus memahami,
+              bukan menyalahkan.
+            </p>
+          </div>
+          <div class="note c-sky" style="--r: -1.6deg">
+            <div class="icon-wrap">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <circle
+                  cx="12"
+                  cy="8"
+                  r="3.2"
+                  stroke="#171821"
+                  stroke-width="2"
+                />
+                <path
+                  d="M5 20c0-3.9 3.1-6 7-6s7 2.1 7 6"
+                  stroke="#171821"
+                  stroke-width="2"
+                  fill="none"
+                />
+              </svg>
+            </div>
+            <h3 style="font-size: 15px">Bukan Pengganti Ahli</h3>
+            <p>Kamu jadi teman pendukung. Masalah berat? Libatkan Guru BK.</p>
+          </div>
+          <div class="note c-sun" style="--r: 1.4deg">
+            <div class="icon-wrap">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 3 4 6v6c0 5.2 3.4 8.4 8 9 4.6-.6 8-3.8 8-9V6Z"
+                  stroke="#171821"
+                  stroke-width="2"
+                  fill="none"
+                />
+                <circle cx="12" cy="14" r="1.1" fill="#171821" />
+                <path
+                  d="M12 8v4"
+                  stroke="#171821"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </div>
+            <h3 style="font-size: 15px">Keselamatan No. 1</h3>
+            <p>
+              Ada tanda bahaya buat diri sendiri/orang lain? Wajib
+              disampaikan, walau rasanya "buka rahasia".
+            </p>
+          </div>
+          <div class="note c-bubble" style="--r: -1.2deg">
+            <div class="icon-wrap">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="8.5"
+                  stroke="#171821"
+                  stroke-width="2"
+                />
+                <path
+                  d="M6 18 18 6"
+                  stroke="#171821"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </div>
+            <h3 style="font-size: 15px">Bukan Mendiagnosis</h3>
+            <p>
+              Kita belajar mengenali tanda & merespons dengan empati — bukan
+              kasih cap.
+            </p>
+          </div>
+          <div class="note c-grape" style="--r: 1.6deg">
+            <div class="icon-wrap">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M4 15c0-4.4 3.6-8 8-8s8 3.6 8 8"
+                  stroke="#171821"
+                  stroke-width="2"
+                  fill="none"
+                />
+                <rect
+                  x="3"
+                  y="14"
+                  width="4"
+                  height="6"
+                  rx="1.4"
+                  stroke="#171821"
+                  stroke-width="2"
+                />
+                <rect
+                  x="17"
+                  y="14"
+                  width="4"
+                  height="6"
+                  rx="1.4"
+                  stroke="#171821"
+                  stroke-width="2"
+                />
+              </svg>
+            </div>
+            <h3 style="font-size: 15px">Dengar Dulu, Baru Bicara</h3>
+            <p>Validasi perasaan teman dulu, sebelum buru-buru beri solusi.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= DO ============================= -->
+    <section class="do-block">
+      <div class="wrap side-split">
+        <div class="side-illustration">
+          <svg viewBox="0 0 220 260">
+            <ellipse cx="110" cy="248" rx="60" ry="12" fill="#171821" opacity=".12" />
+            <rect x="82" y="190" width="18" height="34" rx="8" fill="#2b2b38" />
+            <rect x="118" y="190" width="18" height="34" rx="8" fill="#2b2b38" />
+            <path
+              d="M64 128 Q110 110 156 128 L166 214 Q110 230 54 214 Z"
+              fill="#79cff0"
+            />
+            <path
+              d="M66 136 Q40 150 46 176"
+              stroke="#c68642"
+              stroke-width="15"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <circle cx="47" cy="180" r="10.5" fill="#c68642" />
+            <!-- lengan kanan jempol -->
+            <path
+              d="M154 136 Q186 122 184 92"
+              stroke="#c68642"
+              stroke-width="15"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <rect
+              x="178"
+              y="66"
+              width="14"
+              height="30"
+              rx="7"
+              fill="#c68642"
+              stroke="#171821"
+              stroke-width="2.5"
+            />
+            <rect x="100" y="80" width="20" height="18" fill="#c68642" />
+            <circle cx="110" cy="58" r="36" fill="#c68642" />
+            <path
+              d="M74 60c0-26 16-42 36-42s36 16 36 42c-14-14-58-14-72 0Z"
+              fill="#171821"
+            />
+            <circle cx="96" cy="60" r="4.4" fill="#171821" />
+            <circle cx="124" cy="60" r="4.4" fill="#171821" />
+            <path
+              d="M94 76 Q110 92 126 76"
+              stroke="#171821"
+              stroke-width="3.6"
+              fill="none"
+              stroke-linecap="round"
+            />
+          </svg>
+        </div>
+        <div>
+          <span class="label-box sm" style="background: var(--mint-deep)"
+            >YANG DILAKUKAN</span
+          >
+          <h2 style="font-size: clamp(20px, 4vw, 30px); margin-top: 18px">
+            Do — Yang Perlu Kamu Lakukan
+          </h2>
+          <div class="chip-wrap" data-reveal-group>
+            <div class="chip ok" style="--r: -1.5deg">
+              <span class="dot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M4 12l5 5L20 6"
+                    stroke="#fff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                </svg>
+              </span>
+              <span
+                >Jujur saat memilih kartu — jawab sesuai perasaanmu, bukan
+                jawaban "paling ingin didengar".</span
+              >
+            </div>
+            <div class="chip ok" style="--r: 1.2deg">
+              <span class="dot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M4 12l5 5L20 6"
+                    stroke="#fff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                </svg>
+              </span>
+              <span
+                >Masuk pakai kode dari Guru BK — bukan dari teman/orang
+                lain.</span
+              >
+            </div>
+            <div class="chip ok" style="--r: -0.8deg">
+              <span class="dot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M4 12l5 5L20 6"
+                    stroke="#fff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                </svg>
+              </span>
+              <span>Dengarkan aturan main dulu sebelum mulai memilih.</span>
+            </div>
+            <div class="chip ok" style="--r: 1.8deg">
+              <span class="dot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M4 12l5 5L20 6"
+                    stroke="#fff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                </svg>
+              </span>
+              <span
+                >Jaga rahasia teman — jangan sebarkan jawabannya ke luar
+                sesi.</span
+              >
+            </div>
+            <div class="chip ok" style="--r: -1.8deg">
+              <span class="dot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M4 12l5 5L20 6"
+                    stroke="#fff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                </svg>
+              </span>
+              <span>Boleh bilang "aku belum siap" untuk skip topik berat.</span>
+            </div>
+            <div class="chip ok" style="--r: 1deg">
+              <span class="dot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M4 12l5 5L20 6"
+                    stroke="#fff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                </svg>
+              </span>
+              <span
+                >Cerita ke Guru BK empat mata kalau ada yang mengganjal
+                pikiran.</span
+              >
+            </div>
+            <div class="chip ok" style="--r: -1.2deg">
+              <span class="dot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M4 12l5 5L20 6"
+                    stroke="#fff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                </svg>
+              </span>
+              <span
+                >Kasih tahu Guru BK kalau lihat teman tidak baik-baik saja —
+                ini peduli, bukan mengadu.</span
+              >
+            </div>
+            <div class="chip ok" style="--r: 1.6deg">
+              <span class="dot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M4 12l5 5L20 6"
+                    stroke="#fff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                </svg>
+              </span>
+              <span
+                >Tetap sopan & suportif, apalagi di topik sensitif buat
+                teman.</span
+              >
+            </div>
+            <div class="chip ok" style="--r: -0.6deg">
+              <span class="dot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M4 12l5 5L20 6"
+                    stroke="#fff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                </svg>
+              </span>
+              <span>Fokus penuh saat bermain — simpan dulu HP.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= DON'T ============================= -->
+    <section class="dont-block">
+      <div class="wrap side-split">
+        <div>
+          <span class="label-box sm" style="background: var(--coral-deep)"
+            >YANG DIHINDARI</span
+          >
+          <h2 style="font-size: clamp(20px, 4vw, 30px); margin-top: 18px">
+            Don't — Yang Sebaiknya Dihindari
+          </h2>
+          <div class="chip-wrap" data-reveal-group>
+            <div class="chip no" style="--r: 1.4deg">
+              <span class="dot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M6 6l12 12M18 6 6 18"
+                    stroke="#fff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
+              <span>Jangan bagikan kode room ke orang di luar kelompok.</span>
+            </div>
+            <div class="chip no" style="--r: -1.4deg">
+              <span class="dot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M6 6l12 12M18 6 6 18"
+                    stroke="#fff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
+              <span>Jangan jadikan jawaban teman bahan ejekan/gosip.</span>
+            </div>
+            <div class="chip no" style="--r: 0.8deg">
+              <span class="dot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M6 6l12 12M18 6 6 18"
+                    stroke="#fff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
+              <span
+                >Jangan asal jawab biar cepat selesai — ini bukan lomba.</span
+              >
+            </div>
+            <div class="chip no" style="--r: -1.8deg">
+              <span class="dot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M6 6l12 12M18 6 6 18"
+                    stroke="#fff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
+              <span>Jangan paksa teman cerita kalau ia belum nyaman.</span>
+            </div>
+            <div class="chip no" style="--r: 1.6deg">
+              <span class="dot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M6 6l12 12M18 6 6 18"
+                    stroke="#fff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
+              <span
+                >Jangan screenshot atau rekam layar tanpa izin Guru BK.</span
+              >
+            </div>
+            <div class="chip no" style="--r: -0.8deg">
+              <span class="dot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M6 6l12 12M18 6 6 18"
+                    stroke="#fff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
+              <span
+                >Jangan pendam masalah berat sendirian karena "cuma
+                permainan".</span
+              >
+            </div>
+            <div class="chip no" style="--r: 1.2deg">
+              <span class="dot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M6 6l12 12M18 6 6 18"
+                    stroke="#fff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
+              <span
+                >Jangan pakai sesi ini buat menyerang teman yang sedang
+                berkonflik.</span
+              >
+            </div>
+            <div class="chip no" style="--r: -1.2deg">
+              <span class="dot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M6 6l12 12M18 6 6 18"
+                    stroke="#fff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
+              <span
+                >Jangan keluar room diam-diam — bilang dulu ke Guru BK kalau
+                terganggu.</span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="side-illustration">
+          <svg viewBox="0 0 220 260">
+            <ellipse cx="110" cy="248" rx="60" ry="12" fill="#171821" opacity=".12" />
+            <rect x="82" y="190" width="18" height="34" rx="8" fill="#2b2b38" />
+            <rect x="118" y="190" width="18" height="34" rx="8" fill="#2b2b38" />
+            <path
+              d="M64 128 Q110 110 156 128 L166 214 Q110 230 54 214 Z"
+              fill="#ffd65c"
+            />
+            <!-- kedua tangan angkat "stop" -->
+            <path
+              d="M66 136 Q34 132 26 104"
+              stroke="#f7c9a0"
+              stroke-width="15"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <circle
+              cx="22"
+              cy="92"
+              r="15"
+              fill="#f7c9a0"
+              stroke="#171821"
+              stroke-width="2.5"
+            />
+            <path
+              d="M154 136 Q186 132 194 104"
+              stroke="#f7c9a0"
+              stroke-width="15"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <circle
+              cx="198"
+              cy="92"
+              r="15"
+              fill="#f7c9a0"
+              stroke="#171821"
+              stroke-width="2.5"
+            />
+            <rect x="100" y="80" width="20" height="18" fill="#f7c9a0" />
+            <circle cx="110" cy="58" r="36" fill="#f7c9a0" />
+            <path
+              d="M76 52c0-24 16-38 34-38s34 14 34 38c-8-8-14-2-18-10-6 10-16 8-22 2-6 10-16 8-28 8Z"
+              fill="#e8b34c"
+            />
+            <circle cx="96" cy="60" r="4.4" fill="#171821" />
+            <circle cx="124" cy="60" r="4.4" fill="#171821" />
+            <path
+              d="M96 78 Q110 74 124 78"
+              stroke="#171821"
+              stroke-width="3.6"
+              fill="none"
+              stroke-linecap="round"
+            />
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= CATATAN AMAN ============================= -->
+    <section class="safe">
+      <div class="wrap" data-reveal>
+        <h2>Ingat, ini ruang aman untuk kamu bercerita.</h2>
+        <div class="safe-grid">
+          <div class="safe-card">
+            Semua yang dibicarakan bersifat rahasia di antara kelompok —
+            kecuali menyangkut keselamatan diri sendiri atau orang lain.
+          </div>
+          <div class="safe-card">
+            Guru BK memantau jalannya sesi, jadi ini ruang aman, bukan ruang
+            untuk saling menghakimi.
+          </div>
+          <div class="safe-card">
+            Tidak ada jawaban "salah" — tujuannya untuk saling memahami,
+            bukan menilai siapa paling benar.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= CTA ============================= -->
+    <section class="cta" id="mulai">
+      <div class="wrap">
+        <div class="mascot-wrap">
+          <svg viewBox="0 0 200 220">
+            <rect x="76" y="178" width="18" height="34" rx="8" fill="#0f0f16" />
+            <rect x="106" y="178" width="18" height="34" rx="8" fill="#0f0f16" />
+            <path
+              d="M60 120 Q100 104 140 120 L150 200 Q100 214 50 200 Z"
+              fill="#ffd65c"
+            />
+            <path
+              d="M62 128 Q30 116 24 84"
+              stroke="#f7c9a0"
+              stroke-width="14"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <circle cx="21" cy="76" r="10" fill="#f7c9a0" />
+            <path
+              d="M138 128 Q170 116 176 84"
+              stroke="#f7c9a0"
+              stroke-width="14"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <circle cx="179" cy="76" r="10" fill="#f7c9a0" />
+            <rect x="90" y="72" width="20" height="18" fill="#f7c9a0" />
+            <circle cx="100" cy="52" r="34" fill="#f7c9a0" />
+            <path
+              d="M66 46c0-24 20-38 34-38s34 14 34 38c-8-10-16-4-20-14-6 12-16 10-22 4-6 10-16 8-26 10Z"
+              fill="#ff6fa5"
+            />
+            <circle cx="88" cy="54" r="4.2" fill="#171821" />
+            <circle cx="112" cy="54" r="4.2" fill="#171821" />
+            <circle cx="76" cy="62" r="6" fill="#ff9ec4" opacity=".5" />
+            <circle cx="124" cy="62" r="6" fill="#ff9ec4" opacity=".5" />
+            <path
+              d="M84 68 Q100 84 116 68"
+              stroke="#171821"
+              stroke-width="3.4"
+              fill="none"
+              stroke-linecap="round"
+            />
+          </svg>
+        </div>
+        <h2>SIAP BERMAIN?</h2>
+        <p class="lede">
+          Sebelum kartu pertama dibuka, pastikan kamu sudah membaca dan
+          paham semua aturan main di atas, ya.
+        </p>
+        <label class="agree" for="agreeCheckbox">
+          <input type="checkbox" id="agreeCheckbox" />
+          <span>Saya sudah membaca dan memahami semua aturan di atas.</span>
+        </label>
+        <a
+          href="javascript:void(0)"
+          id="startBtn"
+          class="start-btn is-disabled"
+          data-target="GANTI_DENGAN_LINK_GAME.html"
+          aria-disabled="true"
+          >MULAI PERMAINAN</a
+        >
+        <p class="start-hint">
+          * Placeholder — ganti nilai <code>data-target</code> di kode
+          dengan file game kamu.
+        </p>
+      </div>
+    </section>
+
+    <footer>
+      MindPlay — dimainkan bersama, didampingi Guru BK. Ruang aman untuk
+      saling memahami.
+    </footer>
+
+    <script>
+      /* ================= marquee content ================= */
+      const words = ["JUJUR", "PEDULI", "AMAN", "PERCAYA", "TERBUKA"];
+      const track = document.getElementById("marqueeTrack");
+      const seq = document.createElement("div");
+      seq.style.display = "flex";
+      words.forEach((w) => {
+        const s = document.createElement("span");
+        s.textContent = w;
+        seq.appendChild(s);
+        const d = document.createElement("span");
+        d.className = "dot";
+        d.textContent = "♦";
+        seq.appendChild(d);
+      });
+      track.appendChild(seq.cloneNode(true));
+      track.appendChild(seq.cloneNode(true));
+
+      /* ================= reveal on scroll ================= */
+      const revealTargets = document.querySelectorAll(
+        "[data-reveal], [data-reveal-group]",
+      );
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              io.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.15, rootMargin: "0px 0px -60px 0px" },
+      );
+      revealTargets.forEach((el) => io.observe(el));
+
+      /* ================= checkbox -> tombol mulai ================= */
+      const agreeCheckbox = document.getElementById("agreeCheckbox");
+      const startBtn = document.getElementById("startBtn");
+
+      agreeCheckbox.addEventListener("change", () => {
+        const checked = agreeCheckbox.checked;
+        startBtn.classList.toggle("is-disabled", !checked);
+        startBtn.setAttribute("aria-disabled", String(!checked));
+      });
+
+      startBtn.addEventListener("click", () => {
+        if (startBtn.classList.contains("is-disabled")) return;
+        // TODO: ganti baris di bawah agar mengarah ke file game-mu,
+        // atau sesuaikan atribut data-target di HTML lalu aktifkan baris ini:
+        // window.location.href = startBtn.dataset.target;
+        alert(
+          "Tombol ini masih placeholder.\nHubungkan ke file game kamu di sini.",
+        );
+      });
+    </script>
+  </body>
+</html>

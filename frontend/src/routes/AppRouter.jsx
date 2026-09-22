@@ -70,7 +70,10 @@ export function AppRouter() {
               <Route path="/schools/new" element={<SchoolFormPage />} />
               <Route path="/schools/:schoolId" element={<SchoolDetailPage />} />
               <Route path="/request-logs" element={<RequestLogsPage />} />
-              <Route path="/students/tracking" element={<StudentTrackingPage />} />
+              <Route
+                path="/students/tracking"
+                element={<StudentTrackingPage />}
+              />
             </Route>
           </Route>
           <Route element={<RoleRoute roles={["ADMIN"]} />}>
@@ -89,7 +92,10 @@ export function AppRouter() {
                 element={<AdminTeacherDetailPage />}
               />
               <Route path="/admin/problems" element={<TopicListPage />} />
-              <Route path="/admin/students/tracking" element={<StudentTrackingPage />} />
+              <Route
+                path="/admin/students/tracking"
+                element={<StudentTrackingPage />}
+              />
               <Route
                 path="/admin/change-password"
                 element={<ChangePasswordPage />}

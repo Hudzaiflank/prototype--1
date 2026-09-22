@@ -93,7 +93,10 @@ export function JoinRoomPage() {
   };
 
   return (
-    <section className="relative mx-auto flex min-h-screen w-full max-w-xl items-center px-5 py-10" aria-labelledby="join-title">
+    <section
+      className="relative mx-auto flex min-h-screen w-full max-w-xl items-center px-5 py-10"
+      aria-labelledby="join-title"
+    >
       {isEnteringRoom ? (
         <div className="fixed inset-0 z-50 flex min-h-screen items-center justify-center bg-[#1a0f28] text-center">
           <div>

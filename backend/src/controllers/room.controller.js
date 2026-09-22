@@ -55,6 +55,21 @@ export async function createTeacherSession(request, response, next) {
     next(error);
   }
 }
+export async function createClassSession(request, response, next) {
+  try {
+    response.status(201).json({
+      success: true,
+      data: await service.createRoomAndGameSession({
+        ...request.validated.body,
+        classId: request.params.classId,
+        teacherId: request.user.userId,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      }),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 export async function join(request, response, next) {
   try {
     response.json({

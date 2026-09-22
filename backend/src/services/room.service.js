@@ -28,6 +28,22 @@ export async function createGameSession(data) {
   if (!result) throw new AppError("Open room not found", "ROOM_NOT_FOUND", 404);
   return result;
 }
+export async function createRoomAndGameSession(data) {
+  const result = await repository.createRoomAndGameSession(data);
+  if (!result)
+    throw new AppError(
+      "Class or topic not found",
+      "GAME_SESSION_REJECTED",
+      404,
+    );
+  if (result.conflict)
+    throw new AppError(
+      "Class already has an open room",
+      "ROOM_ALREADY_OPEN",
+      409,
+    );
+  return result;
+}
 export async function createTeacherGameSession(data) {
   const result = await repository.createTeacherGameSession(data);
   if (!result)
