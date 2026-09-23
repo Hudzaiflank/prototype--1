@@ -441,12 +441,42 @@ export async function findParticipantGroup(participantId, gameSessionId) {
 }
 
 export async function markParticipantDisconnected(participantId) {
+  const [participantRows] = await pool.execute(
+    "SELECT game_session_id AS gameSessionId FROM participants WHERE id = ? LIMIT 1",
+    [participantId],
+  );
+  if (!participantRows.length) return null;
   await pool.execute(
     `UPDATE participants p JOIN game_sessions gs ON gs.id = p.game_session_id
      SET p.status = 'DISCONNECTED', p.disconnected_at = NOW(), gs.state_version = gs.state_version + 1
      WHERE p.id = ?`,
     [participantId],
   );
+  const [groups] = await pool.execute(
+    `SELECT id, game_session_id AS gameSessionId
+     FROM \`groups\` WHERE leader_participant_id = ? LIMIT 1`,
+    [participantId],
+  );
+  if (!groups.length)
+    return { gameSessionId: participantRows[0].gameSessionId };
+  const [replacement] = await pool.execute(
+    `SELECT p.id, p.full_name AS fullName
+     FROM group_members gm JOIN participants p ON p.id = gm.participant_id
+     WHERE gm.group_id = ? AND p.status = 'CONNECTED' AND p.id <> ?
+     ORDER BY gm.assigned_at, gm.id LIMIT 1`,
+    [groups[0].id, participantId],
+  );
+  if (!replacement.length) return { gameSessionId: groups[0].gameSessionId };
+  await pool.execute(
+    "UPDATE `groups` SET leader_participant_id = ? WHERE id = ?",
+    [replacement[0].id, groups[0].id],
+  );
+  return {
+    gameSessionId: groups[0].gameSessionId,
+    groupId: groups[0].id,
+    leaderParticipantId: replacement[0].id,
+    leaderName: replacement[0].fullName,
+  };
 }
 
 export async function getRoomStatus(roomId, teacherId) {

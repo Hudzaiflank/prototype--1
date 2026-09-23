@@ -8,6 +8,7 @@ export function TeacherDetailPage() {
   const [error, setError] = useState("");
   const [credential, setCredential] = useState(null);
   const [resetting, setResetting] = useState(false);
+
   useEffect(() => {
     teacherApi
       .detail(teacherId)
@@ -19,6 +20,7 @@ export function TeacherDetailPage() {
         ),
       );
   }, [teacherId]);
+
   const resetPassword = async () => {
     setResetting(true);
     setError("");
@@ -26,11 +28,15 @@ export function TeacherDetailPage() {
       const { data } = await teacherApi.resetPassword(teacherId);
       setCredential(data.data);
     } catch (requestError) {
-      setError(requestError.response?.data?.message ?? "Password guru belum dapat di-reset.");
+      setError(
+        requestError.response?.data?.message ??
+          "Password guru belum dapat di-reset.",
+      );
     } finally {
       setResetting(false);
     }
   };
+
   return (
     <section className="space-y-6" aria-labelledby="teacher-detail-title">
       <div>
@@ -44,6 +50,7 @@ export function TeacherDetailPage() {
       {error ? <p className="text-sm text-rose-300">{error}</p> : null}
       <div className="grid gap-4 sm:grid-cols-2">
         {[
+          ["NIP", teacher?.nip],
           ["Email", teacher?.email],
           ["Status", teacher?.status],
           ["Dibuat", teacher?.createdAt],
@@ -58,7 +65,12 @@ export function TeacherDetailPage() {
         ))}
       </div>
       <div className="flex flex-wrap gap-3">
-        <button className="rounded-lg bg-amber-300 px-4 py-3 text-sm font-bold text-slate-950 disabled:opacity-60" type="button" onClick={resetPassword} disabled={resetting}>
+        <button
+          className="rounded-lg bg-amber-300 px-4 py-3 text-sm font-bold text-slate-950 disabled:opacity-60"
+          type="button"
+          onClick={resetPassword}
+          disabled={resetting}
+        >
           {resetting ? "Mereset password..." : "Reset password guru"}
         </button>
       </div>
@@ -66,11 +78,23 @@ export function TeacherDetailPage() {
         <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
           <h2 className="text-lg font-semibold">Kelas terkait</h2>
           <div className="mt-3 space-y-2">
-            {teacher.classes.map((item) => <p className="rounded-lg border border-slate-800 p-3" key={item.id}>{item.name} <span className="text-sm text-slate-400">({item.status})</span></p>)}
+            {teacher.classes.map((item) => (
+              <p
+                className="rounded-lg border border-slate-800 p-3"
+                key={item.id}
+              >
+                {item.name}{" "}
+                <span className="text-sm text-slate-400">({item.status})</span>
+              </p>
+            ))}
           </div>
         </div>
       ) : null}
-      {credential ? <p className="rounded-xl border border-emerald-400/50 bg-emerald-950/20 p-4 text-sm text-emerald-200">Password sementara: <strong>{credential.password}</strong></p> : null}
+      {credential ? (
+        <p className="rounded-xl border border-emerald-400/50 bg-emerald-950/20 p-4 text-sm text-emerald-200">
+          Password sementara: <strong>{credential.password}</strong>
+        </p>
+      ) : null}
     </section>
   );
 }

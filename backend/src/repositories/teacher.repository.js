@@ -3,15 +3,16 @@ import { pool } from "../config/database.js";
 export async function createTeacher({
   schoolId,
   fullName,
+  nip,
   email,
   passwordHash,
 }) {
   const [result] = await pool.execute(
-    `INSERT INTO users (school_id, role, full_name, email, password_hash)
-		 VALUES (?, 'TEACHER', ?, ?, ?)`,
-    [schoolId, fullName, email, passwordHash],
+    `INSERT INTO users (school_id, role, full_name, nip, email, password_hash)
+		 VALUES (?, 'TEACHER', ?, ?, ?, ?)`,
+    [schoolId, fullName, nip, email, passwordHash],
   );
-  return { id: result.insertId, fullName, email };
+  return { id: result.insertId, fullName, nip, email };
 }
 
 export async function listTeachers({
@@ -24,8 +25,8 @@ export async function listTeachers({
   const filters = ["school_id = ?", "role = 'TEACHER'"];
   const values = [schoolId];
   if (search) {
-    filters.push("(full_name LIKE ? OR email LIKE ?)");
-    values.push(`%${search}%`, `%${search}%`);
+    filters.push("(full_name LIKE ? OR nip LIKE ? OR email LIKE ?)");
+    values.push(`%${search}%`, `%${search}%`, `%${search}%`);
   }
   if (status) {
     filters.push("status = ?");
@@ -33,7 +34,7 @@ export async function listTeachers({
   }
   const where = filters.join(" AND ");
   const [rows] = await pool.execute(
-    `SELECT id, full_name AS fullName, email, status, created_at AS createdAt
+    `SELECT id, full_name AS fullName, nip, email, status, created_at AS createdAt
      FROM users WHERE ${where} ORDER BY full_name LIMIT ? OFFSET ?`,
     [...values, limit, offset],
   );
@@ -46,7 +47,7 @@ export async function listTeachers({
 
 export async function getTeacherDetail(teacherId, schoolId) {
   const [teachers] = await pool.execute(
-    `SELECT id, full_name AS fullName, email, status, created_at AS createdAt FROM users
+    `SELECT id, full_name AS fullName, nip, email, status, created_at AS createdAt FROM users
      WHERE id = ? AND school_id = ? AND role = 'TEACHER' LIMIT 1`,
     [teacherId, schoolId],
   );
@@ -103,11 +104,30 @@ export async function importTeachers({ schoolId, teachers, actorUserId }) {
       error.details = { emails: existing.map((row) => row.email) };
       throw error;
     }
+    const nips = teachers.map((teacher) => teacher.nip);
+    const nipPlaceholders = nips.map(() => "?").join(",");
+    const [existingNips] = await connection.execute(
+      `SELECT nip FROM users WHERE nip IN (${nipPlaceholders})`,
+      nips,
+    );
+    if (existingNips.length) {
+      const error = new Error("NIP guru sudah terdaftar");
+      error.code = "TEACHER_NIP_DUPLICATE";
+      error.statusCode = 409;
+      error.details = { nips: existingNips.map((row) => row.nip) };
+      throw error;
+    }
     for (const teacher of teachers) {
       const [result] = await connection.execute(
-        `INSERT INTO users (school_id, role, full_name, email, password_hash)
-	 VALUES (?, 'TEACHER', ?, ?, ?)`,
-        [schoolId, teacher.fullName, teacher.email, teacher.passwordHash],
+        `INSERT INTO users (school_id, role, full_name, nip, email, password_hash)
+	 VALUES (?, 'TEACHER', ?, ?, ?, ?)`,
+        [
+          schoolId,
+          teacher.fullName,
+          teacher.nip,
+          teacher.email,
+          teacher.passwordHash,
+        ],
       );
       await connection.execute(
         `INSERT INTO audit_logs (actor_user_id, school_id, action, entity_type, entity_id)
@@ -141,4 +161,11 @@ export async function listTeacherEmails(schoolId) {
     [schoolId],
   );
   return rows.map((row) => row.email);
+}
+
+export async function listTeacherNips() {
+  const [rows] = await pool.execute(
+    "SELECT nip FROM users WHERE role = 'TEACHER' AND nip IS NOT NULL",
+  );
+  return rows.map((row) => row.nip);
 }

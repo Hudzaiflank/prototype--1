@@ -44,9 +44,35 @@ export async function updateGameConfiguration(
 export const getStudentGameState = (sessionId, participantId) =>
   repository.getStudentGameState(sessionId, participantId);
 export const revealCards = (sessionId, groupId, turnId, teacherId) =>
-  repository.revealCards(sessionId, groupId, turnId, teacherId);
+  repository.revealCards(sessionId, groupId, turnId, {
+    kind: "TEACHER",
+    id: teacherId,
+  });
 export const completeTurn = (sessionId, groupId, turnId, teacherId) =>
-  repository.completeTurn(sessionId, groupId, turnId, teacherId);
+  repository.completeTurn(sessionId, groupId, turnId, {
+    kind: "TEACHER",
+    id: teacherId,
+  });
+export const revealCardsByLeader = (
+  sessionId,
+  groupId,
+  turnId,
+  participantId,
+) =>
+  repository.revealCards(sessionId, groupId, turnId, {
+    kind: "STUDENT",
+    id: participantId,
+  });
+export const completeTurnByLeader = (
+  sessionId,
+  groupId,
+  turnId,
+  participantId,
+) =>
+  repository.completeTurn(sessionId, groupId, turnId, {
+    kind: "STUDENT",
+    id: participantId,
+  });
 export const getCurrentTurn = (sessionId, groupId, teacherId) =>
   repository.getCurrentTurn(sessionId, groupId, teacherId);
 export const getGroups = (sessionId, teacherId) =>
@@ -54,12 +80,18 @@ export const getGroups = (sessionId, teacherId) =>
 export async function getOwnGroup(sessionId, participantId) {
   const group = await repository.getOwnGroup(sessionId, participantId);
   return {
+    id: group.id,
     groupNumber: group.groupNumber,
     status: group.status,
     currentTurnNumber: group.currentTurnNumber,
-    members: group.members.map(({ fullName, status }) => ({
+    leaderParticipantId: group.leaderParticipantId,
+    leaderName: group.leaderName,
+    isLeader: Number(group.leaderParticipantId) === Number(participantId),
+    members: group.members.map(({ id, fullName, status, isLeader }) => ({
+      id,
       fullName,
       status,
+      isLeader: Boolean(isLeader),
     })),
   };
 }
