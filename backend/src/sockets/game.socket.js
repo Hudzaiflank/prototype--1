@@ -191,6 +191,22 @@ export function registerGameSocket(namespace) {
         namespace
           .to(`group:${payload.groupId}`)
           .emit(SOCKET_EVENTS.TURN_COMPLETED, result);
+        if (result.sessionFinished) {
+          const finalState =
+            identity.kind === "TEACHER"
+              ? await gameService.getGameSession(
+                  socket.data.gameSessionId,
+                  identity.user.userId,
+                )
+              : await gameService.getStudentGameState(
+                  socket.data.gameSessionId,
+                  identity.participant.id,
+                );
+          namespace
+            .to(gameRoom(socket.data.gameSessionId))
+            .emit(SOCKET_EVENTS.GAME_FINISHED, finalState);
+          return;
+        }
         if (result.nextTurn)
           namespace
             .to(`group:${payload.groupId}`)

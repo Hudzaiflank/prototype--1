@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getStudentRoom, getParticipantSession } from "../../utils/storage";
 import { socketClient } from "../../services/socket/socketClient";
@@ -8,6 +8,7 @@ export function RoomWaitingPage() {
   const navigate = useNavigate();
   const room = getStudentRoom();
   const participantSessionId = getParticipantSession();
+  const [participantName, setParticipantName] = useState("");
 
   useEffect(() => {
     if (!room?.gameSessionId || !participantSessionId) return undefined;
@@ -16,6 +17,7 @@ export function RoomWaitingPage() {
       gameSessionId: room.gameSessionId,
     });
     const handleSnapshot = (state) => {
+      setParticipantName(state.participant?.fullName ?? "");
       if (["PLAYING", "PAUSED"].includes(state.status))
         navigate("../game", { replace: true });
     };
@@ -41,6 +43,11 @@ export function RoomWaitingPage() {
       <h2 className="mt-5 font-['Press_Start_2P'] text-sm leading-relaxed text-[#ffe98a] sm:text-base">
         Menunggu permainan
       </h2>
+      {participantName ? (
+        <p className="mt-4 font-[Lexend] text-base font-bold text-[#fdf6e3]">
+          {participantName}
+        </p>
+      ) : null}
       <p className="mx-auto mt-5 max-w-lg font-[Lexend] text-sm leading-7 text-[#cbb8e0]">
         Jawabanmu sudah tersimpan. Guru akan memulai permainan ketika semua
         peserta siap.
