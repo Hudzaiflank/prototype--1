@@ -7,6 +7,7 @@ export const SOCKET_EVENTS = Object.freeze({
   ALL_PARTICIPANTS_READY: "all-participants-ready",
   YOUR_GROUP_ASSIGNED: "your-group-assigned",
   YOUR_SESSION_RESTORED: "your-session-restored",
+  GROUP_LEADER_CHANGED: "group-leader-changed",
   GROUPS_ASSIGNED: "groups-assigned",
   GAME_STARTED: "game-started",
   GAME_PAUSED: "game-paused",

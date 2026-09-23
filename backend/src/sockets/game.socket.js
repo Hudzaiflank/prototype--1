@@ -143,17 +143,24 @@ export function registerGameSocket(namespace) {
 
     socket.on("reveal-cards", async (payload = {}) => {
       try {
-        if (identity.kind !== "TEACHER")
-          throw new Error("Teacher authorization required");
         const data = parseSocketPayload(turnActionSchema, payload);
         if (Number(payload.gameSessionId) !== Number(socket.data.gameSessionId))
           throw new Error("Game session mismatch");
-        const result = await gameService.revealCards(
-          socket.data.gameSessionId,
-          socketSessionSchema.parse(payload.groupId),
-          data.turnId,
-          identity.user.userId,
-        );
+        const groupId = socketSessionSchema.parse(payload.groupId);
+        const result =
+          identity.kind === "TEACHER"
+            ? await gameService.revealCards(
+                socket.data.gameSessionId,
+                groupId,
+                data.turnId,
+                identity.user.userId,
+              )
+            : await gameService.revealCardsByLeader(
+                socket.data.gameSessionId,
+                groupId,
+                data.turnId,
+                identity.participant.id,
+              );
         namespace
           .to(`group:${payload.groupId}`)
           .emit(SOCKET_EVENTS.CARDS_REVEALED, result);
@@ -163,17 +170,24 @@ export function registerGameSocket(namespace) {
     });
     socket.on("complete-turn", async (payload = {}) => {
       try {
-        if (identity.kind !== "TEACHER")
-          throw new Error("Teacher authorization required");
         const data = parseSocketPayload(turnActionSchema, payload);
         if (Number(payload.gameSessionId) !== Number(socket.data.gameSessionId))
           throw new Error("Game session mismatch");
-        const result = await gameService.completeTurn(
-          socket.data.gameSessionId,
-          socketSessionSchema.parse(payload.groupId),
-          data.turnId,
-          identity.user.userId,
-        );
+        const groupId = socketSessionSchema.parse(payload.groupId);
+        const result =
+          identity.kind === "TEACHER"
+            ? await gameService.completeTurn(
+                socket.data.gameSessionId,
+                groupId,
+                data.turnId,
+                identity.user.userId,
+              )
+            : await gameService.completeTurnByLeader(
+                socket.data.gameSessionId,
+                groupId,
+                data.turnId,
+                identity.participant.id,
+              );
         namespace
           .to(`group:${payload.groupId}`)
           .emit(SOCKET_EVENTS.TURN_COMPLETED, result);
@@ -190,6 +204,15 @@ export function registerGameSocket(namespace) {
       if (identity.kind === "STUDENT") {
         roomService
           .markParticipantDisconnected(identity.participant.id)
+          .then((leaderChange) => {
+            if (!leaderChange?.leaderParticipantId) return;
+            namespace
+              .to(`group:${leaderChange.groupId}`)
+              .emit(SOCKET_EVENTS.GROUP_LEADER_CHANGED, leaderChange);
+            namespace
+              .to(`teacher-game:${leaderChange.gameSessionId}`)
+              .emit(SOCKET_EVENTS.GROUP_LEADER_CHANGED, leaderChange);
+          })
           .catch(() => {});
         namespace
           .to(`teacher-game:${identity.participant.gameSessionId}`)

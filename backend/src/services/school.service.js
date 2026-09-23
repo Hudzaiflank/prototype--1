@@ -23,7 +23,7 @@ export async function createSchool({ name, level, actorUserId }) {
   const slug = slugify(name);
   const password = temporaryPassword();
   const school = await createSchoolWithAdmin({
-    school: { name, level },
+    school: { name, level, slug },
     admin: {
       actorUserId,
       email: `admin.${slug}@phillyogo.id`,

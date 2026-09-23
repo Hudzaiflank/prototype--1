@@ -1,4 +1,9 @@
-export function TeacherControls({ status, onAction, disabled = false }) {
+export function TeacherControls({
+  status,
+  gameMode,
+  onAction,
+  disabled = false,
+}) {
   const actions = {
     WAITING: [{ label: "Mulai permainan", action: "start-game" }],
     PLAYING: [
@@ -12,10 +17,16 @@ export function TeacherControls({ status, onAction, disabled = false }) {
       { label: "Selesaikan permainan", action: "finish-game" },
     ],
   };
+  const groupActions = {
+    WAITING: [{ label: "Mulai permainan", action: "start-game" }],
+    PLAYING: [{ label: "Selesaikan permainan", action: "finish-game" }],
+    PAUSED: [{ label: "Selesaikan permainan", action: "finish-game" }],
+  };
+  const visibleActions = gameMode === "GROUPS" ? groupActions : actions;
 
   return (
     <div className="flex flex-wrap gap-3" aria-label="Teacher controls">
-      {(actions[status] ?? []).map((item) => (
+      {(visibleActions[status] ?? []).map((item) => (
         <button
           key={item.action}
           className="rounded-xl border border-[#ffd23f] px-4 py-3 font-[Lexend] text-sm font-bold text-[#ffe98a] transition hover:bg-[#ffd23f] hover:text-[#201a14] disabled:cursor-not-allowed disabled:opacity-50"

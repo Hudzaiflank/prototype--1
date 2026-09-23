@@ -15,7 +15,7 @@ export const uploadTeacherFile = multer({
 export async function create(request, response, next) {
   try {
     const [rows] = await pool.execute(
-      "SELECT domain FROM schools WHERE id = ?",
+      "SELECT name, domain FROM schools WHERE id = ?",
       [request.user.schoolId],
     );
     response.status(201).json({
@@ -24,6 +24,7 @@ export async function create(request, response, next) {
         ...request.validated.body,
         schoolId: request.user.schoolId,
         schoolDomain: rows[0].domain,
+        schoolName: rows[0].name,
       }),
     });
   } catch (error) {
@@ -111,7 +112,7 @@ export async function importTeachers(request, response, next) {
         .status(400)
         .json({ success: false, message: "Excel file is required" });
     const [rows] = await pool.execute(
-      "SELECT domain FROM schools WHERE id = ?",
+      "SELECT name, domain FROM schools WHERE id = ?",
       [request.user.schoolId],
     );
     response.status(201).json({
@@ -120,6 +121,7 @@ export async function importTeachers(request, response, next) {
         buffer: request.file.buffer,
         schoolId: request.user.schoolId,
         schoolDomain: rows[0].domain,
+        schoolName: rows[0].name,
         actorUserId: request.user.userId,
       }),
     });
@@ -135,7 +137,7 @@ export async function previewImport(request, response, next) {
         .status(400)
         .json({ success: false, message: "Excel file is required" });
     const [rows] = await pool.execute(
-      "SELECT domain FROM schools WHERE id = ?",
+      "SELECT name, domain FROM schools WHERE id = ?",
       [request.user.schoolId],
     );
     response.json({
@@ -144,6 +146,7 @@ export async function previewImport(request, response, next) {
         buffer: request.file.buffer,
         schoolId: request.user.schoolId,
         schoolDomain: rows[0].domain,
+        schoolName: rows[0].name,
       }),
     });
   } catch (error) {
@@ -155,9 +158,11 @@ export function downloadTemplate(_request, response, next) {
   try {
     const workbook = XLSX.utils.book_new();
     const sheet = XLSX.utils.aoa_to_sheet([
-      ["Nama Lengkap"],
-      ["Budi Santoso"],
+      ["Nama Lengkap", "NIP"],
+      ["Budi Santoso", "198501012010011001"],
     ]);
+    sheet["B1"].z = "@";
+    sheet["!cols"] = [{ wch: 28 }, { wch: 22 }];
     XLSX.utils.book_append_sheet(workbook, sheet, "Guru");
     const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
     response

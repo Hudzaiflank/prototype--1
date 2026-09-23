@@ -130,6 +130,10 @@ export function AppRouter() {
               />
               <Route path="/teacher/history" element={<RoomHistoryPage />} />
               <Route
+                path="/teacher/students/tracking"
+                element={<StudentTrackingPage />}
+              />
+              <Route
                 path="/teacher/history/:sessionId"
                 element={<HistoryDetailPage />}
               />

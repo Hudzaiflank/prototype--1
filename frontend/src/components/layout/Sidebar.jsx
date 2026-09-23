@@ -17,6 +17,7 @@ const NAVIGATION = {
   TEACHER: [
     { label: "Dashboard", to: "/teacher/dashboard" },
     { label: "Kelas Saya", to: "/teacher/classes" },
+    { label: "Tracking Siswa", to: "/teacher/students/tracking" },
     { label: "Riwayat", to: "/teacher/history" },
   ],
 };

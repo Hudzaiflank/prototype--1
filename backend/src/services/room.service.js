@@ -90,7 +90,7 @@ export async function listRoomStudents(gameSessionId) {
 export async function submitProblem(data) {
   if (!(await repository.submitProblem(data)))
     throw new AppError(
-      "Problem already submitted or participant not found",
+      "nama tersebut sudah di submit. Pastikan nama yang kamu masukkan sudah benar",
       "PROBLEM_SUBMISSION_REJECTED",
       409,
     );

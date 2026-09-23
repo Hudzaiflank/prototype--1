@@ -39,23 +39,47 @@ export async function findLatestStudentEnrollments(studentIds) {
   return rows;
 }
 
-export async function createClassWithStudents({ schoolId, gradeLevel, major, classNumber, academicYear, students }) {
+export async function createClassWithStudents({
+  schoolId,
+  gradeLevel,
+  major,
+  classNumber,
+  academicYear,
+  students,
+}) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-    const [schools] = await connection.execute("SELECT level FROM schools WHERE id = ? FOR UPDATE", [schoolId]);
+    const [schools] = await connection.execute(
+      "SELECT level FROM schools WHERE id = ? FOR UPDATE",
+      [schoolId],
+    );
     if (!schools.length) throw new Error("School not found");
-    const allowedGrades = schools[0].level === "SMP" ? ["7", "8", "9"] : ["10", "11", "12"];
-    if (!allowedGrades.includes(String(gradeLevel))) throw new Error("Tingkat tidak sesuai dengan jenjang sekolah");
-    if (schools[0].level === "SMP" && major) throw new Error("SMP tidak memiliki jurusan");
-    if (schools[0].level !== "SMP" && !major) throw new Error("Jurusan wajib diisi untuk SMA/SMK");
+    const allowedGrades =
+      schools[0].level === "SMP" ? ["7", "8", "9"] : ["10", "11", "12"];
+    if (!allowedGrades.includes(String(gradeLevel)))
+      throw new Error("Tingkat tidak sesuai dengan jenjang sekolah");
+    if (schools[0].level === "SMP" && major)
+      throw new Error("SMP tidak memiliki jurusan");
+    if (schools[0].level !== "SMP" && !major)
+      throw new Error("Jurusan wajib diisi untuk SMA/SMK");
     const [classResult] = await connection.execute(
       `INSERT INTO classes (school_id, academic_year, grade_level, major, class_number, name)
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [schoolId, academicYear, gradeLevel, major, classNumber, `${gradeLevel}-${major || "UMUM"}-${classNumber}`],
+      [
+        schoolId,
+        academicYear,
+        gradeLevel,
+        major,
+        classNumber,
+        `${gradeLevel}-${major || "UMUM"}-${classNumber}`,
+      ],
     );
     for (const student of students) {
-      const [existing] = await connection.execute("SELECT id FROM students WHERE nisn = ? LIMIT 1", [student.nisn]);
+      const [existing] = await connection.execute(
+        "SELECT id FROM students WHERE nisn = ? LIMIT 1",
+        [student.nisn],
+      );
       let studentId = existing[0]?.id;
       if (!studentId) {
         const [studentResult] = await connection.execute(
@@ -99,15 +123,25 @@ export async function resetClassStudents(classId, schoolId) {
      WHERE e.class_id = ? AND c.school_id = ? AND e.status = 'ACTIVE'`,
     [classId, schoolId],
   );
-  const [classRows] = await pool.execute("SELECT id FROM classes WHERE id = ? AND school_id = ?", [classId, schoolId]);
+  const [classRows] = await pool.execute(
+    "SELECT id FROM classes WHERE id = ? AND school_id = ?",
+    [classId, schoolId],
+  );
   return classRows.length > 0 && result !== undefined;
 }
 
-export async function promoteSchool({ schoolId, academicYear, nextAcademicYear }) {
+export async function promoteSchool({
+  schoolId,
+  academicYear,
+  nextAcademicYear,
+}) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-    const [schools] = await connection.execute("SELECT level FROM schools WHERE id = ? FOR UPDATE", [schoolId]);
+    const [schools] = await connection.execute(
+      "SELECT level FROM schools WHERE id = ? FOR UPDATE",
+      [schoolId],
+    );
     if (!schools.length) return null;
     const terminal = schools[0].level === "SMP" ? "9" : "12";
     const increment = (grade) => String(Number(grade) + 1);
@@ -118,20 +152,39 @@ export async function promoteSchool({ schoolId, academicYear, nextAcademicYear }
     for (const current of classes) {
       const targetGrade = increment(current.grade_level);
       if (current.grade_level === terminal) {
-        await connection.execute("UPDATE classes SET status = 'INACTIVE' WHERE id = ?", [current.id]);
-        await connection.execute("UPDATE class_enrollments SET status = 'INACTIVE' WHERE class_id = ? AND status = 'ACTIVE'", [current.id]);
+        await connection.execute(
+          "UPDATE classes SET status = 'INACTIVE' WHERE id = ?",
+          [current.id],
+        );
+        await connection.execute(
+          "UPDATE class_enrollments SET status = 'INACTIVE' WHERE class_id = ? AND status = 'ACTIVE'",
+          [current.id],
+        );
         continue;
       }
       let [targets] = await connection.execute(
         "SELECT id FROM classes WHERE school_id = ? AND academic_year = ? AND grade_level = ? AND major = ? AND class_number = ? LIMIT 1",
-        [schoolId, nextAcademicYear, targetGrade, current.major, current.class_number],
+        [
+          schoolId,
+          nextAcademicYear,
+          targetGrade,
+          current.major,
+          current.class_number,
+        ],
       );
       let targetId = targets[0]?.id;
       if (!targetId) {
         const [result] = await connection.execute(
           `INSERT INTO classes (school_id, academic_year, grade_level, major, class_number, name)
            VALUES (?, ?, ?, ?, ?, ?)`,
-          [schoolId, nextAcademicYear, targetGrade, current.major, current.class_number, `${targetGrade}-${current.major || "UMUM"}-${current.class_number}`],
+          [
+            schoolId,
+            nextAcademicYear,
+            targetGrade,
+            current.major,
+            current.class_number,
+            `${targetGrade}-${current.major || "UMUM"}-${current.class_number}`,
+          ],
         );
         targetId = result.insertId;
       }
@@ -140,7 +193,10 @@ export async function promoteSchool({ schoolId, academicYear, nextAcademicYear }
          SELECT teacher_id, ?, assigned_at FROM teacher_classes WHERE class_id = ? AND unassigned_at IS NULL`,
         [targetId, current.id],
       );
-      await connection.execute("UPDATE teacher_classes SET unassigned_at = NOW() WHERE class_id = ? AND unassigned_at IS NULL", [current.id]);
+      await connection.execute(
+        "UPDATE teacher_classes SET unassigned_at = NOW() WHERE class_id = ? AND unassigned_at IS NULL",
+        [current.id],
+      );
       await connection.execute(
         `INSERT INTO class_enrollments (student_id, class_id, school_id, academic_year)
          SELECT student_id, ?, school_id, ? FROM class_enrollments
@@ -152,7 +208,10 @@ export async function promoteSchool({ schoolId, academicYear, nextAcademicYear }
         `UPDATE class_enrollments SET status = 'INACTIVE' WHERE class_id = ? AND status = 'ACTIVE'`,
         [current.id],
       );
-      await connection.execute("UPDATE classes SET status = 'INACTIVE' WHERE id = ?", [current.id]);
+      await connection.execute(
+        "UPDATE classes SET status = 'INACTIVE' WHERE id = ?",
+        [current.id],
+      );
     }
     await connection.commit();
     return { academicYear, nextAcademicYear, promoted: classes.length };
@@ -174,31 +233,79 @@ export async function resetLevel({ schoolId, academicYear, gradeLevel }) {
   return { released: result.affectedRows };
 }
 
-export async function listStudents(schoolId = null) {
+export async function listStudents(schoolId = null, teacherId = null) {
   const values = [];
-  const scope = schoolId ? "WHERE e.school_id = ? AND e.status = 'ACTIVE'" : "WHERE e.status = 'ACTIVE'";
-  if (schoolId) values.push(schoolId);
+  let scope = "WHERE e.status = 'ACTIVE'";
+  let teacherJoin = "";
+  if (schoolId) {
+    scope += " AND e.school_id = ?";
+    values.push(schoolId);
+  }
+  if (teacherId) {
+    teacherJoin =
+      " JOIN teacher_classes tc ON tc.class_id = e.class_id AND tc.teacher_id = ? AND tc.unassigned_at IS NULL";
+    values.unshift(teacherId);
+  }
   const [rows] = await pool.execute(
-    `SELECT DISTINCT s.id, s.nisn, s.full_name AS fullName
-     FROM students s JOIN class_enrollments e ON e.student_id = s.id ${scope}
+    `SELECT s.id, s.nisn, s.full_name AS fullName,
+       GROUP_CONCAT(DISTINCT CONCAT(c.name, ' (', c.academic_year, ')') ORDER BY c.academic_year, c.name SEPARATOR ', ') AS className
+     FROM students s JOIN class_enrollments e ON e.student_id = s.id
+     JOIN classes c ON c.id = e.class_id${teacherJoin}
+     ${scope}
+     GROUP BY s.id, s.nisn, s.full_name
      ORDER BY s.full_name, s.nisn`,
     values,
   );
   return rows;
 }
 
-export async function getStudentHistory({ studentId, schoolId = null }) {
-  const values = [studentId];
-  const scope = schoolId ? "AND c.school_id = ?" : "";
-  if (schoolId) values.push(schoolId);
-  const [studentRows] = await pool.execute("SELECT id, nisn, full_name AS fullName FROM students WHERE id = ?", [studentId]);
+export async function getStudentHistory({
+  studentId,
+  schoolId = null,
+  teacherId = null,
+}) {
+  const studentValues = [];
+  let studentJoins = "";
+  let studentScope = "";
+  if (schoolId) {
+    studentJoins +=
+      " JOIN class_enrollments e ON e.student_id = s.id AND e.status = 'ACTIVE' JOIN classes c ON c.id = e.class_id";
+    studentScope += " AND e.school_id = ?";
+  }
+  if (teacherId) {
+    if (!studentJoins) {
+      studentJoins +=
+        " JOIN class_enrollments e ON e.student_id = s.id AND e.status = 'ACTIVE' JOIN classes c ON c.id = e.class_id";
+    }
+    studentJoins +=
+      " JOIN teacher_classes tc ON tc.class_id = e.class_id AND tc.teacher_id = ? AND tc.unassigned_at IS NULL";
+    studentValues.unshift(teacherId);
+  }
+  studentValues.push(studentId);
+  if (schoolId) studentValues.push(schoolId);
+  const [studentRows] = await pool.execute(
+    `SELECT DISTINCT s.id, s.nisn, s.full_name AS fullName
+     FROM students s${studentJoins}
+     WHERE s.id = ?${studentScope}`,
+    studentValues,
+  );
   if (!studentRows.length) return null;
+
+  const values = [studentId];
+  let scope = schoolId ? "AND c.school_id = ?" : "";
+  if (schoolId) values.push(schoolId);
+  if (teacherId) {
+    scope +=
+      " AND e.status = 'ACTIVE' AND EXISTS (SELECT 1 FROM teacher_classes tc WHERE tc.class_id = c.id AND tc.teacher_id = ? AND tc.unassigned_at IS NULL)";
+    values.push(teacherId);
+  }
   const [rows] = await pool.execute(
     `SELECT c.id AS classId, c.name AS className, c.academic_year AS academicYear,
        sc.name AS schoolName, gs.id AS gameSessionId, gs.created_at AS playedAt,
        pr.content AS problemContent
      FROM participants p JOIN game_sessions gs ON gs.id = p.game_session_id
      JOIN classes c ON c.id = COALESCE(gs.class_id, (SELECT class_id FROM rooms WHERE id = gs.room_id))
+     JOIN class_enrollments e ON e.student_id = p.student_id AND e.class_id = c.id
      JOIN schools sc ON sc.id = c.school_id
      JOIN problems pr ON pr.participant_id = p.id
      WHERE p.student_id = ? ${scope}

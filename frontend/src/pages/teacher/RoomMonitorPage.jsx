@@ -122,6 +122,16 @@ export function RoomMonitorPage() {
     ];
     events.forEach((event) => socket.on(event, updateState));
     socket.on(SOCKET_EVENTS.PARTICIPANT_JOINED, handleParticipantJoined);
+    const refreshGroupsAfterLeaderChange = () => {
+      gameApi
+        .groups(sessionId)
+        .then(({ data }) => setGroups(data.data ?? []))
+        .catch(() => {});
+    };
+    socket.on(
+      SOCKET_EVENTS.GROUP_LEADER_CHANGED,
+      refreshGroupsAfterLeaderChange,
+    );
     socket.on(
       SOCKET_EVENTS.PARTICIPANT_STATUS_CHANGED,
       handleParticipantStatusChanged,
@@ -143,6 +153,10 @@ export function RoomMonitorPage() {
       active = false;
       events.forEach((event) => socket.off(event, updateState));
       socket.off(SOCKET_EVENTS.PARTICIPANT_JOINED, handleParticipantJoined);
+      socket.off(
+        SOCKET_EVENTS.GROUP_LEADER_CHANGED,
+        refreshGroupsAfterLeaderChange,
+      );
       socket.off(
         SOCKET_EVENTS.PARTICIPANT_STATUS_CHANGED,
         handleParticipantStatusChanged,
@@ -344,6 +358,9 @@ export function RoomMonitorPage() {
                 <p className="mt-1 text-sm text-slate-400">
                   {group.members?.length ?? 0} peserta
                 </p>
+                <p className="mt-1 text-sm font-semibold text-amber-200">
+                  Ketua: {group.leaderName ?? "Belum ditentukan"}
+                </p>
                 <ul className="mt-3 space-y-1 text-sm text-slate-300">
                   {(group.members ?? []).map((member) => (
                     <li key={member.id}>{member.fullName}</li>
@@ -368,6 +385,7 @@ export function RoomMonitorPage() {
       <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
         <TeacherControls
           status={game?.status}
+          gameMode={game?.gameMode}
           onAction={handleAction}
           disabled={!game}
         />

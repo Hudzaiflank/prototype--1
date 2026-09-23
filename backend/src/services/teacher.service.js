@@ -12,8 +12,8 @@ const emailName = (name) =>
     .replace(/[^a-z0-9]+/g, ".")
     .replace(/^\.|\.$/g, "");
 
-const normalizeSchoolDomain = (domain) =>
-  String(domain ?? "")
+const normalizeSchoolDomain = (domain, schoolName) => {
+  const normalized = String(domain ?? "")
     .trim()
     .toLowerCase()
     .replace(/^https?:\/\//, "")
@@ -21,9 +21,18 @@ const normalizeSchoolDomain = (domain) =>
     .replace(/@/g, ".")
     .replace(/\.+/g, ".")
     .replace(/^\.|\.$/g, "");
+  if (normalized) return normalized;
 
-const generatedEmail = (name, domain, suffix = "") =>
-  `${emailName(name) || "guru"}${suffix}@${normalizeSchoolDomain(domain)}`;
+  const schoolSlug = String(schoolName ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  return schoolSlug ? `${schoolSlug}.phillyogo.id` : "phillyogo.id";
+};
+
+const generatedEmail = (name, domain, schoolName, suffix = "") =>
+  `${emailName(name) || "guru"}${suffix}@${normalizeSchoolDomain(domain, schoolName)}`;
 
 function readTeacherRows(buffer) {
   const workbook = XLSX.read(buffer, { type: "buffer" });
@@ -36,9 +45,15 @@ function readTeacherRows(buffer) {
   return rows;
 }
 
-async function normalizeTeacherRows({ buffer, schoolId, schoolDomain }) {
+async function normalizeTeacherRows({
+  buffer,
+  schoolId,
+  schoolDomain,
+  schoolName,
+}) {
   const rows = readTeacherRows(buffer);
   const usedEmails = new Set(await repository.listTeacherEmails(schoolId));
+  const usedNips = new Set(await repository.listTeacherNips());
   const preview = [];
   const errors = [];
   for (const [index, row] of rows.entries()) {
@@ -47,15 +62,28 @@ async function normalizeTeacherRows({ buffer, schoolId, schoolDomain }) {
       errors.push({ row: index + 2, message: "Nama Lengkap wajib diisi" });
       continue;
     }
-    const baseEmail = generatedEmail(fullName, schoolDomain);
+    const nip = String(row.NIP ?? "").trim();
+    if (!/^\d{18}$/.test(nip)) {
+      errors.push({
+        row: index + 2,
+        message: "NIP wajib diisi dengan tepat 18 digit angka",
+      });
+      continue;
+    }
+    if (usedNips.has(nip)) {
+      errors.push({ row: index + 2, message: "NIP sudah terdaftar" });
+      continue;
+    }
+    usedNips.add(nip);
+    const baseEmail = generatedEmail(fullName, schoolDomain, schoolName);
     let suffix = 1;
     let email = baseEmail;
     while (usedEmails.has(email)) {
       suffix += 1;
-      email = generatedEmail(fullName, schoolDomain, suffix);
+      email = generatedEmail(fullName, schoolDomain, schoolName, suffix);
     }
     usedEmails.add(email);
-    preview.push({ row: index + 2, fullName, email });
+    preview.push({ row: index + 2, fullName, nip, email });
   }
   return { preview, errors };
 }
@@ -63,25 +91,28 @@ async function normalizeTeacherRows({ buffer, schoolId, schoolDomain }) {
 export async function createTeacher({
   schoolId,
   schoolDomain,
+  schoolName,
   fullName,
   email,
+  nip,
 }) {
   const providedEmail = email?.trim().toLowerCase();
   let teacherEmail = providedEmail;
   if (!teacherEmail) {
     const usedEmails = new Set(await repository.listTeacherEmails(schoolId));
-    const baseEmail = generatedEmail(fullName, schoolDomain);
+    const baseEmail = generatedEmail(fullName, schoolDomain, schoolName);
     let suffix = 1;
     teacherEmail = baseEmail;
     while (usedEmails.has(teacherEmail)) {
       suffix += 1;
-      teacherEmail = generatedEmail(fullName, schoolDomain, suffix);
+      teacherEmail = generatedEmail(fullName, schoolDomain, schoolName, suffix);
     }
   }
   const password = "Guru@123";
   const teacher = await repository.createTeacher({
     schoolId,
     fullName,
+    nip,
     email: teacherEmail,
     passwordHash: await hashPassword(password),
   });
@@ -152,12 +183,14 @@ export async function importTeachers({
   buffer,
   schoolId,
   schoolDomain,
+  schoolName,
   actorUserId,
 }) {
   const { preview, errors } = await normalizeTeacherRows({
     buffer,
     schoolId,
     schoolDomain,
+    schoolName,
   });
   if (errors.length)
     throw new AppError("Import contains invalid rows", "IMPORT_INVALID", 400, {
@@ -180,11 +213,17 @@ export async function importTeachers({
   };
 }
 
-export async function previewTeachers({ buffer, schoolId, schoolDomain }) {
+export async function previewTeachers({
+  buffer,
+  schoolId,
+  schoolDomain,
+  schoolName,
+}) {
   const result = await normalizeTeacherRows({
     buffer,
     schoolId,
     schoolDomain,
+    schoolName,
   });
   return {
     rows: result.preview,

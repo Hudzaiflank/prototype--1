@@ -38,10 +38,18 @@ export async function startGame(sessionId, teacherId) {
       "SELECT id, participant_id FROM problems WHERE game_session_id = ? AND status = 'ACTIVE' ORDER BY id",
       [sessionId],
     );
-    const matching = createPerfectMatching(participants, problems);
     const groupCount = session.game_mode === "GROUPS" ? session.group_count : 1;
     if (!groupCount || groupCount > participants.length)
       throw new AppError("Invalid group count", "INVALID_GROUP_COUNT", 409);
+    if (
+      session.game_mode === "GROUPS" &&
+      groupCount > Math.floor(participants.length / 2)
+    )
+      throw new AppError(
+        "Jumlah kelompok terlalu banyak. Setiap kelompok harus memiliki minimal dua anggota.",
+        "INVALID_GROUP_COUNT",
+        409,
+      );
 
     const groupIds = [];
     for (let index = 0; index < groupCount; index += 1) {
@@ -52,15 +60,46 @@ export async function startGame(sessionId, teacherId) {
       groupIds.push(result.insertId);
     }
     const participantGroup = new Map();
+    const groupLeader = new Map();
     const groupTurnNumbers = new Map(groupIds.map((groupId) => [groupId, 0]));
     for (const [index, participant] of secureShuffle(participants).entries()) {
       const groupId = groupIds[index % groupCount];
       participantGroup.set(participant.id, groupId);
+      if (!groupLeader.has(groupId)) groupLeader.set(groupId, participant.id);
       await connection.execute(
         "INSERT INTO group_members (group_id, participant_id) VALUES (?, ?)",
         [groupId, participant.id],
       );
     }
+    for (const [groupId, participantId] of groupLeader) {
+      await connection.execute(
+        "UPDATE `groups` SET leader_participant_id = ? WHERE id = ?",
+        [participantId, groupId],
+      );
+    }
+
+    const matching = [];
+    const groupedParticipants = new Map();
+    const groupedProblems = new Map();
+    for (const participant of participants) {
+      const groupId = participantGroup.get(participant.id);
+      if (!groupedParticipants.has(groupId))
+        groupedParticipants.set(groupId, []);
+      groupedParticipants.get(groupId).push(participant);
+    }
+    for (const problem of problems) {
+      const groupId = participantGroup.get(problem.participant_id);
+      if (!groupedProblems.has(groupId)) groupedProblems.set(groupId, []);
+      groupedProblems.get(groupId).push(problem);
+    }
+    for (const groupId of groupIds) {
+      const groupMatching = createPerfectMatching(
+        groupedParticipants.get(groupId) ?? [],
+        groupedProblems.get(groupId) ?? [],
+      );
+      matching.push(...groupMatching);
+    }
+
     for (const assignment of matching) {
       const groupId = participantGroup.get(assignment.participantId);
       const turnNumber = groupTurnNumbers.get(groupId) + 1;
@@ -239,14 +278,18 @@ export async function getStudentGameState(sessionId, participantId) {
   if (!participant.length)
     throw new AppError("Participant not found", "PARTICIPANT_NOT_FOUND", 404);
   const [groups] = await pool.execute(
-    `SELECT g.id, g.group_number AS groupNumber, g.status, g.active_turn_id AS activeTurnId
+    `SELECT g.id, g.group_number AS groupNumber, g.status, g.active_turn_id AS activeTurnId,
+       g.leader_participant_id AS leaderParticipantId, leader.full_name AS leaderName
      FROM \`groups\` g JOIN group_members gm ON gm.group_id = g.id
+     LEFT JOIN participants leader ON leader.id = g.leader_participant_id
      WHERE g.game_session_id = ? AND gm.participant_id = ? LIMIT 1`,
     [sessionId, participantId],
   );
   const [members] = groups.length
     ? await pool.execute(
-        `SELECT p.id, p.full_name AS fullName, p.status FROM group_members gm
+        `SELECT p.id, p.full_name AS fullName, p.status,
+           p.id = (SELECT leader_participant_id FROM \`groups\` WHERE id = gm.group_id) AS isLeader
+         FROM group_members gm
          JOIN participants p ON p.id = gm.participant_id WHERE gm.group_id = ? ORDER BY p.full_name`,
         [groups[0].id],
       )
@@ -266,16 +309,24 @@ export async function getStudentGameState(sessionId, participantId) {
   return {
     ...sessions[0],
     participant: {
+      id: participant[0].id,
       fullName: participant[0].fullName,
       status: participant[0].status,
+      isLeader:
+        groups.length &&
+        Number(groups[0].leaderParticipantId) === Number(participantId),
     },
     group: groups.length
       ? {
+          id: groups[0].id,
           groupNumber: groups[0].groupNumber,
           status: groups[0].status,
-          members: members.map(({ fullName, status }) => ({
+          leaderParticipantId: groups[0].leaderParticipantId,
+          leaderName: groups[0].leaderName,
+          members: members.map(({ fullName, status, isLeader }) => ({
             fullName,
             status,
+            isLeader: Boolean(isLeader),
           })),
         }
       : null,
@@ -293,17 +344,26 @@ export async function getStudentGameState(sessionId, participantId) {
   };
 }
 
-async function lockTurnContext(
-  connection,
-  sessionId,
-  groupId,
-  turnId,
-  teacherId,
-) {
-  const [groups] = await connection.execute(
-    "SELECT g.id, g.active_turn_id AS activeTurnId, gs.status AS sessionStatus FROM `groups` g JOIN game_sessions gs ON gs.id = g.game_session_id WHERE g.id = ? AND g.game_session_id = ? AND gs.created_by = ? FOR UPDATE",
-    [groupId, sessionId, teacherId],
-  );
+async function lockTurnContext(connection, sessionId, groupId, turnId, actor) {
+  const groupQuery =
+    actor.kind === "TEACHER"
+      ? {
+          sql: `SELECT g.id, g.active_turn_id AS activeTurnId, g.leader_participant_id AS leaderParticipantId,
+                 gs.status AS sessionStatus, gs.game_mode AS gameMode
+              FROM \`groups\` g JOIN game_sessions gs ON gs.id = g.game_session_id
+              WHERE g.id = ? AND g.game_session_id = ? AND gs.created_by = ? FOR UPDATE`,
+          params: [groupId, sessionId, actor.id],
+        }
+      : {
+          sql: `SELECT g.id, g.active_turn_id AS activeTurnId, g.leader_participant_id AS leaderParticipantId,
+                 gs.status AS sessionStatus, gs.game_mode AS gameMode
+              FROM \`groups\` g JOIN game_sessions gs ON gs.id = g.game_session_id
+              JOIN group_members actor_member ON actor_member.group_id = g.id
+              WHERE g.id = ? AND g.game_session_id = ?
+                AND actor_member.participant_id = ? AND g.leader_participant_id = ? FOR UPDATE`,
+          params: [groupId, sessionId, actor.id, actor.id],
+        };
+  const [groups] = await connection.execute(groupQuery.sql, groupQuery.params);
   if (!groups.length)
     throw new AppError("Group not found", "GROUP_NOT_FOUND", 404);
   const [turns] = await connection.execute(
@@ -319,6 +379,18 @@ async function lockTurnContext(
     throw new AppError("Turn not found", "TURN_NOT_FOUND", 404);
   if (groups[0].sessionStatus !== "PLAYING")
     throw new AppError("Game is not playing", "INVALID_GAME_STATE", 409);
+  if (actor.kind === "TEACHER" && groups[0].gameMode === "GROUPS")
+    throw new AppError(
+      "Ketua kelompok yang mengatur turn.",
+      "GROUP_LEADER_REQUIRED",
+      403,
+    );
+  if (actor.kind === "STUDENT" && groups[0].gameMode !== "GROUPS")
+    throw new AppError(
+      "Ketua kelompok hanya digunakan pada mode kelompok.",
+      "GROUP_LEADER_NOT_ALLOWED",
+      403,
+    );
   if (
     Number(groups[0].activeTurnId) !== Number(turnId) ||
     turns[0].status !== "ACTIVE"
@@ -337,7 +409,7 @@ const publicTurn = (turn) => ({
   problemCardState: turn.problem_card_state,
 });
 
-export async function revealCards(sessionId, groupId, turnId, teacherId) {
+export async function revealCards(sessionId, groupId, turnId, actor) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
@@ -346,7 +418,7 @@ export async function revealCards(sessionId, groupId, turnId, teacherId) {
       sessionId,
       groupId,
       turnId,
-      teacherId,
+      actor,
     );
     if (
       turn.participant_card_state !== "HIDDEN" ||
@@ -380,7 +452,7 @@ export async function revealCards(sessionId, groupId, turnId, teacherId) {
   }
 }
 
-export async function completeTurn(sessionId, groupId, turnId, teacherId) {
+export async function completeTurn(sessionId, groupId, turnId, actor) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
@@ -389,7 +461,7 @@ export async function completeTurn(sessionId, groupId, turnId, teacherId) {
       sessionId,
       groupId,
       turnId,
-      teacherId,
+      actor,
     );
     await connection.execute(
       "UPDATE assignments SET status = 'COMPLETED', completed_at = NOW() WHERE id = ?",
@@ -483,19 +555,22 @@ export async function getGroups(sessionId, teacherId) {
   const [rows] = await pool.execute(
     `SELECT g.id, g.group_number AS groupNumber, g.status,
 			g.active_turn_id AS activeTurnId, gt.turn_number AS currentTurnNumber,
+      g.leader_participant_id AS leaderParticipantId, leader.full_name AS leaderName,
       (SELECT COUNT(*) FROM game_turns all_turns WHERE all_turns.group_id = g.id) AS totalTurnCount,
       (SELECT COUNT(*) FROM game_turns completed_turns WHERE completed_turns.group_id = g.id AND completed_turns.status = 'COMPLETED') AS completedTurnCount
-		 FROM \`groups\` g JOIN game_sessions gs ON gs.id = g.game_session_id
+     FROM \`groups\` g JOIN game_sessions gs ON gs.id = g.game_session_id
+     LEFT JOIN participants leader ON leader.id = g.leader_participant_id
 		 LEFT JOIN game_turns gt ON gt.id = g.active_turn_id
 		 WHERE g.game_session_id = ? AND gs.created_by = ? ORDER BY g.group_number`,
     [sessionId, teacherId],
   );
   for (const group of rows) {
     const [members] = await pool.execute(
-      `SELECT p.id, p.full_name AS fullName, p.status
-			 FROM group_members gm JOIN participants p ON p.id = gm.participant_id
+      `SELECT p.id, p.full_name AS fullName, p.status,
+          p.id = ? AS isLeader
+    			 FROM group_members gm JOIN participants p ON p.id = gm.participant_id
 			 WHERE gm.group_id = ? ORDER BY p.full_name`,
-      [group.id],
+      [group.leaderParticipantId, group.id],
     );
     group.members = members;
   }
@@ -505,8 +580,10 @@ export async function getGroups(sessionId, teacherId) {
 export async function getOwnGroup(sessionId, participantId) {
   const [rows] = await pool.execute(
     `SELECT g.id, g.group_number AS groupNumber, g.status,
-			g.active_turn_id AS activeTurnId, gt.turn_number AS currentTurnNumber
+			g.active_turn_id AS activeTurnId, gt.turn_number AS currentTurnNumber,
+      g.leader_participant_id AS leaderParticipantId, leader.full_name AS leaderName
 		 FROM \`groups\` g JOIN group_members gm ON gm.group_id = g.id
+     LEFT JOIN participants leader ON leader.id = g.leader_participant_id
 		 LEFT JOIN game_turns gt ON gt.id = g.active_turn_id
 		 WHERE g.game_session_id = ? AND gm.participant_id = ? LIMIT 1`,
     [sessionId, participantId],
@@ -514,10 +591,11 @@ export async function getOwnGroup(sessionId, participantId) {
   if (!rows.length)
     throw new AppError("Group not found", "GROUP_NOT_FOUND", 404);
   const [members] = await pool.execute(
-    `SELECT p.id, p.full_name AS fullName, p.status
-		 FROM group_members gm JOIN participants p ON p.id = gm.participant_id
+    `SELECT p.id, p.full_name AS fullName, p.status,
+        p.id = ? AS isLeader
+  			 FROM group_members gm JOIN participants p ON p.id = gm.participant_id
 		 WHERE gm.group_id = ? ORDER BY p.full_name`,
-    [rows[0].id],
+    [rows[0].leaderParticipantId, rows[0].id],
   );
   return { ...rows[0], members };
 }
