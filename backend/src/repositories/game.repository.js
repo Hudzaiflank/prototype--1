@@ -323,7 +323,10 @@ export async function getStudentGameState(sessionId, participantId) {
           status: groups[0].status,
           leaderParticipantId: groups[0].leaderParticipantId,
           leaderName: groups[0].leaderName,
-          members: members.map(({ fullName, status, isLeader }) => ({
+          isLeader:
+            Number(groups[0].leaderParticipantId) === Number(participantId),
+          members: members.map(({ id, fullName, status, isLeader }) => ({
+            id,
             fullName,
             status,
             isLeader: Boolean(isLeader),

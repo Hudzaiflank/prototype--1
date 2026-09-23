@@ -106,6 +106,7 @@ export function RoomGamePage() {
                   <li key={member.id}>
                     {member.fullName}
                     {member.isLeader ? " (Ketua)" : ""}
+                    {Number(member.id) === Number(game?.participant?.id) ? " (Kamu)" : ""}
                   </li>
                 ))}
               </ul>
@@ -121,7 +122,7 @@ export function RoomGamePage() {
             className="mt-2 font-['Press_Start_2P'] text-sm leading-relaxed text-[#ffe98a]"
             id="game-title"
           >
-            Giliran kamu
+            {game?.participant?.fullName ?? "Giliran kamu"}
           </h2>
         </div>
         <GameStatus status={game?.status ?? "CONNECTING"} />
