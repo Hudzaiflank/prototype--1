@@ -36,9 +36,16 @@ export function RoomWaitingPage() {
         Room {room?.code}
       </p>
       {room?.topicTitle ? (
-        <p className="mt-3 font-[Lexend] text-sm font-bold text-[#ffd23f]">
-          Topik yang di bahas hari ini : {room.topicTitle}
-        </p>
+        <div className="mt-3 space-y-2">
+          <p className="font-[Lexend] text-sm font-bold text-[#ffd23f]">
+            Topik yang di bahas hari ini : {room.topicTitle}
+          </p>
+          {room?.topicDescription ? (
+            <p className="font-[Lexend] text-sm leading-6 text-[#cbb8e0]">
+              {room.topicDescription}
+            </p>
+          ) : null}
+        </div>
       ) : null}
       <h2 className="mt-5 font-['Press_Start_2P'] text-sm leading-relaxed text-[#ffe98a] sm:text-base">
         Menunggu permainan

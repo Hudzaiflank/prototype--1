@@ -263,7 +263,7 @@ export async function updateGameConfiguration(
 export async function getStudentGameState(sessionId, participantId) {
   const [sessions] = await pool.execute(
     `SELECT gs.id, gs.status, gs.state_version AS stateVersion, gs.game_mode AS gameMode,
-       gs.problem_display_limit AS problemDisplayLimit, t.title AS topicTitle
+       gs.problem_display_limit AS problemDisplayLimit, t.title AS topicTitle, t.description AS topicDescription
 		 FROM game_sessions gs LEFT JOIN topics t ON t.id = gs.topic_id
        WHERE gs.id = ? LIMIT 1`,
     [sessionId],

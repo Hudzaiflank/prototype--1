@@ -113,10 +113,16 @@ export function RoomGamePage() {
             </div>
           ) : null}
           {(game?.topicTitle ?? room?.topicTitle) ? (
-            <p className="mt-2 font-[Lexend] text-sm text-[#cbb8e0]">
-              Topik yang di bahas hari ini :{" "}
-              {game?.topicTitle ?? room.topicTitle}
-            </p>
+            <div className="mt-2 space-y-1">
+              <p className="font-[Lexend] text-sm text-[#cbb8e0]">
+                Topik yang di bahas hari ini : {game?.topicTitle ?? room.topicTitle}
+              </p>
+              {(game?.topicDescription ?? room?.topicDescription) ? (
+                <p className="font-[Lexend] text-sm leading-6 text-[#cbb8e0]">
+                  {game?.topicDescription ?? room.topicDescription}
+                </p>
+              ) : null}
+            </div>
           ) : null}
           <h2
             className="mt-2 font-['Press_Start_2P'] text-sm leading-relaxed text-[#ffe98a]"

@@ -9,6 +9,8 @@ export function TeacherListPage() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [success, setSuccess] = useState("");
+  const [deletingId, setDeletingId] = useState(null);
+  const [pendingDeleteTeacher, setPendingDeleteTeacher] = useState(null);
   useEffect(() => {
     teacherApi
       .list()
@@ -73,8 +75,69 @@ export function TeacherListPage() {
       );
     }
   };
+  const removeTeacher = (teacherId) => {
+    const teacher = teachers.find((item) => item.id === teacherId);
+    if (!teacher) return;
+    setPendingDeleteTeacher(teacher);
+  };
+
+  const confirmDeleteTeacher = async () => {
+    if (!pendingDeleteTeacher) return;
+    setDeletingId(pendingDeleteTeacher.id);
+    setError("");
+    setSuccess("");
+    try {
+      await teacherApi.remove(pendingDeleteTeacher.id);
+      setTeachers((current) =>
+        current.filter((teacher) => teacher.id !== pendingDeleteTeacher.id),
+      );
+      setSuccess("Guru berhasil dihapus permanen.");
+      setPendingDeleteTeacher(null);
+    } catch (requestError) {
+      setError(
+        requestError.response?.data?.message ?? "Guru belum dapat dihapus.",
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  };
   return (
     <section className="space-y-6" aria-labelledby="teachers-title">
+      {pendingDeleteTeacher ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-rose-400/40 bg-slate-950 p-6 shadow-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-rose-300">
+              Konfirmasi hapus
+            </p>
+            <h2 className="mt-3 text-2xl font-bold text-white">
+              Hapus guru permanen?
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-slate-300">
+              Guru <span className="font-semibold text-amber-200">{pendingDeleteTeacher.fullName}</span> akan dihapus secara permanen dari sekolah ini.
+              Tindakan ini tidak bisa dibatalkan.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-medium text-slate-200"
+                type="button"
+                onClick={() => setPendingDeleteTeacher(null)}
+              >
+                Batal
+              </button>
+              <button
+                className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                type="button"
+                onClick={confirmDeleteTeacher}
+                disabled={deletingId === pendingDeleteTeacher.id}
+              >
+                {deletingId === pendingDeleteTeacher.id
+                  ? "Menghapus..."
+                  : "Hapus permanen"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-300">
@@ -194,6 +257,7 @@ export function TeacherListPage() {
               <th className="px-5 py-4">Email</th>
               <th className="px-5 py-4">Status</th>
               <th className="px-5 py-4">Detail</th>
+              <th className="px-5 py-4">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -210,6 +274,16 @@ export function TeacherListPage() {
                   >
                     Buka
                   </Link>
+                </td>
+                <td className="px-5 py-4">
+                  <button
+                    className="rounded-lg border border-rose-300 px-3 py-2 text-sm text-rose-300 disabled:cursor-not-allowed disabled:opacity-50"
+                    type="button"
+                    onClick={() => removeTeacher(teacher.id)}
+                    disabled={deletingId === teacher.id}
+                  >
+                    {deletingId === teacher.id ? "Menghapus..." : "Hapus"}
+                  </button>
                 </td>
               </tr>
             ))}

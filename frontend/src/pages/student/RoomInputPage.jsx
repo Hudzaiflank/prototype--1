@@ -21,15 +21,13 @@ export function RoomInputPage() {
         .then(({ data }) => setStudents(data.data ?? []));
   }, [room?.gameSessionId]);
 
-  const filteredStudents = students
-    .filter((student) => {
-      const search = studentSearch.trim().toLowerCase();
-      return (
-        !search ||
-        `${student.fullName} ${student.nisn}`.toLowerCase().includes(search)
-      );
-    })
-    .slice(0, 20);
+  const filteredStudents = students.filter((student) => {
+    const search = studentSearch.trim().toLowerCase();
+    return (
+      !search ||
+      `${student.fullName} ${student.nisn}`.toLowerCase().includes(search)
+    );
+  });
 
   const selectedStudent = students.find(
     (student) => String(student.studentId) === String(studentId),
@@ -78,9 +76,16 @@ export function RoomInputPage() {
           Siapkan kartu kamu
         </h2>
         {room?.topicTitle ? (
-          <p className="mt-4 font-[Lexend] text-sm font-bold text-[#ffd23f]">
-            Topik yang di bahas hari ini : {room.topicTitle}
-          </p>
+          <div className="mt-4 space-y-2">
+            <p className="font-[Lexend] text-sm font-bold text-[#ffd23f]">
+              Topik yang di bahas hari ini : {room.topicTitle}
+            </p>
+            {room?.topicDescription ? (
+              <p className="font-[Lexend] text-sm leading-6 text-[#cbb8e0]">
+                {room.topicDescription}
+              </p>
+            ) : null}
+          </div>
         ) : null}
         <p className="mt-4 font-[Lexend] text-sm leading-6 text-[#cbb8e0]">
           Pilih nama kamu dari daftar kelas. Tulis satu hal yang ingin dibagikan

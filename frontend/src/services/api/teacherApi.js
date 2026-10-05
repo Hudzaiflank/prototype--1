@@ -3,6 +3,7 @@ export const teacherApi = {
   list: () => apiClient.get("/teachers"),
   detail: (id) => apiClient.get(`/teachers/${id}`),
   create: (payload) => apiClient.post("/teachers", payload),
+  remove: (id) => apiClient.delete(`/teachers/${id}`),
   resetPassword: (id) => apiClient.post(`/teachers/${id}/reset-password`),
   import: (file) => {
     const formData = new FormData();

@@ -63,10 +63,10 @@ async function normalizeTeacherRows({
       continue;
     }
     const nip = String(row.NIP ?? "").trim();
-    if (!/^\d{18}$/.test(nip)) {
+    if (!/^\d{16,18}$/.test(nip)) {
       errors.push({
         row: index + 2,
-        message: "NIP wajib diisi dengan tepat 18 digit angka",
+        message: "NIP wajib diisi minimal 16 digit angka",
       });
       continue;
     }
@@ -135,6 +135,13 @@ export async function listTeachers(schoolId, query = {}) {
     limit,
     totalPages: Math.ceil(result.total / limit),
   };
+}
+
+export async function deleteTeacher({ teacherId, schoolId }) {
+  if (!(await repository.deleteTeacher({ teacherId, schoolId }))) {
+    throw new AppError("Teacher not found", "TEACHER_NOT_FOUND", 404);
+  }
+  return { removed: true };
 }
 
 export async function getTeacherDetail(teacherId, schoolId) {
