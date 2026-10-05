@@ -113,8 +113,12 @@ export function TeacherListPage() {
               Hapus guru permanen?
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-300">
-              Guru <span className="font-semibold text-amber-200">{pendingDeleteTeacher.fullName}</span> akan dihapus secara permanen dari sekolah ini.
-              Tindakan ini tidak bisa dibatalkan.
+              Guru{" "}
+              <span className="font-semibold text-amber-200">
+                {pendingDeleteTeacher.fullName}
+              </span>{" "}
+              akan dihapus secara permanen dari sekolah ini. Tindakan ini tidak
+              bisa dibatalkan.
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <button

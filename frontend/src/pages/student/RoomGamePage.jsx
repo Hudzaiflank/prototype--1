@@ -106,7 +106,9 @@ export function RoomGamePage() {
                   <li key={member.id}>
                     {member.fullName}
                     {member.isLeader ? " (Ketua)" : ""}
-                    {Number(member.id) === Number(game?.participant?.id) ? " (Kamu)" : ""}
+                    {Number(member.id) === Number(game?.participant?.id)
+                      ? " (Kamu)"
+                      : ""}
                   </li>
                 ))}
               </ul>
@@ -115,7 +117,8 @@ export function RoomGamePage() {
           {(game?.topicTitle ?? room?.topicTitle) ? (
             <div className="mt-2 space-y-1">
               <p className="font-[Lexend] text-sm text-[#cbb8e0]">
-                Topik yang di bahas hari ini : {game?.topicTitle ?? room.topicTitle}
+                Topik yang di bahas hari ini :{" "}
+                {game?.topicTitle ?? room.topicTitle}
               </p>
               {(game?.topicDescription ?? room?.topicDescription) ? (
                 <p className="font-[Lexend] text-sm leading-6 text-[#cbb8e0]">
