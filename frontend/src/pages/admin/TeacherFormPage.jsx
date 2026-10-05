@@ -65,10 +65,10 @@ export function TeacherFormPage() {
               setNip(event.target.value.replace(/\D/g, "").slice(0, 18))
             }
             inputMode="numeric"
-            pattern="[0-9]{18}"
-            minLength="18"
+            pattern="[0-9]{16,18}"
+            minLength="16"
             maxLength="18"
-            placeholder="18 digit angka"
+            placeholder="Minimal 16 digit angka"
             required
           />
         </label>

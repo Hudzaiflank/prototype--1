@@ -1,0 +1,334 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3880" height="9360" viewBox="0 0 3880 9360">
+  <defs>
+    <style>
+      text { font-family: Arial, sans-serif; fill: #202124; }
+      .frame { fill: #fff; stroke: #252525; stroke-width: 2; }
+      .ui-bg { fill: #f4f4f4; }
+      .ui-white { fill: #fff; stroke: #b8b8b8; stroke-width: 1.5; }
+      .ui-line { fill: none; stroke: #888; stroke-width: 2; stroke-linecap: round; }
+      .ui-soft { fill: #e8e8e8; stroke: #b8b8b8; stroke-width: 1.2; }
+      .ui-dark { fill: #292929; }
+      .ui-button { fill: #d8d8d8; stroke: #676767; stroke-width: 1.5; }
+      .label { font-size: 17px; font-weight: 700; }
+      .title { font-size: 25px; font-weight: 700; }
+      .subhead { font-size: 16px; font-weight: 700; }
+      .copy { font-size: 13px; fill: #595959; }
+      .small { font-size: 11px; fill: #595959; }
+      .button-text { font-size: 13px; font-weight: 700; }
+      .table-line { stroke: #d0d0d0; stroke-width: 1; }
+    </style>
+    <g id="management-shell">
+      <rect class="frame" width="1240" height="760" rx="8"/>
+      <rect class="ui-white" x="1" y="1" width="1238" height="62" rx="7"/>
+      <rect class="ui-dark" x="0" y="62" width="220" height="698"/>
+      <text x="28" y="36" fill="#fff" font-size="19" font-weight="700">MindPlay</text>
+      <rect x="238" y="18" width="330" height="27" rx="5" fill="#f0f0f0" stroke="#d0d0d0"/>
+      <text x="1050" y="29" font-size="12">Nama pengguna</text>
+      <text x="1050" y="45" class="small">Admin / Guru</text>
+      <circle cx="1020" cy="32" r="17" fill="#dedede"/>
+      <rect x="16" y="91" width="188" height="40" rx="5" fill="#515151"/>
+      <text x="34" y="116" fill="#fff" font-size="13" font-weight="700">Dashboard</text>
+      <text x="34" y="169" fill="#d5d5d5" font-size="13">Kelola data</text>
+      <text x="34" y="213" fill="#d5d5d5" font-size="13">Aktivitas</text>
+      <text x="34" y="257" fill="#d5d5d5" font-size="13">Riwayat</text>
+      <text x="34" y="301" fill="#d5d5d5" font-size="13">Pengaturan</text>
+      <line x1="16" y1="332" x2="204" y2="332" stroke="#575757"/>
+      <text x="34" y="365" fill="#a8a8a8" font-size="11">RUANG KERJA</text>
+      <text x="260" y="104" class="small">Beranda / Halaman</text>
+    </g>
+    <g id="student-shell">
+      <rect class="frame" width="1240" height="760" rx="8"/>
+      <rect x="1" y="1" width="1238" height="758" rx="8" fill="#efefef"/>
+      <rect x="1" y="1" width="1238" height="62" rx="8" fill="#dedede"/>
+      <text x="34" y="38" font-size="19" font-weight="700">MindPlay</text>
+      <text x="1040" y="37" class="copy">Siswa</text>
+      <line x1="30" y1="80" x2="1210" y2="80" stroke="#c5c5c5"/>
+    </g>
+    <g id="metric-card">
+      <rect class="ui-white" width="205" height="112" rx="7"/>
+      <rect x="18" y="18" width="92" height="11" rx="5" fill="#bdbdbd"/>
+      <rect x="18" y="52" width="60" height="30" rx="4" fill="#777"/>
+      <rect x="137" y="53" width="45" height="28" rx="4" fill="#e7e7e7"/>
+    </g>
+    <g id="metric-card-compact">
+      <rect class="ui-white" width="170" height="112" rx="7"/>
+      <rect x="15" y="18" width="82" height="11" rx="5" fill="#bdbdbd"/>
+      <rect x="15" y="52" width="54" height="30" rx="4" fill="#777"/>
+      <rect x="111" y="53" width="42" height="28" rx="4" fill="#e7e7e7"/>
+    </g>
+    <g id="table-rows">
+      <rect class="ui-white" width="900" height="264" rx="6"/>
+      <rect x="0" y="0" width="900" height="42" rx="6" fill="#e5e5e5"/>
+      <line class="table-line" x1="0" y1="42" x2="900" y2="42"/>
+      <line class="table-line" x1="0" y1="86" x2="900" y2="86"/>
+      <line class="table-line" x1="0" y1="130" x2="900" y2="130"/>
+      <line class="table-line" x1="0" y1="174" x2="900" y2="174"/>
+      <line class="table-line" x1="0" y1="218" x2="900" y2="218"/>
+      <g class="ui-line"><path d="M20 22h80 M145 22h100 M290 22h105 M455 22h100 M620 22h100 M770 22h95"/><path d="M20 64h90 M145 64h120 M290 64h88 M455 64h95 M620 64h83 M770 64h80"/><path d="M20 108h95 M145 108h118 M290 108h90 M455 108h90 M620 108h105 M770 108h72"/><path d="M20 152h84 M145 152h104 M290 152h100 M455 152h85 M620 152h98 M770 152h84"/><path d="M20 196h95 M145 196h116 M290 196h88 M455 196h105 M620 196h90 M770 196h75"/><path d="M20 240h86 M145 240h125 M290 240h95 M455 240h92 M620 240h110 M770 240h82"/></g>
+    </g>
+    <g id="form-field">
+      <rect class="ui-white" width="420" height="48" rx="5"/>
+      <line x1="16" y1="24" x2="210" y2="24" stroke="#d0d0d0" stroke-width="2"/>
+    </g>
+    <g id="primary-button">
+      <rect class="ui-button" width="170" height="42" rx="5"/>
+      <line x1="36" y1="21" x2="134" y2="21" stroke="#777" stroke-width="3" stroke-linecap="round"/>
+    </g>
+  </defs>
+
+  <rect width="3880" height="9360" fill="#e9e9e9"/>
+  <text x="40" y="38" font-size="25" font-weight="700">MINDPLAY · WIREFRAME DESKTOP</text>
+  <text x="40" y="62" font-size="13" fill="#555">32 layar unik dari route frontend · 1240 × 760 px per frame · grayscale wireframe</text>
+
+  <g id="screen-login" transform="translate(40 96)">
+    <text y="-14" class="label">01 · Login</text><rect class="frame" width="1240" height="760" rx="8"/><rect class="ui-bg" x="1" y="1" width="1238" height="758" rx="8"/>
+    <rect class="ui-white" x="390" y="112" width="460" height="530" rx="12"/>
+    <text x="438" y="170" class="small">MINDPLAY</text><text x="438" y="216" class="title">Masuk ke akun</text><text x="438" y="244" class="copy">Gunakan akun Admin, Guru, atau Super Admin.</text>
+    <text x="438" y="295" class="copy">Email</text><rect class="ui-white" x="438" y="308" width="364" height="48" rx="5"/>
+    <text x="438" y="389" class="copy">Password</text><rect class="ui-white" x="438" y="402" width="364" height="48" rx="5"/>
+    <rect class="ui-button" x="438" y="484" width="364" height="50" rx="5"/><text x="590" y="515" class="button-text">Masuk</text>
+  </g>
+
+  <g id="screen-rules" transform="translate(1320 96)">
+    <text y="-14" class="label">02 · Aturan main</text><use href="#student-shell"/>
+    <rect class="ui-white" x="150" y="112" width="940" height="560" rx="12"/>
+    <text x="205" y="166" class="small">MINDPLAY · PANDUAN</text><text x="205" y="214" class="title">Aturan main</text>
+    <rect class="ui-soft" x="205" y="246" width="830" height="72" rx="6"/><text x="228" y="276" class="subhead">Bermain dengan aman dan saling menghargai</text><text x="228" y="298" class="copy">Dengarkan, jaga kerahasiaan, dan fokus pada solusi bersama.</text>
+    <g class="ui-line"><path d="M230 362h760 M230 386h720 M230 410h735 M230 458h760 M230 482h680 M230 506h750 M230 554h725"/></g>
+    <rect class="ui-button" x="804" y="594" width="230" height="48" rx="6"/><text x="864" y="624" class="button-text">Saya siap bermain</text>
+  </g>
+
+  <g id="screen-join-room" transform="translate(2600 96)">
+    <text y="-14" class="label">03 · Masuk room</text><use href="#student-shell"/>
+    <rect class="ui-white" x="330" y="160" width="580" height="420" rx="14"/>
+    <text x="390" y="215" class="small">MINDPLAY</text><text x="390" y="262" class="title">Masuk ke room</text><text x="390" y="292" class="copy">Masukkan kode room dari guru untuk mulai bermain.</text>
+    <text x="390" y="350" class="copy">Kode room</text><rect class="ui-white" x="390" y="364" width="460" height="62" rx="8"/><text x="568" y="403" font-size="23" font-weight="700">ABC123</text>
+    <rect class="ui-button" x="390" y="466" width="460" height="50" rx="6"/><text x="555" y="497" class="button-text">Masuk room</text>
+  </g>
+
+  <g id="screen-student-input" transform="translate(40 936)">
+    <text y="-14" class="label">04 · Input nama &amp; masalah</text><use href="#student-shell"/>
+    <text x="34" y="122" class="title">Room ABC123</text><rect class="ui-soft" x="34" y="150" width="1170" height="558" rx="12"/>
+    <text x="76" y="200" class="title">Siapkan kartu kamu</text><text x="76" y="232" class="copy">Topik hari ini: kerja sama di kelas</text><text x="76" y="260" class="copy">Pilih nama dan tulis satu hal yang ingin dibagikan dengan aman.</text>
+    <text x="76" y="312" class="copy">Nama siswa</text><rect class="ui-white" x="76" y="326" width="1078" height="50" rx="5"/><text x="96" y="357" class="copy">Pilih nama dari daftar kelas</text>
+    <text x="76" y="420" class="copy">Hal yang ingin dibagikan</text><rect class="ui-white" x="76" y="434" width="1078" height="136" rx="5"/><g class="ui-line"><path d="M98 466h700 M98 492h620"/></g>
+    <rect class="ui-button" x="76" y="612" width="1078" height="54" rx="6"/><text x="542" y="646" class="button-text">Kirim dan tunggu</text>
+  </g>
+
+  <g id="screen-student-waiting" transform="translate(1320 936)">
+    <text y="-14" class="label">05 · Menunggu permainan</text><use href="#student-shell"/>
+    <rect class="ui-white" x="260" y="186" width="720" height="390" rx="14"/>
+    <text x="620" y="236" text-anchor="middle" class="small">ROOM ABC123 · TOPIK KERJA SAMA</text><text x="620" y="300" text-anchor="middle" class="title">Menunggu permainan</text>
+    <circle cx="620" cy="374" r="34" fill="#eee" stroke="#888" stroke-width="2"/><path d="M620 350v25l17 12" class="ui-line"/>
+    <text x="620" y="448" text-anchor="middle" class="subhead">Nama siswa</text><text x="620" y="481" text-anchor="middle" class="copy">Jawabanmu tersimpan. Guru akan memulai permainan saat semua siap.</text>
+  </g>
+
+  <g id="screen-student-game" transform="translate(2600 936)">
+    <text y="-14" class="label">06 · Permainan siswa</text><use href="#student-shell"/>
+    <text x="34" y="122" class="small">PERMAINAN BERJALAN · KELOMPOK 1 · ROOM ABC123</text><text x="34" y="158" class="title">Giliran kamu</text><rect class="ui-soft" x="978" y="106" width="226" height="46" rx="23"/><text x="1040" y="135" class="button-text">Sedang bermain</text>
+    <rect class="ui-white" x="170" y="200" width="900" height="465" rx="14"/><text x="620" y="246" text-anchor="middle" class="small">MINDPLAY BOARD</text><text x="620" y="281" text-anchor="middle" class="subhead">Kartu pasangan</text>
+    <rect x="270" y="326" width="295" height="250" rx="12" fill="#e6e6e6" stroke="#777" stroke-width="2"/><rect x="675" y="326" width="295" height="250" rx="12" fill="#e6e6e6" stroke="#777" stroke-width="2"/>
+    <text x="418" y="458" text-anchor="middle" class="subhead">Kartu peserta</text><text x="822" y="458" text-anchor="middle" class="subhead">Kartu masalah</text>
+    <rect class="ui-button" x="475" y="604" width="290" height="44" rx="6"/><text x="552" y="632" class="button-text">Buka kartu</text>
+  </g>
+
+  <g id="screen-student-result" transform="translate(40 1776)">
+    <text y="-14" class="label">07 · Hasil permainan</text><use href="#student-shell"/>
+    <rect class="ui-white" x="260" y="166" width="720" height="440" rx="14"/><text x="620" y="218" text-anchor="middle" class="small">MINDPLAY · ROOM ABC123</text><text x="620" y="274" text-anchor="middle" class="title">Permainan selesai</text>
+    <text x="620" y="314" text-anchor="middle" class="copy">Terima kasih sudah ikut berbagi dan bermain bersama.</text>
+    <rect class="ui-soft" x="330" y="366" width="580" height="68" rx="6"/><text x="354" y="407" class="copy">Status game</text><text x="750" y="407" class="subhead">Selesai</text>
+    <rect class="ui-soft" x="330" y="450" width="580" height="68" rx="6"/><text x="354" y="491" class="copy">Nama kamu</text><text x="750" y="491" class="subhead">Nama siswa</text>
+  </g>
+
+  <g id="screen-super-dashboard" transform="translate(1320 1776)">
+    <text y="-14" class="label">08 · Super Admin / Dashboard</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">MINDPLAY CONTROL</text><text x="260" y="184" class="title">Super Admin</text><text x="260" y="210" class="copy">Ringkasan ekosistem sekolah dan pengguna.</text>
+    <use href="#metric-card-compact" x="260" y="246"/><use href="#metric-card-compact" x="445" y="246"/><use href="#metric-card-compact" x="630" y="246"/><use href="#metric-card-compact" x="815" y="246"/><use href="#metric-card-compact" x="1000" y="246"/>
+    <text x="275" y="283" class="small">Sekolah</text><text x="460" y="283" class="small">Aktif</text><text x="645" y="283" class="small">Guru</text><text x="830" y="283" class="small">Kelas</text><text x="1015" y="283" class="small">Game selesai</text>
+    <rect class="ui-white" x="260" y="390" width="930" height="280" rx="7"/><text x="284" y="426" class="subhead">Ringkasan aktivitas</text><path d="M300 620 420 572 540 586 660 500 780 531 900 460 1030 478 1150 438" fill="none" stroke="#888" stroke-width="3"/><path d="M300 630h850 M300 470v160" class="ui-line"/>
+  </g>
+
+  <g id="screen-school-list" transform="translate(2600 1776)">
+    <text y="-14" class="label">09 · Super Admin / Sekolah</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">MANAGEMENT</text><text x="260" y="184" class="title">Sekolah</text><use href="#primary-button" x="1010" y="142"/><text x="1034" y="168" class="button-text">Tambah sekolah</text>
+    <rect class="ui-white" x="260" y="230" width="930" height="410" rx="7"/><text x="282" y="262" class="copy">Nama</text><text x="485" y="262" class="copy">Domain</text><text x="690" y="262" class="copy">Status</text><text x="850" y="262" class="copy">Detail</text><text x="1030" y="262" class="copy">Aksi</text>
+    <g class="table-line"><path d="M260 280h930 M260 344h930 M260 408h930 M260 472h930 M260 536h930 M260 600h930"/></g>
+    <g class="ui-line"><path d="M282 312h140 M485 312h120 M690 312h78 M850 312h42 M1030 312h55 M282 376h130 M485 376h120 M690 376h78 M850 376h42 M1030 376h55 M282 440h140 M485 440h120 M690 440h78 M850 440h42 M1030 440h55 M282 504h130 M485 504h120 M690 504h78 M850 504h42 M1030 504h55 M282 568h145 M485 568h120 M690 568h78 M850 568h42 M1030 568h55"/></g>
+  </g>
+
+  <g id="screen-school-create" transform="translate(40 2616)">
+    <text y="-14" class="label">10 · Super Admin / Tambah sekolah</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">SUPER ADMIN</text><text x="260" y="184" class="title">Tambah sekolah</text><rect class="ui-white" x="260" y="220" width="700" height="430" rx="8"/>
+    <text x="292" y="268" class="copy">Nama sekolah</text><use href="#form-field" x="292" y="282"/>
+    <text x="292" y="362" class="copy">Jenjang sekolah</text><rect class="ui-white" x="292" y="376" width="420" height="48" rx="5"/><text x="314" y="406" class="copy">Pilih jenjang</text><text x="678" y="406" class="copy">▼</text>
+    <use href="#primary-button" x="292" y="470"/><text x="326" y="496" class="button-text">Buat sekolah</text>
+  </g>
+
+  <g id="screen-school-detail" transform="translate(1320 2616)">
+    <text y="-14" class="label">11 · Super Admin / Detail sekolah</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">SUPER ADMIN</text><text x="260" y="184" class="title">Nama sekolah</text>
+    <g><rect class="ui-white" x="260" y="220" width="445" height="82" rx="6"/><rect class="ui-white" x="725" y="220" width="445" height="82" rx="6"/><rect class="ui-white" x="260" y="316" width="445" height="82" rx="6"/><rect class="ui-white" x="725" y="316" width="445" height="82" rx="6"/><rect class="ui-white" x="260" y="412" width="445" height="82" rx="6"/><rect class="ui-white" x="725" y="412" width="445" height="82" rx="6"/></g>
+    <g class="copy"><text x="280" y="248">Domain</text><text x="745" y="248">Status</text><text x="280" y="344">Admin</text><text x="745" y="344">Email Admin</text><text x="280" y="440">Guru</text><text x="745" y="440">Kelas</text></g>
+    <g class="ui-line"><path d="M280 275h180 M745 275h170 M280 371h150 M745 371h200 M280 467h70 M745 467h70"/></g>
+    <use href="#primary-button" x="260" y="540"/><text x="279" y="566" class="button-text">Reset password Admin</text><rect class="ui-button" x="445" y="540" width="180" height="42" rx="5"/><text x="477" y="566" class="button-text">Ubah status</text><rect class="ui-white" x="640" y="540" width="170" height="42" rx="5"/><text x="674" y="566" class="button-text">Hapus sekolah</text>
+  </g>
+
+  <g id="screen-request-logs" transform="translate(2600 2616)">
+    <text y="-14" class="label">12 · Super Admin / Request Logs</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">LIVE MONITORING</text><text x="260" y="184" class="title">Request Logs</text><text x="260" y="210" class="copy">Log realtime dari backend.</text><rect class="ui-soft" x="1030" y="145" width="150" height="34" rx="17"/><text x="1065" y="167" class="small">Connected</text>
+    <rect class="ui-white" x="260" y="236" width="930" height="426" rx="7"/><rect x="260" y="236" width="930" height="42" fill="#e5e5e5"/>
+    <g class="copy"><text x="274" y="262">Waktu</text><text x="410" y="262">IP</text><text x="520" y="262">Request</text><text x="744" y="262">Status</text><text x="836" y="262">Durasi</text><text x="945" y="262">User-Agent</text></g>
+    <g class="table-line"><path d="M260 278h930 M260 342h930 M260 406h930 M260 470h930 M260 534h930 M260 598h930"/></g><g class="ui-line"><path d="M274 312h100 M410 312h75 M520 312h190 M744 312h50 M836 312h60 M945 312h190 M274 376h100 M410 376h75 M520 376h190 M744 376h50 M836 376h60 M945 376h190 M274 440h100 M410 440h75 M520 440h190 M744 440h50 M836 440h60 M945 440h190 M274 504h100 M410 504h75 M520 504h190 M744 504h50 M836 504h60 M945 504h190 M274 568h100 M410 568h75 M520 568h190 M744 568h50 M836 568h60 M945 568h190"/></g>
+  </g>
+
+  <g id="screen-admin-dashboard" transform="translate(40 3456)">
+    <text y="-14" class="label">13 · Admin / Dashboard</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">SCHOOL MANAGEMENT</text><text x="260" y="184" class="title">Dashboard Admin</text><text x="260" y="210" class="copy">Kelola kelas, guru, dan room sekolah.</text>
+    <use href="#metric-card" x="260" y="244"/><use href="#metric-card" x="480" y="244"/><use href="#metric-card" x="700" y="244"/><use href="#metric-card" x="920" y="244"/><text x="278" y="281" class="small">Kelas</text><text x="498" y="281" class="small">Guru</text><text x="718" y="281" class="small">Room aktif</text><text x="938" y="281" class="small">Room selesai</text>
+    <rect class="ui-white" x="260" y="385" width="930" height="274" rx="7"/><text x="282" y="420" class="subhead">Game terbaru sekolah</text><g class="ui-soft"><rect x="282" y="444" width="885" height="54" rx="5"/><rect x="282" y="510" width="885" height="54" rx="5"/><rect x="282" y="576" width="885" height="54" rx="5"/></g><g class="ui-line"><path d="M302 466h180 M302 485h110 M302 532h190 M302 551h105 M302 598h170 M302 617h115"/></g>
+  </g>
+
+  <g id="screen-class-list-admin" transform="translate(1320 3456)">
+    <text y="-14" class="label">14 · Admin / Daftar kelas</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">SCHOOL MANAGEMENT</text><text x="260" y="184" class="title">Kelas</text><use href="#primary-button" x="1020" y="142"/><text x="1044" y="168" class="button-text">Tambah kelas</text>
+    <rect class="ui-white" x="260" y="220" width="930" height="74" rx="7"/><text x="280" y="248" class="small">Tahun ajaran</text><rect class="ui-soft" x="280" y="258" width="150" height="24" rx="4"/><text x="468" y="248" class="small">Tingkat</text><rect class="ui-soft" x="468" y="258" width="120" height="24" rx="4"/><rect class="ui-button" x="608" y="252" width="168" height="30" rx="4"/><text x="622" y="272" class="small">Naikkan kelas</text><rect class="ui-button" x="794" y="252" width="168" height="30" rx="4"/><text x="812" y="272" class="small">Reset tingkat</text>
+    <g><rect class="ui-white" x="260" y="318" width="292" height="140" rx="7"/><rect class="ui-white" x="570" y="318" width="292" height="140" rx="7"/><rect class="ui-white" x="880" y="318" width="292" height="140" rx="7"/><rect class="ui-white" x="260" y="478" width="292" height="140" rx="7"/><rect class="ui-white" x="570" y="478" width="292" height="140" rx="7"/><rect class="ui-white" x="880" y="478" width="292" height="140" rx="7"/></g>
+    <g class="ui-line"><path d="M282 354h130 M282 382h210 M592 354h130 M592 382h210 M902 354h130 M902 382h210 M282 514h130 M282 542h210 M592 514h130 M592 542h210 M902 514h130 M902 542h210"/></g>
+  </g>
+
+  <g id="screen-class-create" transform="translate(2600 3456)">
+    <text y="-14" class="label">15 · Admin / Tambah kelas</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">SCHOOL MANAGEMENT</text><text x="260" y="184" class="title">Tambah kelas</text><rect class="ui-white" x="260" y="220" width="700" height="444" rx="8"/>
+    <text x="286" y="254" class="copy">Tingkat</text><rect class="ui-white" x="286" y="266" width="300" height="42" rx="5"/><text x="286" y="336" class="copy">Jurusan</text><rect class="ui-white" x="286" y="348" width="360" height="42" rx="5"/><text x="286" y="418" class="copy">Tahun ajaran</text><rect class="ui-white" x="286" y="430" width="360" height="42" rx="5"/>
+    <rect class="ui-soft" x="286" y="492" width="648" height="90" rx="6"/><text x="306" y="520" class="subhead">Daftar siswa · Excel</text><text x="306" y="548" class="copy">Pilih file · Download template · Preview data</text><text x="306" y="568" class="small">Validasi nama, NISN, dan baris bermasalah</text>
+    <use href="#primary-button" x="286" y="602"/><text x="310" y="628" class="button-text">Buat kelas</text>
+  </g>
+
+  <g id="screen-class-detail-admin" transform="translate(40 4296)">
+    <text y="-14" class="label">16 · Admin / Detail kelas</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">SCHOOL MANAGEMENT</text><text x="260" y="184" class="title">X MIPA 1</text><rect class="ui-white" x="260" y="216" width="930" height="82" rx="7"/><g class="ui-line"><path d="M282 247h120 M500 247h100 M718 247h150 M930 247h150 M282 275h100 M500 275h100 M718 275h120 M930 275h130"/></g>
+    <rect class="ui-white" x="260" y="316" width="930" height="178" rx="7"/><text x="284" y="350" class="subhead">Siswa (32)</text><rect class="ui-button" x="1030" y="330" width="132" height="34" rx="4"/><text x="1051" y="352" class="small">Reset siswa</text>
+    <g class="ui-soft"><rect x="284" y="374" width="275" height="42" rx="4"/><rect x="574" y="374" width="275" height="42" rx="4"/><rect x="864" y="374" width="275" height="42" rx="4"/><rect x="284" y="432" width="275" height="42" rx="4"/><rect x="574" y="432" width="275" height="42" rx="4"/><rect x="864" y="432" width="275" height="42" rx="4"/></g>
+    <rect class="ui-white" x="260" y="512" width="930" height="146" rx="7"/><text x="284" y="546" class="subhead">Guru terkait</text><rect class="ui-white" x="284" y="566" width="350" height="42" rx="5"/><use href="#primary-button" x="650" y="566"/><text x="676" y="592" class="button-text">Assign guru</text>
+  </g>
+
+  <g id="screen-teacher-list-admin" transform="translate(1320 4296)">
+    <text y="-14" class="label">17 · Admin / Daftar guru</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">SCHOOL MANAGEMENT</text><text x="260" y="184" class="title">Guru</text><rect class="ui-white" x="720" y="142" width="146" height="42" rx="5"/><text x="744" y="168" class="small">Template Excel</text><rect class="ui-white" x="878" y="142" width="120" height="42" rx="5"/><text x="905" y="168" class="small">Import</text><use href="#primary-button" x="1012" y="142"/><text x="1036" y="168" class="button-text">Tambah guru</text>
+    <rect class="ui-white" x="260" y="218" width="930" height="404" rx="7"/><rect x="260" y="218" width="930" height="42" fill="#e5e5e5"/><g class="copy"><text x="282" y="245">Nama</text><text x="480" y="245">NIP</text><text x="660" y="245">Email</text><text x="890" y="245">Status</text><text x="1030" y="245">Detail</text></g><g class="table-line"><path d="M260 260h930 M260 326h930 M260 392h930 M260 458h930 M260 524h930 M260 590h930"/></g><g class="ui-line"><path d="M282 300h130 M480 300h110 M660 300h170 M890 300h75 M1030 300h75 M282 366h130 M480 366h110 M660 366h170 M890 366h75 M1030 366h75 M282 432h130 M480 432h110 M660 432h170 M890 432h75 M1030 432h75 M282 498h130 M480 498h110 M660 498h170 M890 498h75 M1030 498h75 M282 564h130 M480 564h110 M660 564h170 M890 564h75 M1030 564h75"/></g>
+  </g>
+
+  <g id="screen-teacher-create" transform="translate(2600 4296)">
+    <text y="-14" class="label">18 · Admin / Tambah guru</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">SCHOOL MANAGEMENT</text><text x="260" y="184" class="title">Tambah guru</text><rect class="ui-white" x="260" y="220" width="660" height="360" rx="8"/>
+    <text x="292" y="270" class="copy">Nama lengkap</text><use href="#form-field" x="292" y="284"/>
+    <text x="292" y="372" class="copy">NIP · 18 digit angka</text><use href="#form-field" x="292" y="386"/>
+    <use href="#primary-button" x="292" y="464"/><text x="321" y="490" class="button-text">Tambah guru</text>
+    <rect class="ui-soft" x="260" y="600" width="660" height="72" rx="7"/><text x="284" y="630" class="copy">Setelah dibuat, tampilkan email dan password sementara.</text>
+  </g>
+
+  <g id="screen-teacher-detail-admin" transform="translate(40 5136)">
+    <text y="-14" class="label">19 · Admin / Detail guru</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">SCHOOL MANAGEMENT</text><text x="260" y="184" class="title">Nama guru</text><rect class="ui-white" x="260" y="220" width="445" height="90" rx="7"/><rect class="ui-white" x="725" y="220" width="445" height="90" rx="7"/><rect class="ui-white" x="260" y="326" width="445" height="90" rx="7"/><rect class="ui-white" x="725" y="326" width="445" height="90" rx="7"/>
+    <g class="copy"><text x="282" y="250">NIP</text><text x="747" y="250">Email</text><text x="282" y="356">Status</text><text x="747" y="356">Dibuat</text></g><g class="ui-line"><path d="M282 278h180 M747 278h240 M282 384h140 M747 384h220"/></g>
+    <use href="#primary-button" x="260" y="448"/><text x="281" y="474" class="button-text">Reset password guru</text><rect class="ui-white" x="260" y="514" width="910" height="144" rx="7"/><text x="284" y="550" class="subhead">Kelas terkait</text><g class="ui-soft"><rect x="284" y="572" width="860" height="34" rx="4"/><rect x="284" y="614" width="860" height="28" rx="4"/></g>
+  </g>
+
+  <g id="screen-topics" transform="translate(1320 5136)">
+    <text y="-14" class="label">20 · Admin / Topik permainan</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">SCHOOL MANAGEMENT</text><text x="260" y="184" class="title">Topik permainan</text><rect class="ui-white" x="260" y="220" width="930" height="128" rx="7"/>
+    <rect class="ui-white" x="282" y="244" width="290" height="44" rx="5"/><rect class="ui-white" x="586" y="244" width="350" height="44" rx="5"/><use href="#primary-button" x="954" y="244"/><text x="974" y="270" class="button-text">Tambah topik</text>
+    <rect class="ui-white" x="260" y="368" width="930" height="78" rx="7"/><text x="284" y="400" class="subhead">Judul topik</text><text x="284" y="424" class="copy">Deskripsi topik</text><rect class="ui-button" x="1004" y="388" width="76" height="34" rx="4"/><text x="1022" y="410" class="small">Ubah</text><rect class="ui-button" x="1090" y="388" width="78" height="34" rx="4"/><text x="1107" y="410" class="small">Hapus</text>
+    <rect class="ui-white" x="260" y="460" width="930" height="78" rx="7"/><text x="284" y="492" class="subhead">Judul topik</text><text x="284" y="516" class="copy">Deskripsi topik</text><rect class="ui-button" x="1004" y="480" width="76" height="34" rx="4"/><text x="1022" y="502" class="small">Ubah</text><rect class="ui-button" x="1090" y="480" width="78" height="34" rx="4"/><text x="1107" y="502" class="small">Hapus</text>
+  </g>
+
+  <g id="screen-student-tracking-admin" transform="translate(2600 5136)">
+    <text y="-14" class="label">21 · Admin / Riwayat siswa</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">STUDENT TRACKING</text><text x="260" y="184" class="title">Riwayat siswa</text><text x="260" y="210" class="copy">Cari siswa berdasarkan nama dan NISN untuk melihat riwayat lintas kelas.</text>
+    <rect class="ui-white" x="260" y="242" width="660" height="48" rx="5"/><text x="282" y="272" class="copy">Cari nama lengkap atau NISN</text><rect class="ui-soft" x="260" y="302" width="660" height="48" rx="5"/><text x="282" y="332" class="copy">Hasil siswa · nama · NISN · kelas</text>
+    <rect class="ui-white" x="260" y="374" width="930" height="274" rx="7"/><text x="284" y="408" class="subhead">Nama siswa · NISN</text><rect x="260" y="428" width="930" height="38" fill="#e5e5e5"/><g class="copy"><text x="278" y="453">Sekolah</text><text x="430" y="453">Kelas</text><text x="560" y="453">Tahun</text><text x="700" y="453">Masalah</text><text x="1050" y="453">Waktu</text></g><g class="table-line"><path d="M260 466h930 M260 510h930 M260 554h930 M260 598h930"/></g><g class="ui-line"><path d="M278 492h110 M430 492h90 M560 492h80 M700 492h280 M1050 492h100 M278 536h110 M430 536h90 M560 536h80 M700 536h280 M1050 536h100 M278 580h110 M430 580h90 M560 580h80 M700 580h280 M1050 580h100"/></g>
+  </g>
+
+  <g id="screen-change-password-admin" transform="translate(40 5976)">
+    <text y="-14" class="label">22 · Admin / Ganti password</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">ACCOUNT</text><text x="260" y="184" class="title">Ganti password</text><rect class="ui-white" x="260" y="220" width="620" height="390" rx="8"/>
+    <text x="292" y="270" class="copy">Password saat ini</text><use href="#form-field" x="292" y="284"/>
+    <text x="292" y="372" class="copy">Password baru</text><use href="#form-field" x="292" y="386"/>
+    <use href="#primary-button" x="292" y="466"/><text x="321" y="492" class="button-text">Simpan password</text>
+  </g>
+
+  <g id="screen-teacher-dashboard" transform="translate(1320 5976)">
+    <text y="-14" class="label">23 · Guru / Dashboard</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">TEACHER SPACE</text><text x="260" y="184" class="title">Dashboard Guru</text><text x="260" y="210" class="copy">Buka room dan pantau permainan kelas kamu.</text>
+    <use href="#metric-card" x="260" y="244"/><use href="#metric-card" x="480" y="244"/><use href="#metric-card" x="700" y="244"/><use href="#metric-card" x="920" y="244"/><g class="small"><text x="278" y="281">Kelas</text><text x="498" y="281">Room aktif</text><text x="718" y="281">Game dijeda</text><text x="938" y="281">Room selesai</text></g>
+    <rect class="ui-white" x="260" y="385" width="930" height="272" rx="7"/><text x="284" y="420" class="subhead">Room aktif</text><rect class="ui-soft" x="284" y="444" width="882" height="76" rx="6"/><text x="306" y="475" class="subhead">Room ABC123</text><text x="306" y="498" class="small">Game session · Kelas X MIPA 1</text><use href="#primary-button" x="968" y="462"/><text x="989" y="488" class="button-text">Monitor game</text><rect class="ui-soft" x="284" y="532" width="882" height="76" rx="6"/><text x="306" y="565" class="subhead">Room DEF456</text><text x="306" y="588" class="small">Game session · Kelas XI IPA 2</text>
+  </g>
+
+  <g id="screen-room-monitor" transform="translate(2600 5976)">
+    <text y="-14" class="label">24 · Guru / Pantau permainan</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">TEACHER MONITOR</text><text x="260" y="184" class="title">Pantau permainan</text><text x="260" y="210" class="copy">Room ABC123</text><rect class="ui-soft" x="1024" y="145" width="160" height="34" rx="17"/><text x="1062" y="167" class="small">Berlangsung</text>
+    <rect class="ui-white" x="260" y="236" width="930" height="110" rx="7"/><text x="284" y="270" class="subhead">Peserta / kelompok</text><g class="ui-soft"><rect x="284" y="286" width="200" height="42" rx="5"/><rect x="496" y="286" width="200" height="42" rx="5"/><rect x="708" y="286" width="200" height="42" rx="5"/></g>
+    <rect class="ui-white" x="260" y="364" width="400" height="266" rx="7"/><text x="284" y="398" class="subhead">Semua kelompok</text><g class="ui-soft"><rect x="284" y="418" width="352" height="48" rx="5"/><rect x="284" y="478" width="352" height="48" rx="5"/><rect x="284" y="538" width="352" height="48" rx="5"/></g><g class="ui-line"><path d="M302 438h130 M302 498h130 M302 558h130"/></g>
+    <rect class="ui-white" x="678" y="364" width="512" height="266" rx="7"/><text x="934" y="400" text-anchor="middle" class="subhead">Kartu pasangan</text><rect class="ui-soft" x="720" y="426" width="190" height="132" rx="8"/><rect class="ui-soft" x="978" y="426" width="170" height="132" rx="8"/><rect class="ui-button" x="760" y="576" width="348" height="38" rx="5"/><text x="852" y="601" class="button-text">Mulai · Jeda · Selesai</text>
+  </g>
+
+  <g id="screen-teacher-class-list" transform="translate(40 6816)">
+    <text y="-14" class="label">25 · Guru / Kelas saya</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">TEACHER SPACE</text><text x="260" y="184" class="title">Kelas Saya</text>
+    <g><rect class="ui-white" x="260" y="224" width="292" height="180" rx="8"/><rect class="ui-white" x="570" y="224" width="292" height="180" rx="8"/><rect class="ui-white" x="880" y="224" width="292" height="180" rx="8"/><rect class="ui-white" x="260" y="424" width="292" height="180" rx="8"/></g>
+    <g class="ui-line"><path d="M284 270h140 M284 300h200 M594 270h140 M594 300h200 M904 270h140 M904 300h200 M284 470h140 M284 500h200"/></g><g class="ui-soft"><rect x="284" y="338" width="100" height="30" rx="15"/><rect x="594" y="338" width="100" height="30" rx="15"/><rect x="904" y="338" width="100" height="30" rx="15"/><rect x="284" y="538" width="100" height="30" rx="15"/></g>
+  </g>
+
+  <g id="screen-teacher-class-detail" transform="translate(1320 6816)">
+    <text y="-14" class="label">26 · Guru / Detail kelas</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">TEACHER CLASS</text><text x="260" y="184" class="title">X MIPA 1</text><rect class="ui-white" x="260" y="220" width="930" height="390" rx="8"/>
+    <text x="290" y="264" class="copy">Status kelas</text><text x="290" y="300" class="title">Aktif</text><line x1="284" y1="324" x2="1166" y2="324" stroke="#ddd"/>
+    <text x="290" y="364" class="subhead">Room aktif</text><rect class="ui-soft" x="290" y="386" width="240" height="56" rx="6"/><text x="312" y="421" class="button-text">Kode room ABC123</text><rect class="ui-white" x="558" y="370" width="112" height="112" rx="4"/><path d="M580 390h22v22h-22z M626 390h22v22h-22z M580 436h22v22h-22z M610 415h15v15h-15z M638 438h12v12h-12z" fill="#555"/><rect class="ui-button" x="700" y="386" width="180" height="50" rx="5"/><text x="732" y="416" class="button-text">Tutup room</text>
+    <rect class="ui-button" x="290" y="514" width="220" height="52" rx="5"/><text x="323" y="546" class="button-text">Buka room baru</text>
+  </g>
+
+  <g id="screen-room-configure" transform="translate(2600 6816)">
+    <text y="-14" class="label">27 · Guru / Atur permainan</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">ROOM CONFIGURATION</text><text x="260" y="184" class="title">Atur permainan</text><rect class="ui-white" x="260" y="218" width="930" height="450" rx="8"/>
+    <text x="286" y="252" class="copy">Topik / permasalahan</text><rect class="ui-white" x="286" y="264" width="878" height="42" rx="5"/><text x="306" y="290" class="copy">Pilih topik</text>
+    <rect class="ui-soft" x="286" y="320" width="878" height="82" rx="6"/><text x="306" y="348" class="subhead">Buat topik pribadi</text><rect class="ui-white" x="306" y="360" width="350" height="30" rx="4"/><rect class="ui-white" x="672" y="360" width="300" height="30" rx="4"/><rect class="ui-button" x="990" y="360" width="154" height="30" rx="4"/><text x="1007" y="380" class="small">Simpan topik</text>
+    <text x="286" y="432" class="copy">Mode input</text><rect class="ui-white" x="286" y="444" width="420" height="42" rx="5"/><text x="306" y="471" class="copy">Murid / Guru</text><text x="730" y="432" class="copy">Mode permainan</text><rect class="ui-white" x="730" y="444" width="434" height="42" rx="5"/><text x="750" y="471" class="copy">Kelompok / Semua siswa</text>
+    <rect class="ui-soft" x="286" y="504" width="878" height="82" rx="6"/><text x="306" y="534" class="subhead">Input data murid / import Excel</text><text x="306" y="560" class="copy">Nama · Permasalahan · Preview · Konfirmasi import</text>
+    <use href="#primary-button" x="286" y="606"/><text x="307" y="632" class="button-text">Buat game session</text>
+  </g>
+
+  <g id="screen-room-history" transform="translate(40 7656)">
+    <text y="-14" class="label">28 · Guru / Riwayat permainan</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">TEACHER SPACE</text><text x="260" y="184" class="title">Riwayat permainan</text>
+    <g><rect class="ui-white" x="260" y="222" width="930" height="78" rx="7"/><rect class="ui-white" x="260" y="314" width="930" height="78" rx="7"/><rect class="ui-white" x="260" y="406" width="930" height="78" rx="7"/><rect class="ui-white" x="260" y="498" width="930" height="78" rx="7"/></g>
+    <g class="ui-line"><path d="M284 252h130 M284 276h90 M284 344h130 M284 368h90 M284 436h130 M284 460h90 M284 528h130 M284 552h90"/><path d="M960 252h160 M960 344h160 M960 436h160 M960 528h160"/></g>
+    <g class="ui-button"><rect x="1030" y="264" width="130" height="26" rx="4"/><rect x="1030" y="356" width="130" height="26" rx="4"/><rect x="1030" y="448" width="130" height="26" rx="4"/><rect x="1030" y="540" width="130" height="26" rx="4"/></g><g class="small"><text x="1053" y="282">Lihat detail</text><text x="1053" y="374">Lihat detail</text><text x="1053" y="466">Lihat detail</text><text x="1053" y="558">Lihat detail</text></g>
+  </g>
+
+  <g id="screen-student-tracking-teacher" transform="translate(1320 7656)">
+    <text y="-14" class="label">29 · Guru / Riwayat siswa</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">STUDENT TRACKING</text><text x="260" y="184" class="title">Riwayat siswa</text><text x="260" y="210" class="copy">Hanya siswa dari kelas yang Anda ampu yang dapat dilihat.</text>
+    <rect class="ui-white" x="260" y="242" width="660" height="48" rx="5"/><text x="282" y="272" class="copy">Cari nama lengkap atau NISN</text><rect class="ui-soft" x="260" y="302" width="660" height="48" rx="5"/><text x="282" y="332" class="copy">Siswa · NISN · kelas yang diampu</text>
+    <rect class="ui-white" x="260" y="374" width="930" height="274" rx="7"/><text x="284" y="408" class="subhead">Nama siswa · NISN</text><rect x="260" y="428" width="930" height="38" fill="#e5e5e5"/><g class="copy"><text x="278" y="453">Sekolah</text><text x="430" y="453">Kelas</text><text x="560" y="453">Tahun</text><text x="700" y="453">Masalah</text><text x="1050" y="453">Waktu</text></g><g class="table-line"><path d="M260 466h930 M260 510h930 M260 554h930 M260 598h930"/></g><g class="ui-line"><path d="M278 492h110 M430 492h90 M560 492h80 M700 492h280 M1050 492h100 M278 536h110 M430 536h90 M560 536h80 M700 536h280 M1050 536h100 M278 580h110 M430 580h90 M560 580h80 M700 580h280 M1050 580h100"/></g>
+  </g>
+
+  <g id="screen-history-detail" transform="translate(2600 7656)">
+    <text y="-14" class="label">30 · Guru / Detail riwayat</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">TEACHER SPACE</text><text x="260" y="184" class="title">Detail history permainan</text><rect class="ui-button" x="1010" y="144" width="164" height="38" rx="5"/><text x="1038" y="168" class="small">Kembali ke history</text>
+    <rect class="ui-white" x="260" y="220" width="930" height="422" rx="7"/><rect x="260" y="220" width="930" height="44" fill="#e5e5e5"/><g class="small"><text x="274" y="247">Turn</text><text x="340" y="247">Kelompok</text><text x="442" y="247">Peserta</text><text x="555" y="247">Diisi oleh</text><text x="685" y="247">Permasalahan</text><text x="950" y="247">Waktu</text><text x="1100" y="247">Status</text></g><g class="table-line"><path d="M260 264h930 M260 326h930 M260 388h930 M260 450h930 M260 512h930 M260 574h930"/></g><g class="ui-line"><path d="M274 300h38 M340 300h70 M442 300h85 M555 300h90 M685 300h210 M950 300h110 M1100 300h70 M274 362h38 M340 362h70 M442 362h85 M555 362h90 M685 362h210 M950 362h110 M1100 362h70 M274 424h38 M340 424h70 M442 424h85 M555 424h90 M685 424h210 M950 424h110 M1100 424h70 M274 486h38 M340 486h70 M442 486h85 M555 486h90 M685 486h210 M950 486h110 M1100 486h70 M274 548h38 M340 548h70 M442 548h85 M555 548h90 M685 548h210 M950 548h110 M1100 548h70 M274 610h38 M340 610h70 M442 610h85 M555 610h90 M685 610h210 M950 610h110 M1100 610h70"/></g>
+  </g>
+
+  <g id="screen-change-password-teacher" transform="translate(40 8496)">
+    <text y="-14" class="label">31 · Guru / Ganti password</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">ACCOUNT</text><text x="260" y="184" class="title">Ganti password</text><rect class="ui-white" x="260" y="220" width="620" height="390" rx="8"/>
+    <text x="292" y="270" class="copy">Password saat ini</text><use href="#form-field" x="292" y="284"/><text x="292" y="372" class="copy">Password baru</text><use href="#form-field" x="292" y="386"/><use href="#primary-button" x="292" y="466"/><text x="321" y="492" class="button-text">Simpan password</text>
+  </g>
+
+  <g id="screen-student-tracking-super-admin" transform="translate(1320 8496)">
+    <text y="-14" class="label">32 · Super Admin / Tracking siswa</text><use href="#management-shell"/>
+    <text x="260" y="148" class="small">STUDENT TRACKING · ALL SCHOOLS</text><text x="260" y="184" class="title">Riwayat siswa</text><text x="260" y="210" class="copy">Cari siswa berdasarkan nama dan NISN untuk melihat riwayat lintas sekolah.</text>
+    <rect class="ui-white" x="260" y="242" width="700" height="48" rx="5"/><text x="282" y="272" class="copy">Cari nama lengkap atau NISN</text><rect class="ui-soft" x="260" y="302" width="700" height="48" rx="5"/><text x="282" y="332" class="copy">Hasil pencarian · siswa · NISN · sekolah</text>
+    <rect class="ui-white" x="260" y="374" width="930" height="274" rx="7"/><text x="284" y="408" class="subhead">Nama siswa · NISN</text><rect x="260" y="428" width="930" height="38" fill="#e5e5e5"/><g class="copy"><text x="278" y="453">Sekolah</text><text x="430" y="453">Kelas</text><text x="560" y="453">Tahun</text><text x="700" y="453">Masalah</text><text x="1050" y="453">Waktu</text></g><g class="table-line"><path d="M260 466h930 M260 510h930 M260 554h930 M260 598h930"/></g><g class="ui-line"><path d="M278 492h110 M430 492h90 M560 492h80 M700 492h280 M1050 492h100 M278 536h110 M430 536h90 M560 536h80 M700 536h280 M1050 536h100 M278 580h110 M430 580h90 M560 580h80 M700 580h280 M1050 580h100"/></g>
+  </g>
+
+</svg>

@@ -90,6 +90,20 @@ export async function resetPassword(request, response, next) {
   }
 }
 
+export async function remove(request, response, next) {
+  try {
+    response.json({
+      success: true,
+      data: await service.deleteTeacher({
+        teacherId: Number(request.params.teacherId),
+        schoolId: request.user.schoolId,
+      }),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function removeAssignment(request, response, next) {
   try {
     response.json({

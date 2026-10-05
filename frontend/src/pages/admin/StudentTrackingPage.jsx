@@ -30,13 +30,11 @@ export function StudentTrackingPage() {
       );
     }
   };
-  const filteredStudents = students
-    .filter((student) =>
-      `${student.fullName} ${student.nisn}`
-        .toLowerCase()
-        .includes(search.trim().toLowerCase()),
-    )
-    .slice(0, 20);
+  const filteredStudents = students.filter((student) =>
+    `${student.fullName} ${student.nisn}`
+      .toLowerCase()
+      .includes(search.trim().toLowerCase()),
+  );
   return (
     <section className="space-y-6" aria-labelledby="student-tracking-title">
       <div>

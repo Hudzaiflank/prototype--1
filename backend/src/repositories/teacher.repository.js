@@ -60,6 +60,36 @@ export async function getTeacherDetail(teacherId, schoolId) {
   return { ...teachers[0], classes };
 }
 
+export async function deleteTeacher({ teacherId, schoolId }) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    await connection.execute(
+      "DELETE FROM teacher_classes WHERE teacher_id = ?",
+      [teacherId],
+    );
+    await connection.execute(
+      "DELETE FROM refresh_tokens WHERE user_id = ?",
+      [teacherId],
+    );
+
+    const [result] = await connection.execute(
+      `DELETE FROM users
+       WHERE id = ? AND school_id = ? AND role = 'TEACHER'`,
+      [teacherId, schoolId],
+    );
+
+    await connection.commit();
+    return result.affectedRows > 0;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
 export async function removeAssignment({ teacherId, classId, schoolId }) {
   const [result] = await pool.execute(
     `UPDATE teacher_classes tc JOIN users t ON t.id = tc.teacher_id JOIN classes c ON c.id = tc.class_id

@@ -44,7 +44,7 @@ export function errorMiddleware(error, _request, response, _next) {
     success: false,
     message:
       statusCode >= 500
-        ? "Sekolah belum dapat dibuat sekarang. Silakan coba lagi beberapa saat lagi."
+        ? "Permintaan belum dapat diproses saat ini. Silakan coba lagi beberapa saat lagi."
         : (error.message ?? "Permintaan belum dapat diproses."),
     error: {
       code:

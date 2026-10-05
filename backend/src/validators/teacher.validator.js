@@ -3,7 +3,9 @@ import { z } from "zod";
 export const createTeacherSchema = z.object({
   body: z.object({
     fullName: z.string().trim().min(2).max(150),
-    nip: z.string().regex(/^\d{18}$/, "NIP harus terdiri dari 18 digit angka"),
+    nip: z
+      .string()
+      .regex(/^\d{16,18}$/, "NIP harus terdiri dari minimal 16 digit angka"),
     email: z.string().email().optional(),
   }),
 });

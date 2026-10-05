@@ -15,6 +15,7 @@ router.use(requireAuth, allowRoles(ROLES.ADMIN));
 router.get("/", validate(teacherListSchema), controller.list);
 router.get("/import/template", controller.downloadTemplate);
 router.get("/:teacherId", controller.detail);
+router.delete("/:teacherId", controller.remove);
 router.post("/", validate(createTeacherSchema), controller.create);
 router.post(
   "/import/preview",
