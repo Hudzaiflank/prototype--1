@@ -21,6 +21,7 @@ export const env = {
     name: process.env.DB_NAME,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
+    ssl: process.env.DB_SSL === "true",
     connectionLimit: Number(process.env.DB_CONNECTION_LIMIT ?? 10),
   },
   jwt: {

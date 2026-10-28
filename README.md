@@ -112,3 +112,7 @@ Alur utama yang sudah tersedia:
 - Pause dan resume permainan.
 - Pemulihan permainan saat siswa kembali.
 - Pemantauan dan riwayat permainan.
+
+## Deployment backend gratis
+
+Untuk demo tanpa kartu kredit, lihat [panduan Render Free + TiDB Cloud Starter](deploy/RENDER_TIDB_DEPLOYMENT.md). Backend dapat diakses melalui URL publik, tetapi Render Free akan sleep setelah 15 menit tanpa traffic sehingga request pertama setelah idle bisa lambat.

@@ -69,10 +69,9 @@ export async function deleteTeacher({ teacherId, schoolId }) {
       "DELETE FROM teacher_classes WHERE teacher_id = ?",
       [teacherId],
     );
-    await connection.execute(
-      "DELETE FROM refresh_tokens WHERE user_id = ?",
-      [teacherId],
-    );
+    await connection.execute("DELETE FROM refresh_tokens WHERE user_id = ?", [
+      teacherId,
+    ]);
 
     const [result] = await connection.execute(
       `DELETE FROM users

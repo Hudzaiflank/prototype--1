@@ -15,6 +15,7 @@ const connection = await mysql.createConnection({
   port: env.database.port,
   user: env.database.user,
   password: env.database.password,
+  ...(env.database.ssl ? { ssl: {} } : {}),
   multipleStatements: true,
 });
 

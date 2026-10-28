@@ -119,7 +119,7 @@ Environment dibaca dan divalidasi oleh `src/config/env.js`:
 | `FRONTEND_URL`, `FRONTEND_URLS`                                        | Origin yang diizinkan CORS/socket. |
 | `REFRESH_COOKIE_NAME`                                                  | Nama cookie refresh token.         |
 | `RETENTION_DAYS`                                                       | Umur data game sebelum cleanup.    |
-| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`              | Koneksi MySQL.                     |
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_SSL`    | Koneksi MySQL; aktifkan TLS jika database cloud mewajibkannya. |
 | `DB_CONNECTION_LIMIT`                                                  | Ukuran pool.                       |
 | `JWT_ACCESS_SECRET`, `JWT_ACCESS_EXPIRES_IN`                           | Access JWT.                        |
 | `JWT_REFRESH_SECRET`, `JWT_REFRESH_EXPIRES_IN`                         | Refresh JWT.                       |
