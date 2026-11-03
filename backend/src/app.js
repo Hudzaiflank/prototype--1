@@ -9,20 +9,22 @@ import { requestLogMiddleware } from "./middleware/request-log.middleware.js";
 
 export function createApp() {
   const app = express();
-  app.use(helmet());
-  app.use(
-    cors({
-      origin: (requestOrigin, callback) => {
-        if (!requestOrigin || env.frontendUrls.includes(requestOrigin)) {
-          callback(null, true);
-          return;
-        }
+  const corsOptions = {
+    origin: (requestOrigin, callback) => {
+      if (!requestOrigin || env.frontendUrls.includes(requestOrigin)) {
+        callback(null, true);
+        return;
+      }
 
-        callback(null, false);
-      },
-      credentials: true,
-    }),
-  );
+      callback(null, false);
+    },
+    credentials: true,
+    optionsSuccessStatus: 204,
+  };
+
+  app.use(helmet());
+  app.use(cors(corsOptions));
+  app.options("*", cors(corsOptions));
   app.use(express.json());
   app.use(cookieParser());
   app.use(requestLogMiddleware);
