@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
+    "dev:worker": "wrangler dev",
+    "deploy:worker": "wrangler deploy",
     "test": "node --test",
     "test:socket": "node --test tests/socket.integration.test.js",
     "test:api": "node scripts/api-test-runner.js",
@@ -24,7 +26,7 @@
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.3.0",
-    "mysql2": "^3.11.3",
+    "mysql2": "^3.13.0",
     "socket.io": "^4.8.0",
     "uuid": "^11.0.3",
     "xlsx": "^0.18.5",
@@ -32,6 +34,7 @@
   },
   "devDependencies": {
     "socket.io-client": "^4.8.3",
-    "supertest": "^7.0.0"
+    "supertest": "^7.0.0",
+    "wrangler": "^4.0.0"
   }
 }

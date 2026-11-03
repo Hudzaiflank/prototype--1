@@ -18,7 +18,11 @@ router.post(
 );
 router.post(
   "/game-sessions/:sessionId/participants",
-  rateLimit({ limit: 30 }),
+  rateLimit({
+    limit: 30,
+    keyGenerator: (request) =>
+      `register:${request.params.sessionId}:${request.body?.studentId ?? request.ip}`,
+  }),
   validate(participantSchema),
   controller.registerParticipant,
 );
@@ -28,7 +32,11 @@ router.get(
 );
 router.post(
   "/game-sessions/:sessionId/problems",
-  rateLimit({ limit: 30 }),
+  rateLimit({
+    limit: 30,
+    keyGenerator: (request) =>
+      `submit:${request.params.sessionId}:${request.body?.participantSessionId ?? request.ip}`,
+  }),
   validate(problemSchema),
   controller.submitProblem,
 );

@@ -3,7 +3,7 @@ import { AppError } from "../utils/errors.js";
 import { hashPassword } from "../utils/password.js";
 import * as repository from "../repositories/teacher.repository.js";
 import { resetUserPassword } from "../repositories/user.repository.js";
-import XLSX from "xlsx";
+import XLSX from "../utils/xlsx.js";
 
 const emailName = (name) =>
   name

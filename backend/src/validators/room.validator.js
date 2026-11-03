@@ -1,7 +1,7 @@
 import { z } from "zod";
 export const gameSessionSchema = z.object({
   body: z.object({
-    topicId: z.coerce.number().int().positive(),
+    topicId: z.coerce.number().int().positive().nullable().optional(),
     inputMode: z.enum(["STUDENT", "TEACHER"]),
     gameMode: z.enum(["ALL_STUDENTS", "GROUPS"]),
     problemDisplayLimit: z.coerce.number().int().positive().default(1),

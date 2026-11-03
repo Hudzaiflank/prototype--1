@@ -68,7 +68,10 @@ export function RoomMonitorPage() {
             requestError.response?.data?.message ?? "Game belum dapat dimuat.",
           );
       });
-    const socket = socketClient.connect({ token: getAccessToken() });
+    const socket = socketClient.connect({
+      token: getAccessToken(),
+      gameSessionId: Number(sessionId),
+    });
     const updateState = (state) => {
       if (Number(state?.id) !== Number(sessionId)) return;
       setGame(state);

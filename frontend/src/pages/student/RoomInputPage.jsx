@@ -47,15 +47,20 @@ export function RoomInputPage() {
     setIsSubmitting(true);
     try {
       const participantSessionId = crypto.randomUUID();
-      await roomApi.registerParticipant(room.gameSessionId, {
-        sessionId: participantSessionId,
-        studentId: Number(studentId),
-      });
+      const { data: registrationResponse } = await roomApi.registerParticipant(
+        room.gameSessionId,
+        {
+          sessionId: participantSessionId,
+          studentId: Number(studentId),
+        },
+      );
+      const registeredSessionId =
+        registrationResponse.data?.sessionId ?? participantSessionId;
       await roomApi.submitProblem(room.gameSessionId, {
-        participantSessionId,
+        participantSessionId: registeredSessionId,
         content: content.trim(),
       });
-      setParticipantSession(participantSessionId);
+      setParticipantSession(registeredSessionId);
       navigate("../waiting", { replace: true });
     } catch (requestError) {
       setError(

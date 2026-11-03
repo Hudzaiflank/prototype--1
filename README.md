@@ -113,6 +113,8 @@ Alur utama yang sudah tersedia:
 - Pemulihan permainan saat siswa kembali.
 - Pemantauan dan riwayat permainan.
 
-## Deployment backend gratis
+## Deployment backend
 
-Untuk demo tanpa kartu kredit, lihat [panduan Render Free + TiDB Cloud Starter](deploy/RENDER_TIDB_DEPLOYMENT.md). Backend dapat diakses melalui URL publik, tetapi Render Free akan sleep setelah 15 menit tanpa traffic sehingga request pertama setelah idle bisa lambat.
+Untuk menjalankan backend di Cloudflare Workers dengan TiDB Cloud melalui Hyperdrive, ikuti [panduan Cloudflare Workers + TiDB](deploy/CLOUDFLARE_WORKERS_TIDB_DEPLOYMENT.md). Worker tidak memerlukan server atau laptop yang terus menyala, tetapi paket gratis tetap memiliki kuota dan bukan SLA uptime.
+
+Alternatif Render Free dijelaskan di [panduan Render + TiDB Cloud Starter](deploy/RENDER_TIDB_DEPLOYMENT.md); Render dapat meminta kartu kredit dan layanannya dapat sleep setelah idle.

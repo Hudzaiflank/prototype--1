@@ -136,6 +136,15 @@ export function RoomGamePage() {
         </div>
         <GameStatus status={game?.status ?? "CONNECTING"} />
       </div>
+      {game?.status === "PAUSED" ? (
+        <div
+          className="rounded-xl border border-amber-300/60 bg-amber-950/30 p-4 text-center font-[Lexend] text-sm font-bold text-amber-200"
+          role="status"
+        >
+          Permainan sedang dijeda oleh guru. Silakan menunggu sampai permainan
+          dilanjutkan.
+        </div>
+      ) : null}
       <GameBoard
         state={cardState}
         participant={game?.currentTurn?.participantName}
@@ -149,6 +158,7 @@ export function RoomGamePage() {
             className="rounded-xl bg-[#ffd23f] px-5 py-3 font-bold text-[#201a14] disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
             disabled={
+              game?.status !== "PLAYING" ||
               !socketConnected ||
               game.currentTurn.participantCardState === "REVEALED"
             }
@@ -166,6 +176,7 @@ export function RoomGamePage() {
             className="rounded-xl border border-[#ffd23f] px-5 py-3 font-bold text-[#ffe98a] disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
             disabled={
+              game?.status !== "PLAYING" ||
               !socketConnected ||
               game.currentTurn.participantCardState !== "REVEALED"
             }

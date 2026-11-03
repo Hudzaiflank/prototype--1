@@ -19,8 +19,14 @@ export function TeacherControls({
   };
   const groupActions = {
     WAITING: [{ label: "Mulai permainan", action: "start-game" }],
-    PLAYING: [{ label: "Selesaikan permainan", action: "finish-game" }],
-    PAUSED: [{ label: "Selesaikan permainan", action: "finish-game" }],
+    PLAYING: [
+      { label: "Jeda", action: "pause-game" },
+      { label: "Selesaikan permainan", action: "finish-game" },
+    ],
+    PAUSED: [
+      { label: "Lanjutkan", action: "resume-game" },
+      { label: "Selesaikan permainan", action: "finish-game" },
+    ],
   };
   const visibleActions = gameMode === "GROUPS" ? groupActions : actions;
 

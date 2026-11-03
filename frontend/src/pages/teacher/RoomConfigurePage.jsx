@@ -53,10 +53,6 @@ export function RoomConfigurePage() {
   };
   const createSession = async (event) => {
     event.preventDefault();
-    if (!topicId) {
-      setError("Pilih topik sebelum membuat permainan.");
-      return;
-    }
     setSaving(true);
     setError("");
     try {
@@ -106,19 +102,16 @@ export function RoomConfigurePage() {
   };
   const ensureTeacherSession = async () => {
     if (sessionId) return sessionId;
-    if (!topicId) {
-      throw new Error("Pilih topik sebelum mengimpor data.");
-    }
     const { data } = roomId
       ? await roomApi.createSession(roomId, {
-          topicId: Number(topicId),
+          topicId: topicId ? Number(topicId) : null,
           inputMode: "TEACHER",
           gameMode: "ALL_STUDENTS",
           problemDisplayLimit: 1,
           groupCount: null,
         })
       : await roomApi.createTeacherSession(classId, {
-          topicId: Number(topicId),
+          topicId: topicId ? Number(topicId) : null,
           inputMode: "TEACHER",
           gameMode: "ALL_STUDENTS",
           problemDisplayLimit: 1,

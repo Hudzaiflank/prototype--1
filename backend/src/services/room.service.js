@@ -1,6 +1,6 @@
 import { AppError } from "../utils/errors.js";
 import * as repository from "../repositories/room.repository.js";
-import XLSX from "xlsx";
+import XLSX from "../utils/xlsx.js";
 
 export async function openRoom(data) {
   const room = await repository.openRoom(data);
@@ -88,12 +88,22 @@ export async function listRoomStudents(gameSessionId) {
   return repository.listRoomStudents(gameSessionId);
 }
 export async function submitProblem(data) {
-  if (!(await repository.submitProblem(data)))
+  const result = await repository.submitProblem(data);
+  if (!result.submitted) {
+    const messages = {
+      ALREADY_SUBMITTED:
+        "Nama tersebut sudah disubmit. Pastikan nama yang kamu masukkan sudah benar.",
+      PARTICIPANT_NOT_FOUND:
+        "Sesi peserta tidak ditemukan. Silakan pilih nama dan kirim ulang.",
+      SESSION_NOT_ACCEPTING:
+        "Sesi game sudah tidak menerima jawaban baru.",
+    };
     throw new AppError(
-      "nama tersebut sudah di submit. Pastikan nama yang kamu masukkan sudah benar",
+      messages[result.reason] ?? "Jawaban belum dapat dikirim.",
       "PROBLEM_SUBMISSION_REJECTED",
       409,
     );
+  }
   const progress = await repository.getSubmissionProgress(data.gameSessionId);
   return {
     submitted: true,

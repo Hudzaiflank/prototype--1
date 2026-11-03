@@ -1,7 +1,7 @@
 import * as service from "../services/teacher.service.js";
 import { pool } from "../config/database.js";
 import multer from "multer";
-import XLSX from "xlsx";
+import XLSX from "../utils/xlsx.js";
 
 export const uploadTeacherFile = multer({
   storage: multer.memoryStorage(),

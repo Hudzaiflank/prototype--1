@@ -1,12 +1,14 @@
-# Deploy PhillyoGo tanpa kartu kredit
+# Deploy PhillyoGo dengan Render dan TiDB Cloud
 
 Panduan ini memakai Render Free untuk backend dan TiDB Cloud Starter untuk database MySQL-compatible.
+
+> **Penting:** Render dapat meminta kartu kredit untuk verifikasi akun, seperti yang muncul pada akun Anda. Jika tidak ingin memasukkan kartu sama sekali, jangan lanjutkan langkah Render di panduan ini. Jalur ini juga tidak menjamin backend selalu aktif: Render Free dapat sleep setelah idle. Untuk backend cloud tanpa laptop dan tanpa kartu, backend perlu dimigrasikan ke layanan Cloudflare Workers; itu bukan deployment langsung dari backend Node.js + Express + Socket.IO saat ini.
 
 ```text
 Browser -> Cloudflare Pages -> Render Web Service (Node.js + Socket.IO) -> TiDB Cloud Starter
 ```
 
-Kedua layanan memiliki kuota gratis tanpa kartu kredit. Ini cocok untuk demo, tetapi bukan uptime produksi: Render menghentikan service gratis setelah 15 menit tanpa traffic dan biasanya memerlukan sekitar satu menit untuk aktif kembali. WebSocket juga dapat terputus ketika service sleep atau restart. TiDB Cloud Starter membatasi penggunaan database pada kuota gratis bulanannya.
+Keduanya memiliki opsi kuota gratis, tetapi persyaratan akun dapat berbeda. Ini cocok untuk demo, bukan uptime produksi: Render menghentikan service gratis setelah 15 menit tanpa traffic dan biasanya memerlukan sekitar satu menit untuk aktif kembali. WebSocket juga dapat terputus ketika service sleep atau restart. TiDB Cloud Starter membatasi penggunaan database pada kuota gratis bulanannya.
 
 ## 1. Buat database TiDB
 
@@ -18,7 +20,7 @@ Kedua layanan memiliki kuota gratis tanpa kartu kredit. Ini cocok untuk demo, te
 ## 2. Deploy backend ke Render
 
 1. Push perubahan project ke repository GitHub yang akan dipakai untuk deployment.
-2. Buat akun Render, lalu pilih **New > Blueprint** dan hubungkan repository tersebut.
+2. Buat akun Render, lalu pilih **New > Blueprint** dan hubungkan repository tersebut. Jika Render meminta kartu dan Anda tidak ingin memasukkannya, berhenti di sini; tidak perlu menambahkan kartu.
 3. Render akan membaca [render.yaml](../render.yaml). Pastikan Root Directory backend terdeteksi sebagai `backend`.
 4. Isi prompt variable:
    - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, dan `DB_PASSWORD`: nilai koneksi TiDB.

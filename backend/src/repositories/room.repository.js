@@ -231,20 +231,38 @@ export async function registerParticipant({
 }) {
   const connection = await pool.getConnection();
   try {
-    const [existing] = await connection.execute(
-      "SELECT id, session_uuid AS sessionId, full_name AS fullName, status FROM participants WHERE game_session_id = ? AND (session_uuid = ? OR student_id = ?)",
-      [gameSessionId, sessionId, studentId],
+    await connection.beginTransaction();
+    const [sessions] = await connection.execute(
+      "SELECT id FROM game_sessions WHERE id = ? AND status = 'WAITING' FOR UPDATE",
+      [gameSessionId],
     );
-    if (existing.length) {
+    if (!sessions.length) {
+      await connection.rollback();
+      return null;
+    }
+    const [existing] = await connection.execute(
+      "SELECT id, student_id AS studentId, session_uuid AS sessionId, full_name AS fullName, status FROM participants WHERE game_session_id = ? AND (student_id = ? OR session_uuid = ?) FOR UPDATE",
+      [gameSessionId, studentId, sessionId],
+    );
+    const participant = existing[0];
+    if (participant) {
+      if (
+        Number(participant.studentId) !== Number(studentId) &&
+        participant.sessionId === sessionId
+      ) {
+        await connection.rollback();
+        return null;
+      }
       await connection.execute(
         "UPDATE participants SET status = 'CONNECTED', connected_at = NOW() WHERE id = ?",
-        [existing[0].id],
+        [participant.id],
       );
       await connection.execute(
         "UPDATE game_sessions SET state_version = state_version + 1 WHERE id = ?",
         [gameSessionId],
       );
-      return { ...existing[0], status: "CONNECTED" };
+      await connection.commit();
+      return { ...participant, status: "CONNECTED" };
     }
     const [students] = await connection.execute(
       `SELECT s.id, s.full_name AS fullName FROM students s
@@ -253,17 +271,24 @@ export async function registerParticipant({
        WHERE s.id = ? AND gs.id = ? AND gs.status = 'WAITING' LIMIT 1 FOR UPDATE`,
       [studentId, gameSessionId],
     );
-    if (!students.length) return null;
+    if (!students.length) {
+      await connection.rollback();
+      return null;
+    }
     const [result] = await connection.execute(
       `INSERT INTO participants (game_session_id, student_id, session_uuid, full_name, status, connected_at)
 			 VALUES (?, ?, ?, ?, 'CONNECTED', NOW())`,
       [gameSessionId, studentId, sessionId, students[0].fullName],
     );
-    if (!result.affectedRows) return null;
+    if (!result.affectedRows) {
+      await connection.rollback();
+      return null;
+    }
     await connection.execute(
       "UPDATE game_sessions SET state_version = state_version + 1 WHERE id = ?",
       [gameSessionId],
     );
+    await connection.commit();
     return {
       id: result.insertId,
       sessionId,
@@ -271,6 +296,9 @@ export async function registerParticipant({
       fullName: students[0].fullName,
       status: "CONNECTED",
     };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
   } finally {
     connection.release();
   }
@@ -371,6 +399,28 @@ export async function submitProblem({
   participantSessionId,
   content,
 }) {
+  const [participants] = await pool.execute(
+    `SELECT p.id, gs.status AS gameStatus, gs.input_mode AS inputMode,
+       EXISTS (
+         SELECT 1 FROM problems prior
+         WHERE prior.game_session_id = p.game_session_id
+           AND prior.participant_id = p.id
+       ) AS hasProblem
+     FROM participants p
+     JOIN game_sessions gs ON gs.id = p.game_session_id
+     WHERE p.game_session_id = ? AND p.session_uuid = ?
+     LIMIT 1`,
+    [gameSessionId, participantSessionId],
+  );
+  if (!participants.length)
+    return { submitted: false, reason: "PARTICIPANT_NOT_FOUND" };
+
+  const participant = participants[0];
+  if (participant.gameStatus !== "WAITING" || participant.inputMode !== "STUDENT")
+    return { submitted: false, reason: "SESSION_NOT_ACCEPTING" };
+  if (Number(participant.hasProblem))
+    return { submitted: false, reason: "ALREADY_SUBMITTED" };
+
   const [result] = await pool.execute(
     `INSERT INTO problems (game_session_id, participant_id, content, source)
      SELECT p.game_session_id, p.id, ?, 'STUDENT' FROM participants p
@@ -384,7 +434,9 @@ export async function submitProblem({
       "UPDATE game_sessions SET state_version = state_version + 1 WHERE id = ?",
       [gameSessionId],
     );
-  return result.affectedRows > 0;
+  return result.affectedRows
+    ? { submitted: true }
+    : { submitted: false, reason: "ALREADY_SUBMITTED" };
 }
 
 export async function getSubmissionProgress(gameSessionId) {

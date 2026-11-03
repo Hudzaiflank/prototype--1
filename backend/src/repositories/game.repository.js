@@ -38,6 +38,12 @@ export async function startGame(sessionId, teacherId) {
       "SELECT id, participant_id FROM problems WHERE game_session_id = ? AND status = 'ACTIVE' ORDER BY id",
       [sessionId],
     );
+    if (problems.length !== participants.length)
+      throw new AppError(
+        "Semua peserta harus memiliki jawaban sebelum permainan dimulai.",
+        "INCOMPLETE_SUBMISSIONS",
+        409,
+      );
     const groupCount = session.game_mode === "GROUPS" ? session.group_count : 1;
     if (!groupCount || groupCount > participants.length)
       throw new AppError("Invalid group count", "INVALID_GROUP_COUNT", 409);

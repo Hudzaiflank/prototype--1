@@ -1,4 +1,4 @@
-import XLSX from "xlsx";
+import XLSX from "../utils/xlsx.js";
 import { AppError } from "../utils/errors.js";
 import * as repository from "../repositories/student.repository.js";
 

@@ -1,4 +1,4 @@
-import "dotenv/config";
+if (!globalThis.WebSocketPair) await import("dotenv/config");
 
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? "development",
