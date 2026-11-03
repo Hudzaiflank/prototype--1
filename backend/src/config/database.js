@@ -14,7 +14,13 @@ function createConnectionPool(connectionString) {
         database: env.database.name,
         user: env.database.user,
         password: env.database.password,
-        ...(env.database.ssl ? { ssl: {} } : {}),
+        ...(env.database.ssl
+          ? {
+              ssl: env.database.sslCa
+                ? { ca: env.database.sslCa }
+                : {},
+            }
+          : {}),
         waitForConnections: true,
         connectionLimit: env.database.connectionLimit,
       });
