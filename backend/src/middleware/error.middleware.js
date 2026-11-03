@@ -1,4 +1,12 @@
-export function errorMiddleware(error, _request, response, _next) {
+export function errorMiddleware(error, request, response, _next) {
+  console.error("[request-error]", {
+    method: request?.method,
+    path: request?.originalUrl,
+    code: error.code,
+    message: error.message,
+    stack: error.stack,
+  });
+
   if (error.code === "TEACHER_NIP_DUPLICATE") {
     response.status(409).json({
       success: false,
