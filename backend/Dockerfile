@@ -6,6 +6,7 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 
 COPY src ./src
+COPY aiven-ca.pem ./aiven-ca.pem
 
 EXPOSE 3000
 

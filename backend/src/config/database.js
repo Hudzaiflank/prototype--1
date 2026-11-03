@@ -1,8 +1,10 @@
+import { readFileSync } from "node:fs";
 import mysql from "mysql2/promise";
 import { env } from "./env.js";
 
 let activePool;
 let configuredConnectionString;
+const aivenCa = readFileSync(new URL("../../aiven-ca.pem", import.meta.url), "utf8");
 
 function createConnectionPool(connectionString) {
   const useTextProtocol = Boolean(connectionString);
@@ -18,7 +20,7 @@ function createConnectionPool(connectionString) {
           ? {
               ssl: env.database.sslCa
                 ? { ca: env.database.sslCa }
-                : {},
+                : { ca: aivenCa },
             }
           : {}),
         waitForConnections: true,
