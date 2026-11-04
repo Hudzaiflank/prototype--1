@@ -62,12 +62,11 @@ export async function listTeacherHistory({
     `SELECT gs.id AS sessionId, gs.status, gs.created_at AS createdAt, gs.started_at AS startedAt,
       gs.finished_at AS finishedAt, r.id AS roomId, r.code AS roomCode,
       c.id AS classId, c.name AS className,
-			COUNT(DISTINCT p.id) AS participantCount
+    (SELECT COUNT(*) FROM participants p WHERE p.game_session_id = gs.id) AS participantCount
      FROM game_sessions gs LEFT JOIN rooms r ON r.id = gs.room_id
      JOIN classes c ON c.id = COALESCE(gs.class_id, r.class_id)
-		 LEFT JOIN participants p ON p.game_session_id = gs.id
 		 WHERE ${where}
-		 GROUP BY gs.id ORDER BY gs.created_at DESC LIMIT ? OFFSET ?`,
+		 ORDER BY gs.created_at DESC LIMIT ? OFFSET ?`,
     [...values, limit, offset],
   );
   const [countRows] = await pool.execute(
