@@ -39,6 +39,7 @@ export function registerGameSocket(namespace) {
     };
 
     const joinSession = async (sessionId) => {
+      socket.data.gameSessionId = sessionId;
       if (identity.kind === "TEACHER")
         await gameService.getGameSession(sessionId, identity.user.userId);
       socket.join(gameRoom(sessionId));
@@ -50,7 +51,6 @@ export function registerGameSocket(namespace) {
         );
         if (group)         socket.join(`group:${group.groupId}`);
       }
-      socket.data.gameSessionId = sessionId;
       const state = await readState(sessionId);
       if (identity.kind === "STUDENT") {
         socket.emit(SOCKET_EVENTS.YOUR_SESSION_RESTORED, {

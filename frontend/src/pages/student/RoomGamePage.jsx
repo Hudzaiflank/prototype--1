@@ -31,7 +31,10 @@ export function RoomGamePage() {
         socket.emit("request-state");
       }, 25);
     };
-    const handleConnect = () => setSocketConnected(true);
+    const handleConnect = () => {
+      setSocketConnected(true);
+      requestState();
+    };
     const handleDisconnect = () => setSocketConnected(false);
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
@@ -88,7 +91,6 @@ export function RoomGamePage() {
       setActionError(message ?? "Aksi game gagal diproses.");
     };
     socket.on(SOCKET_EVENTS.SERVER_ERROR, handleServerError);
-    requestState();
     return () => {
       window.clearTimeout(requestStateTimer);
       events.forEach((event) => socket.off(event, updateState));
