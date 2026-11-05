@@ -7,8 +7,14 @@ const historySelect = `
 		pr.content AS problemContent, pr.participant_id AS problemAuthorId,
 		g.id AS groupId, g.group_number AS groupNumber,
 		gt.id AS turnId, gt.turn_number AS turnNumber, gt.status AS turnStatus,
-		gt.started_at AS turnStartedAt, gt.revealed_at AS turnRevealedAt,
-		gt.completed_at AS turnCompletedAt, a.assigned_at AS assignedAt, a.completed_at AS assignmentCompletedAt
+		DATE_FORMAT(DATE_ADD(gt.started_at, INTERVAL 7 HOUR), '%Y-%m-%d %H:%i:%s') AS turnStartedAt,
+		DATE_FORMAT(DATE_ADD(gt.revealed_at, INTERVAL 7 HOUR), '%Y-%m-%d %H:%i:%s') AS turnRevealedAt,
+		DATE_FORMAT(DATE_ADD(gt.completed_at, INTERVAL 7 HOUR), '%Y-%m-%d %H:%i:%s') AS turnCompletedAt,
+		DATE_FORMAT(DATE_ADD(a.assigned_at, INTERVAL 7 HOUR), '%Y-%m-%d %H:%i:%s') AS assignedAt,
+		DATE_FORMAT(DATE_ADD(a.completed_at, INTERVAL 7 HOUR), '%Y-%m-%d %H:%i:%s') AS assignmentCompletedAt,
+		DATE_FORMAT(DATE_ADD(gs.started_at, INTERVAL 7 HOUR), '%Y-%m-%d %H:%i:%s') AS sessionStartedAt,
+		DATE_FORMAT(DATE_ADD(gs.created_at, INTERVAL 7 HOUR), '%Y-%m-%d %H:%i:%s') AS sessionCreatedAt,
+		s.name AS schoolName, c.name AS className
 `;
 
 export async function getSessionHistory(sessionId, teacherId) {
@@ -17,6 +23,9 @@ export async function getSessionHistory(sessionId, teacherId) {
 		 FROM assignments a JOIN game_sessions gs ON gs.id = a.game_session_id
 		 JOIN participants p ON p.id = a.participant_id
 		 JOIN problems pr ON pr.id = a.problem_id
+		 LEFT JOIN rooms r ON r.id = gs.room_id
+		 LEFT JOIN classes c ON c.id = COALESCE(gs.class_id, r.class_id)
+		 LEFT JOIN schools s ON s.id = c.school_id
        LEFT JOIN participants ap ON ap.id = pr.participant_id
        LEFT JOIN students ast ON ast.id = ap.student_id
 		 LEFT JOIN \`groups\` g ON g.id = a.group_id
@@ -59,8 +68,11 @@ export async function listTeacherHistory({
   }
   const where = filters.join(" AND ");
   const [rows] = await pool.execute(
-    `SELECT gs.id AS sessionId, gs.status, gs.created_at AS createdAt, gs.started_at AS startedAt,
-      gs.finished_at AS finishedAt, r.id AS roomId, r.code AS roomCode,
+    `SELECT gs.id AS sessionId, gs.status,
+      DATE_FORMAT(DATE_ADD(gs.created_at, INTERVAL 7 HOUR), '%Y-%m-%d %H:%i:%s') AS createdAt,
+      DATE_FORMAT(DATE_ADD(gs.started_at, INTERVAL 7 HOUR), '%Y-%m-%d %H:%i:%s') AS startedAt,
+      DATE_FORMAT(DATE_ADD(gs.finished_at, INTERVAL 7 HOUR), '%Y-%m-%d %H:%i:%s') AS finishedAt,
+      r.id AS roomId, r.code AS roomCode,
       c.id AS classId, c.name AS className,
     (SELECT COUNT(*) FROM participants p WHERE p.game_session_id = gs.id) AS participantCount
      FROM game_sessions gs LEFT JOIN rooms r ON r.id = gs.room_id

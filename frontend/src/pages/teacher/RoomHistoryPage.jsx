@@ -39,7 +39,7 @@ export function RoomHistoryPage() {
             </div>
             <div className="text-right">
               <span className="block text-xs text-slate-400">
-                {formatDateTime(item.finishedAt ?? item.createdAt)}
+                {formatDateTime(item.startedAt ?? item.createdAt)}
               </span>
               <Link
                 className="mt-2 block text-xs text-amber-200"
