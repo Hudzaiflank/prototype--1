@@ -11,4 +11,4 @@ COPY aiven-ca.pem ./aiven-ca.pem
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "npm run db:migrate && npm start"]
+CMD ["sh", "-c", "npm run db:migrate & exec npm start"]
