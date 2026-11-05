@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { GameBoard } from "../../components/game/GameBoard";
 import { GameStatus } from "../../components/game/GameStatus";
@@ -7,15 +8,25 @@ import { gameApi } from "../../services/api/gameApi";
 import { socketClient } from "../../services/socket/socketClient";
 import { SOCKET_EVENTS } from "../../services/socket/socketEvents";
 import { getAccessToken } from "../../utils/storage";
+import {
+  useGameGroupsQuery,
+  useTeacherGameQuery,
+} from "../../hooks/useGameQueries";
+import { mergeRealtimeState } from "../../utils/realtimeState";
 
 export function RoomMonitorPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const sessionId = searchParams.get("sessionId");
-  const [game, setGame] = useState(null);
+  const queryClient = useQueryClient();
+  const stateQuery = useTeacherGameQuery(sessionId);
+  const groupsQuery = useGameGroupsQuery(sessionId);
+  const game = stateQuery.data ?? null;
   const [error, setError] = useState("");
-  const [groups, setGroups] = useState([]);
+  const [actionPending, setActionPending] = useState(false);
+  const groups = groupsQuery.data ?? [];
   const [selectedGroupId, setSelectedGroupId] = useState("");
+  const activeGroupId = selectedGroupId || String(groups[0]?.id ?? "");
   const [currentTurn, setCurrentTurn] = useState(null);
   const [completionCountdown, setCompletionCountdown] = useState(null);
   const [completionForSession, setCompletionForSession] = useState(null);
@@ -46,75 +57,62 @@ export function RoomMonitorPage() {
 
   useEffect(() => {
     if (!sessionId) return undefined;
-    let active = true;
-    gameApi
-      .state(sessionId)
-      .then(({ data }) => {
-        if (active) {
-          setGame(data.data);
-          return gameApi.groups(sessionId);
-        }
-        return null;
-      })
-      .then((response) => {
-        if (!response || !active) return;
-        const nextGroups = response.data.data ?? [];
-        setGroups(nextGroups);
-        if (nextGroups[0]) setSelectedGroupId(String(nextGroups[0].id));
-      })
-      .catch((requestError) => {
-        if (active)
-          setError(
-            requestError.response?.data?.message ?? "Game belum dapat dimuat.",
-          );
-      });
     const socket = socketClient.connect({
       token: getAccessToken(),
       gameSessionId: Number(sessionId),
     });
     const updateState = (state) => {
       if (Number(state?.id) !== Number(sessionId)) return;
-      setGame(state);
+      queryClient.setQueryData(
+        ["game-session", "teacher", String(sessionId)],
+        (current) => mergeRealtimeState(current, state),
+      );
     };
     const handleParticipantJoined = (participant) => {
-      setGame((current) => {
-        if (!current || Number(current.id) !== Number(sessionId))
-          return current;
-        const participants = current.participants ?? [];
-        const exists = participants.some(
-          (item) => Number(item.id) === Number(participant.participantId),
-        );
-        return {
-          ...current,
-          participants: exists
-            ? participants.map((item) =>
-                Number(item.id) === Number(participant.participantId)
-                  ? { ...item, status: participant.status }
-                  : item,
-              )
-            : [
-                ...participants,
-                {
-                  id: participant.participantId,
-                  fullName: participant.displayName,
-                  status: participant.status,
-                },
-              ],
-        };
-      });
+      queryClient.setQueryData(
+        ["game-session", "teacher", String(sessionId)],
+        (current) => {
+          if (!current || Number(current.id) !== Number(sessionId))
+            return current;
+          const participants = current.participants ?? [];
+          const exists = participants.some(
+            (item) => Number(item.id) === Number(participant.participantId),
+          );
+          return {
+            ...current,
+            participants: exists
+              ? participants.map((item) =>
+                  Number(item.id) === Number(participant.participantId)
+                    ? { ...item, status: participant.status }
+                    : item,
+                )
+              : [
+                  ...participants,
+                  {
+                    id: participant.participantId,
+                    fullName: participant.displayName,
+                    status: participant.status,
+                  },
+                ],
+          };
+        },
+      );
     };
     const handleParticipantStatusChanged = ({ participantId, status }) => {
-      setGame((current) => {
-        if (!current) return current;
-        return {
-          ...current,
-          participants: (current.participants ?? []).map((participant) =>
-            Number(participant.id) === Number(participantId)
-              ? { ...participant, status }
-              : participant,
-          ),
-        };
-      });
+      queryClient.setQueryData(
+        ["game-session", "teacher", String(sessionId)],
+        (current) =>
+          current
+            ? {
+                ...current,
+                participants: (current.participants ?? []).map((participant) =>
+                  Number(participant.id) === Number(participantId)
+                    ? { ...participant, status }
+                    : participant,
+                ),
+              }
+            : current,
+      );
     };
     const events = [
       SOCKET_EVENTS.STATE_SNAPSHOT,
@@ -126,10 +124,9 @@ export function RoomMonitorPage() {
     events.forEach((event) => socket.on(event, updateState));
     socket.on(SOCKET_EVENTS.PARTICIPANT_JOINED, handleParticipantJoined);
     const refreshGroupsAfterLeaderChange = () => {
-      gameApi
-        .groups(sessionId)
-        .then(({ data }) => setGroups(data.data ?? []))
-        .catch(() => {});
+      queryClient.invalidateQueries({
+        queryKey: ["game-groups", String(sessionId)],
+      });
     };
     socket.on(
       SOCKET_EVENTS.GROUP_LEADER_CHANGED,
@@ -139,21 +136,16 @@ export function RoomMonitorPage() {
       SOCKET_EVENTS.PARTICIPANT_STATUS_CHANGED,
       handleParticipantStatusChanged,
     );
-    const refreshAfterTransition = () => {
-      gameApi
-        .state(sessionId)
-        .then(({ data }) => {
-          if (Number(data.data?.id) === Number(sessionId)) setGame(data.data);
-        })
-        .catch(() => {});
+    const refreshGroupsAfterStart = () => {
+      queryClient.invalidateQueries({
+        queryKey: ["game-groups", String(sessionId)],
+      });
     };
-    socket.on(SOCKET_EVENTS.GAME_STARTED, refreshAfterTransition);
-    socket.on(SOCKET_EVENTS.GAME_FINISHED, refreshAfterTransition);
+    socket.on(SOCKET_EVENTS.GAME_STARTED, refreshGroupsAfterStart);
     socket.on("connect", () =>
       socket.emit("join-game", { gameSessionId: Number(sessionId) }),
     );
     return () => {
-      active = false;
       events.forEach((event) => socket.off(event, updateState));
       socket.off(SOCKET_EVENTS.PARTICIPANT_JOINED, handleParticipantJoined);
       socket.off(
@@ -164,36 +156,42 @@ export function RoomMonitorPage() {
         SOCKET_EVENTS.PARTICIPANT_STATUS_CHANGED,
         handleParticipantStatusChanged,
       );
-      socket.off(SOCKET_EVENTS.GAME_STARTED, refreshAfterTransition);
-      socket.off(SOCKET_EVENTS.GAME_FINISHED, refreshAfterTransition);
+      socket.off(SOCKET_EVENTS.GAME_STARTED, refreshGroupsAfterStart);
       socketClient.disconnect();
     };
-  }, [sessionId]);
+  }, [queryClient, sessionId]);
 
   useEffect(() => {
     if (
       !sessionId ||
-      !selectedGroupId ||
+      !activeGroupId ||
       !["PLAYING", "PAUSED"].includes(game?.status)
     )
       return;
     gameApi
-      .currentTurn(sessionId, selectedGroupId)
+      .currentTurn(sessionId, activeGroupId)
       .then(({ data }) => setCurrentTurn(data.data))
       .catch(() => setCurrentTurn(null));
-  }, [game?.status, selectedGroupId, sessionId]);
+  }, [activeGroupId, game?.status, sessionId]);
 
   const refreshMonitor = async () => {
-    const [{ data: stateResponse }, { data: groupsResponse }] =
-      await Promise.all([gameApi.state(sessionId), gameApi.groups(sessionId)]);
-    setGame(stateResponse.data);
-    const nextGroups = groupsResponse.data ?? [];
-    setGroups(nextGroups);
-    if (!selectedGroupId && nextGroups[0])
-      setSelectedGroupId(String(nextGroups[0].id));
+    const [stateResponse, groupsResponse] = await Promise.all([
+      stateQuery.refetch(),
+      groupsQuery.refetch(),
+    ]);
+    queryClient.setQueryData(
+      ["game-session", "teacher", String(sessionId)],
+      stateResponse.data ?? null,
+    );
+    queryClient.setQueryData(
+      ["game-groups", String(sessionId)],
+      groupsResponse.data ?? [],
+    );
   };
 
-  const refreshCurrentTurn = async (groupId = selectedGroupId) => {
+  const loadError = stateQuery.error ?? groupsQuery.error;
+
+  const refreshCurrentTurn = async (groupId = activeGroupId) => {
     if (!sessionId || !groupId || !["PLAYING", "PAUSED"].includes(game?.status))
       return;
     try {
@@ -205,21 +203,23 @@ export function RoomMonitorPage() {
   };
 
   const handleAction = async (action) => {
+    if (actionPending) return;
     setError("");
+    setActionPending(true);
     try {
       if (action === "start-game") await gameApi.startGame(sessionId);
       if (action === "pause-game") await gameApi.pauseGame(sessionId);
       if (action === "resume-game") await gameApi.resumeGame(sessionId);
       if (action === "finish-game") await gameApi.finishGame(sessionId);
       if (action === "reveal-cards") {
-        if (!selectedGroupId || !currentTurn)
+        if (!activeGroupId || !currentTurn)
           throw new Error("Belum ada turn aktif.");
-        await gameApi.revealCard(sessionId, selectedGroupId, currentTurn.id);
+        await gameApi.revealCard(sessionId, activeGroupId, currentTurn.id);
       }
       if (action === "complete-turn") {
-        if (!selectedGroupId || !currentTurn)
+        if (!activeGroupId || !currentTurn)
           throw new Error("Belum ada turn aktif.");
-        await gameApi.completeTurn(sessionId, selectedGroupId, currentTurn.id);
+        await gameApi.completeTurn(sessionId, activeGroupId, currentTurn.id);
       }
       await refreshMonitor();
       await refreshCurrentTurn();
@@ -229,6 +229,8 @@ export function RoomMonitorPage() {
           requestError.message ??
           "Aksi game gagal.",
       );
+    } finally {
+      setActionPending(false);
     }
   };
 
@@ -274,9 +276,11 @@ export function RoomMonitorPage() {
         </div>
         <GameStatus status={game?.status ?? "CONNECTING"} />
       </div>
-      {error ? (
+      {error || loadError ? (
         <p className="rounded-xl border border-rose-400/50 bg-rose-950/30 p-4 text-sm text-rose-200">
-          {error}
+          {error ||
+            loadError.response?.data?.message ||
+            "Game belum dapat dimuat."}
         </p>
       ) : null}
       {game?.status === "WAITING" && !teacherInputMode ? (
@@ -331,7 +335,7 @@ export function RoomMonitorPage() {
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {groups.map((group) => (
               <button
-                className={`rounded-xl border p-4 text-left ${String(group.id) === String(selectedGroupId) ? "border-amber-300" : "border-slate-700"}`}
+                className={`rounded-xl border p-4 text-left ${String(group.id) === String(activeGroupId) ? "border-amber-300" : "border-slate-700"}`}
                 type="button"
                 key={group.id}
                 onClick={() => setSelectedGroupId(String(group.id))}
@@ -390,7 +394,7 @@ export function RoomMonitorPage() {
           status={game?.status}
           gameMode={game?.gameMode}
           onAction={handleAction}
-          disabled={!game}
+          disabled={!game || actionPending}
         />
       </div>
     </section>

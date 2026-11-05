@@ -6,6 +6,7 @@ import { env } from "./config/env.js";
 import { router } from "./routes/index.js";
 import { errorMiddleware } from "./middleware/error.middleware.js";
 import { requestLogMiddleware } from "./middleware/request-log.middleware.js";
+import { pool } from "./config/database.js";
 
 export function createApp() {
   const app = express();
@@ -34,6 +35,23 @@ export function createApp() {
       data: { service: "phillyogo-backend", status: "ok" },
     }),
   );
+  app.get("/health/live", (_request, response) =>
+    response.json({
+      success: true,
+      data: { service: "phillyogo-backend", status: "alive" },
+    }),
+  );
+  app.get("/health/ready", async (_request, response, next) => {
+    try {
+      await pool.execute("SELECT 1");
+      response.json({
+        success: true,
+        data: { service: "phillyogo-backend", status: "ready" },
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
   app.use(env.apiPrefix, router);
   app.use(errorMiddleware);
   return app;

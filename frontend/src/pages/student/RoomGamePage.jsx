@@ -6,6 +6,7 @@ import { useGame } from "../../hooks/useGame";
 import { socketClient } from "../../services/socket/socketClient";
 import { SOCKET_EVENTS } from "../../services/socket/socketEvents";
 import { getParticipantSession, getStudentRoom } from "../../utils/storage";
+import { mergeRealtimeState } from "../../utils/realtimeState";
 
 export function RoomGamePage() {
   const { game, setGame } = useGame();
@@ -20,16 +21,24 @@ export function RoomGamePage() {
       participantSessionId,
       gameSessionId: room.gameSessionId,
     });
+    let requestStateTimer;
+    const requestState = () => {
+      window.clearTimeout(requestStateTimer);
+      requestStateTimer = window.setTimeout(() => {
+        socket.emit("request-state");
+      }, 25);
+    };
     const handleConnect = () => setSocketConnected(true);
     const handleDisconnect = () => setSocketConnected(false);
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
     const updateState = (state) => {
+      if (Number(state?.id) !== Number(room.gameSessionId)) return;
       if (state.status === "WAITING") {
         navigate("../waiting", { replace: true });
         return;
       }
-      setGame(state);
+      setGame((current) => mergeRealtimeState(current, state));
     };
     const handleCardsRevealed = (turn) =>
       setGame((current) => ({
@@ -44,9 +53,9 @@ export function RoomGamePage() {
           problemCardState: turn.problemCardState,
         },
       }));
-    const handleTurnChanged = () => socket.emit("request-state");
-    const handleLeaderChanged = () => socket.emit("request-state");
-    const handleStarted = () => socket.emit("request-state");
+    const handleTurnChanged = requestState;
+    const handleLeaderChanged = requestState;
+    const handleStarted = requestState;
     const handleFinished = (state) => {
       updateState(state);
       navigate("../result", { replace: true });
@@ -64,8 +73,9 @@ export function RoomGamePage() {
     socket.on(SOCKET_EVENTS.TURN_STARTED, handleTurnChanged);
     socket.on(SOCKET_EVENTS.GROUP_LEADER_CHANGED, handleLeaderChanged);
     socket.on(SOCKET_EVENTS.GAME_FINISHED, handleFinished);
-    socket.emit("request-state");
+    requestState();
     return () => {
+      window.clearTimeout(requestStateTimer);
       events.forEach((event) => socket.off(event, updateState));
       socket.off(SOCKET_EVENTS.GAME_STARTED, handleStarted);
       socket.off(SOCKET_EVENTS.CARDS_REVEALED, handleCardsRevealed);

@@ -26,6 +26,18 @@ export function registerGameSocket(namespace) {
     const initialSessionId =
       identity.kind === "STUDENT" ? identity.participant.gameSessionId : null;
 
+    const readState = async (sessionId) => {
+      const state =
+        identity.kind === "TEACHER"
+          ? await gameService.getGameSession(sessionId, identity.user.userId)
+          : await gameService.getStudentGameState(
+              sessionId,
+              identity.participant.id,
+            );
+      socket.emit(SOCKET_EVENTS.STATE_SNAPSHOT, state);
+      return state;
+    };
+
     const joinSession = async (sessionId) => {
       if (identity.kind === "TEACHER")
         await gameService.getGameSession(sessionId, identity.user.userId);
@@ -36,17 +48,10 @@ export function registerGameSocket(namespace) {
           identity.participant.id,
           sessionId,
         );
-        if (group) socket.join(`group:${group.groupId}`);
+        if (group)         socket.join(`group:${group.groupId}`);
       }
       socket.data.gameSessionId = sessionId;
-      const state =
-        identity.kind === "TEACHER"
-          ? await gameService.getGameSession(sessionId, identity.user.userId)
-          : await gameService.getStudentGameState(
-              sessionId,
-              identity.participant.id,
-            );
-      socket.emit(SOCKET_EVENTS.STATE_SNAPSHOT, state);
+      const state = await readState(sessionId);
       if (identity.kind === "STUDENT") {
         socket.emit(SOCKET_EVENTS.YOUR_SESSION_RESTORED, {
           sessionId: identity.participant.sessionId,
@@ -72,7 +77,7 @@ export function registerGameSocket(namespace) {
     socket.on("request-state", () => {
       if (!socket.data.gameSessionId)
         return emitError(socket, new Error("Game session is not joined"));
-      joinSession(socket.data.gameSessionId).catch((error) =>
+      readState(socket.data.gameSessionId).catch((error) =>
         emitError(socket, error),
       );
     });

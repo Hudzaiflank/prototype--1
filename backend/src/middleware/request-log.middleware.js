@@ -1,8 +1,12 @@
+import { randomUUID } from "node:crypto";
 import { addRequestLog } from "../services/request-log.service.js";
 import { emitRequestLog } from "../config/realtime.js";
 
 export function requestLogMiddleware(request, response, next) {
   const startedAt = Date.now();
+  const requestId = request.get("x-request-id") ?? randomUUID();
+  request.requestId = requestId;
+  response.setHeader("x-request-id", requestId);
   response.on("finish", () => {
     const forwardedFor = request.headers["x-forwarded-for"];
     const ip =
@@ -18,6 +22,7 @@ export function requestLogMiddleware(request, response, next) {
       userAgent: request.get("user-agent") ?? "unknown",
       method: request.method,
       path: request.originalUrl,
+      requestId,
       statusCode: response.statusCode,
       durationMs: Date.now() - startedAt,
     });

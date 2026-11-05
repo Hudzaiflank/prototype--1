@@ -1,5 +1,6 @@
 export function errorMiddleware(error, request, response, _next) {
   console.error("[request-error]", {
+    requestId: request?.requestId,
     method: request?.method,
     path: request?.originalUrl,
     code: error.code,

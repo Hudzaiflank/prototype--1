@@ -24,6 +24,7 @@ export const env = {
     ssl: process.env.DB_SSL === "true",
     sslCa: process.env.DB_SSL_CA?.replace(/\\n/g, "\n"),
     connectionLimit: Number(process.env.DB_CONNECTION_LIMIT ?? 10),
+    slowQueryMs: Number(process.env.DB_SLOW_QUERY_MS ?? 500),
   },
   jwt: {
     accessSecret: process.env.JWT_ACCESS_SECRET,

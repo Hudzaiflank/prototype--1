@@ -4,7 +4,36 @@ import { env } from "./env.js";
 
 let activePool;
 let configuredConnectionString;
+const metrics = {
+  queryCount: 0,
+  totalQueryMs: 0,
+  slowQueryCount: 0,
+  connectionWaitCount: 0,
+  totalConnectionWaitMs: 0,
+};
 const aivenCa = readFileSync(new URL("../../aiven-ca.pem", import.meta.url), "utf8");
+
+function recordQuery(startedAt, sql) {
+  const durationMs = Date.now() - startedAt;
+  metrics.queryCount += 1;
+  metrics.totalQueryMs += durationMs;
+  if (durationMs >= env.database.slowQueryMs) {
+    metrics.slowQueryCount += 1;
+    console.warn("[slow-query]", {
+      durationMs,
+      sql: String(sql).replace(/\s+/g, " ").slice(0, 240),
+    });
+  }
+}
+
+async function executeTimed(executor, sql, values) {
+  const startedAt = Date.now();
+  try {
+    return await executor(sql, values);
+  } finally {
+    recordQuery(startedAt, sql);
+  }
+}
 
 function createConnectionPool(connectionString) {
   const useTextProtocol = Boolean(connectionString);
@@ -29,16 +58,31 @@ function createConnectionPool(connectionString) {
 
   return {
     execute: (sql, values) =>
-      useTextProtocol ? pool.query(sql, values) : pool.execute(sql, values),
-    query: (...args) => pool.query(...args),
+      executeTimed(
+        useTextProtocol
+          ? pool.query.bind(pool)
+          : pool.execute.bind(pool),
+        sql,
+        values,
+      ),
+    query: (sql, values) =>
+      executeTimed(pool.query.bind(pool), sql, values),
     getConnection: async () => {
+      const waitStartedAt = Date.now();
       const connection = await pool.getConnection();
+      metrics.connectionWaitCount += 1;
+      metrics.totalConnectionWaitMs += Date.now() - waitStartedAt;
       return {
         execute: (sql, values) =>
-          useTextProtocol
-            ? connection.query(sql, values)
-            : connection.execute(sql, values),
-        query: (...args) => connection.query(...args),
+          executeTimed(
+            useTextProtocol
+              ? connection.query.bind(connection)
+              : connection.execute.bind(connection),
+            sql,
+            values,
+          ),
+        query: (sql, values) =>
+          executeTimed(connection.query.bind(connection), sql, values),
         beginTransaction: (...args) => connection.beginTransaction(...args),
         commit: (...args) => connection.commit(...args),
         rollback: (...args) => connection.rollback(...args),
@@ -61,6 +105,10 @@ export function configureDatabase(connectionString) {
   if (activePool && !configuredConnectionString)
     throw new Error("Database pool was initialized before cloud configuration");
   configuredConnectionString = connectionString;
+}
+
+export function getDatabaseMetrics() {
+  return { ...metrics };
 }
 
 export const pool = {

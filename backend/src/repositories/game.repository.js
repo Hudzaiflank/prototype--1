@@ -5,6 +5,15 @@ import {
 } from "../services/matching.service.js";
 import { AppError } from "../utils/errors.js";
 
+function bulkInsert(connection, statement, rows) {
+  if (!rows.length) return null;
+  const placeholders = rows.map(() => `(${rows[0].map(() => "?").join(", ")})`).join(", ");
+  return connection.execute(
+    `${statement} VALUES ${placeholders}`,
+    rows.flat(),
+  );
+}
+
 async function sessionForUpdate(connection, sessionId, teacherId) {
   const [rows] = await connection.execute(
     `SELECT gs.*, r.status AS room_status, r.created_by AS room_creator
@@ -57,32 +66,42 @@ export async function startGame(sessionId, teacherId) {
         409,
       );
 
-    const groupIds = [];
-    for (let index = 0; index < groupCount; index += 1) {
-      const [result] = await connection.execute(
-        "INSERT INTO `groups` (game_session_id, group_number, status) VALUES (?, ?, 'PLAYING')",
-        [sessionId, index + 1],
-      );
-      groupIds.push(result.insertId);
-    }
+    const [groupResult] = await bulkInsert(
+      connection,
+      "INSERT INTO `groups` (game_session_id, group_number, status)",
+      Array.from({ length: groupCount }, (_, index) => [
+        sessionId,
+        index + 1,
+        "PLAYING",
+      ]),
+    );
+    const groupIds = Array.from(
+      { length: groupCount },
+      (_, index) => groupResult.insertId + index,
+    );
     const participantGroup = new Map();
     const groupLeader = new Map();
     const groupTurnNumbers = new Map(groupIds.map((groupId) => [groupId, 0]));
+    const memberRows = [];
     for (const [index, participant] of secureShuffle(participants).entries()) {
       const groupId = groupIds[index % groupCount];
       participantGroup.set(participant.id, groupId);
       if (!groupLeader.has(groupId)) groupLeader.set(groupId, participant.id);
-      await connection.execute(
-        "INSERT INTO group_members (group_id, participant_id) VALUES (?, ?)",
-        [groupId, participant.id],
-      );
+      memberRows.push([groupId, participant.id]);
     }
-    for (const [groupId, participantId] of groupLeader) {
-      await connection.execute(
-        "UPDATE `groups` SET leader_participant_id = ? WHERE id = ?",
-        [participantId, groupId],
-      );
-    }
+    await bulkInsert(
+      connection,
+      "INSERT INTO group_members (group_id, participant_id)",
+      memberRows,
+    );
+    const leaderCases = [...groupLeader]
+      .map(([groupId, participantId]) => `WHEN ${Number(groupId)} THEN ?`)
+      .join(" ");
+    await connection.execute(
+      `UPDATE \`groups\` SET leader_participant_id = CASE id ${leaderCases} END
+       WHERE id IN (${groupIds.map(() => "?").join(",")})`,
+      [...groupLeader.values(), ...groupIds],
+    );
 
     const matching = [];
     const groupedParticipants = new Map();
@@ -106,47 +125,58 @@ export async function startGame(sessionId, teacherId) {
       matching.push(...groupMatching);
     }
 
+    const assignmentRows = [];
+    const assignmentMetadata = [];
     for (const assignment of matching) {
       const groupId = participantGroup.get(assignment.participantId);
       const turnNumber = groupTurnNumbers.get(groupId) + 1;
       groupTurnNumbers.set(groupId, turnNumber);
-      const isFirstTurn = turnNumber === 1;
-      const [result] = await connection.execute(
-        `INSERT INTO assignments (game_session_id, group_id, participant_id, problem_id, sequence_number, status)
-				 VALUES (?, ?, ?, ?, ?, 'PENDING')`,
-        [
-          sessionId,
-          groupId,
-          assignment.participantId,
-          assignment.problemId,
-          assignment.sequenceNumber,
-        ],
+      assignmentRows.push([
+        sessionId,
+        groupId,
+        assignment.participantId,
+        assignment.problemId,
+        assignment.sequenceNumber,
+        turnNumber === 1 ? "ACTIVE" : "PENDING",
+      ]);
+      assignmentMetadata.push({ groupId, turnNumber });
+    }
+    const [assignmentResult] = await bulkInsert(
+      connection,
+      `INSERT INTO assignments
+       (game_session_id, group_id, participant_id, problem_id, sequence_number, status)`,
+      assignmentRows,
+    );
+    const turnRows = assignmentMetadata.map(({ groupId, turnNumber }, index) => [
+      sessionId,
+      groupId,
+      assignmentResult.insertId + index,
+      turnNumber,
+      turnNumber === 1 ? "ACTIVE" : "PENDING",
+    ]);
+    const [turnResult] = await bulkInsert(
+      connection,
+      `INSERT INTO game_turns
+       (game_session_id, group_id, assignment_id, turn_number, status)`,
+      turnRows,
+    );
+    const activeTurnCases = [];
+    const activeTurnIds = [];
+    for (const [groupId, turnNumber] of groupTurnNumbers) {
+      if (turnNumber < 1) continue;
+      const assignmentIndex = assignmentMetadata.findIndex(
+        (item) => item.groupId === groupId && item.turnNumber === 1,
       );
+      const activeTurnId = turnResult.insertId + assignmentIndex;
+      activeTurnCases.push(`WHEN ${Number(groupId)} THEN ?`);
+      activeTurnIds.push(activeTurnId);
+    }
+    if (activeTurnCases.length) {
       await connection.execute(
-        `INSERT INTO game_turns (game_session_id, group_id, assignment_id, turn_number, status)
-				 VALUES (?, ?, ?, ?, ?)`,
-        [
-          sessionId,
-          groupId,
-          result.insertId,
-          turnNumber,
-          isFirstTurn ? "ACTIVE" : "PENDING",
-        ],
+        `UPDATE \`groups\` SET active_turn_id = CASE id ${activeTurnCases} END
+         WHERE id IN (${groupIds.map(() => "?").join(",")})`,
+        [...activeTurnIds, ...groupIds],
       );
-      if (isFirstTurn) {
-        await connection.execute(
-          "UPDATE assignments SET status = 'ACTIVE' WHERE id = ?",
-          [result.insertId],
-        );
-        const [turn] = await connection.execute(
-          "SELECT id FROM game_turns WHERE assignment_id = ? LIMIT 1",
-          [result.insertId],
-        );
-        await connection.execute(
-          "UPDATE `groups` SET active_turn_id = ? WHERE id = ?",
-          [turn[0].id, groupId],
-        );
-      }
     }
     await connection.execute(
       "UPDATE game_sessions SET status = 'PLAYING', state_version = state_version + 1, started_at = NOW(), updated_at = CURRENT_TIMESTAMP WHERE id = ?",
@@ -267,39 +297,34 @@ export async function updateGameConfiguration(
 }
 
 export async function getStudentGameState(sessionId, participantId) {
-  const [sessions] = await pool.execute(
+  const [sessionRows] = await pool.execute(
     `SELECT gs.id, gs.status, gs.state_version AS stateVersion, gs.game_mode AS gameMode,
-       gs.problem_display_limit AS problemDisplayLimit, t.title AS topicTitle, t.description AS topicDescription
-		 FROM game_sessions gs LEFT JOIN topics t ON t.id = gs.topic_id
+       gs.problem_display_limit AS problemDisplayLimit, t.title AS topicTitle,
+       t.description AS topicDescription, p.id AS participantId,
+       p.full_name AS participantName, p.status AS participantStatus
+		 FROM game_sessions gs
+     LEFT JOIN topics t ON t.id = gs.topic_id
+     LEFT JOIN participants p ON p.id = ? AND p.game_session_id = gs.id
        WHERE gs.id = ? LIMIT 1`,
-    [sessionId],
-  );
-  if (!sessions.length)
-    throw new AppError("Game session not found", "GAME_SESSION_NOT_FOUND", 404);
-  const [participant] = await pool.execute(
-    `SELECT id, full_name AS fullName, status FROM participants
-		 WHERE id = ? AND game_session_id = ? LIMIT 1`,
     [participantId, sessionId],
   );
-  if (!participant.length)
+  if (!sessionRows.length)
+    throw new AppError("Game session not found", "GAME_SESSION_NOT_FOUND", 404);
+  if (!sessionRows[0].participantId)
     throw new AppError("Participant not found", "PARTICIPANT_NOT_FOUND", 404);
-  const [groups] = await pool.execute(
-    `SELECT g.id, g.group_number AS groupNumber, g.status, g.active_turn_id AS activeTurnId,
-       g.leader_participant_id AS leaderParticipantId, leader.full_name AS leaderName
-     FROM \`groups\` g JOIN group_members gm ON gm.group_id = g.id
+  const [groupMembers] = await pool.execute(
+    `SELECT g.id, g.group_number AS groupNumber, g.status,
+       g.leader_participant_id AS leaderParticipantId, leader.full_name AS leaderName,
+       member.id AS memberId, member.full_name AS memberName, member.status AS memberStatus
+     FROM \`groups\` g
+     JOIN group_members gm ON gm.group_id = g.id AND gm.participant_id = ?
      LEFT JOIN participants leader ON leader.id = g.leader_participant_id
-     WHERE g.game_session_id = ? AND gm.participant_id = ? LIMIT 1`,
-    [sessionId, participantId],
+     LEFT JOIN group_members all_members ON all_members.group_id = g.id
+     LEFT JOIN participants member ON member.id = all_members.participant_id
+     WHERE g.game_session_id = ?
+     ORDER BY member.full_name`,
+    [participantId, sessionId],
   );
-  const [members] = groups.length
-    ? await pool.execute(
-        `SELECT p.id, p.full_name AS fullName, p.status,
-           p.id = (SELECT leader_participant_id FROM \`groups\` WHERE id = gm.group_id) AS isLeader
-         FROM group_members gm
-         JOIN participants p ON p.id = gm.participant_id WHERE gm.group_id = ? ORDER BY p.full_name`,
-        [groups[0].id],
-      )
-    : [[]];
   const [turns] = await pool.execute(
     `SELECT gt.id, gt.group_id AS groupId, gt.turn_number AS turnNumber, gt.status,
       gt.participant_card_state AS participantCardState, gt.problem_card_state AS problemCardState,
@@ -312,31 +337,40 @@ export async function getStudentGameState(sessionId, participantId) {
 		 ORDER BY gt.turn_number LIMIT 1`,
     [sessionId, participantId],
   );
+  const session = sessionRows[0];
+  const group = groupMembers[0];
+  const members = groupMembers.map((row) => ({
+    id: row.memberId,
+    fullName: row.memberName,
+    status: row.memberStatus,
+    isLeader: Number(row.memberId) === Number(row.leaderParticipantId),
+  }));
   return {
-    ...sessions[0],
+    id: session.id,
+    status: session.status,
+    stateVersion: session.stateVersion,
+    gameMode: session.gameMode,
+    problemDisplayLimit: session.problemDisplayLimit,
+    topicTitle: session.topicTitle,
+    topicDescription: session.topicDescription,
     participant: {
-      id: participant[0].id,
-      fullName: participant[0].fullName,
-      status: participant[0].status,
+      id: session.participantId,
+      fullName: session.participantName,
+      status: session.participantStatus,
       isLeader:
-        groups.length &&
-        Number(groups[0].leaderParticipantId) === Number(participantId),
+        Boolean(group) &&
+        Number(group.leaderParticipantId) === Number(participantId),
     },
-    group: groups.length
+    group: group
       ? {
-          id: groups[0].id,
-          groupNumber: groups[0].groupNumber,
-          status: groups[0].status,
-          leaderParticipantId: groups[0].leaderParticipantId,
-          leaderName: groups[0].leaderName,
+          id: group.id,
+          groupNumber: group.groupNumber,
+          status: group.status,
+          leaderParticipantId: group.leaderParticipantId,
+          leaderName: group.leaderName,
           isLeader:
-            Number(groups[0].leaderParticipantId) === Number(participantId),
-          members: members.map(({ id, fullName, status, isLeader }) => ({
-            id,
-            fullName,
-            status,
-            isLeader: Boolean(isLeader),
-          })),
+            Number(group.leaderParticipantId) === Number(participantId),
+          members,
         }
       : null,
     currentTurn: turns[0]
@@ -565,25 +599,49 @@ export async function getGroups(sessionId, teacherId) {
     `SELECT g.id, g.group_number AS groupNumber, g.status,
 			g.active_turn_id AS activeTurnId, gt.turn_number AS currentTurnNumber,
       g.leader_participant_id AS leaderParticipantId, leader.full_name AS leaderName,
-      (SELECT COUNT(*) FROM game_turns all_turns WHERE all_turns.group_id = g.id) AS totalTurnCount,
-      (SELECT COUNT(*) FROM game_turns completed_turns WHERE completed_turns.group_id = g.id AND completed_turns.status = 'COMPLETED') AS completedTurnCount
+      COUNT(DISTINCT all_turns.id) AS totalTurnCount,
+      COUNT(DISTINCT CASE WHEN all_turns.status = 'COMPLETED' THEN all_turns.id END) AS completedTurnCount,
+      member.id AS memberId, member.full_name AS memberFullName, member.status AS memberStatus
      FROM \`groups\` g JOIN game_sessions gs ON gs.id = g.game_session_id
      LEFT JOIN participants leader ON leader.id = g.leader_participant_id
 		 LEFT JOIN game_turns gt ON gt.id = g.active_turn_id
-		 WHERE g.game_session_id = ? AND gs.created_by = ? ORDER BY g.group_number`,
+     LEFT JOIN game_turns all_turns ON all_turns.group_id = g.id
+     LEFT JOIN group_members gm ON gm.group_id = g.id
+     LEFT JOIN participants member ON member.id = gm.participant_id
+		 WHERE g.game_session_id = ? AND gs.created_by = ?
+     GROUP BY g.id, g.group_number, g.status, g.active_turn_id, gt.turn_number,
+       g.leader_participant_id, leader.full_name, member.id, member.full_name, member.status
+     ORDER BY g.group_number, member.full_name`,
     [sessionId, teacherId],
   );
-  for (const group of rows) {
-    const [members] = await pool.execute(
-      `SELECT p.id, p.full_name AS fullName, p.status,
-          p.id = ? AS isLeader
-    			 FROM group_members gm JOIN participants p ON p.id = gm.participant_id
-			 WHERE gm.group_id = ? ORDER BY p.full_name`,
-      [group.leaderParticipantId, group.id],
-    );
-    group.members = members;
+  const groups = new Map();
+  for (const row of rows) {
+    let group = groups.get(row.id);
+    if (!group) {
+      group = {
+        id: row.id,
+        groupNumber: row.groupNumber,
+        status: row.status,
+        activeTurnId: row.activeTurnId,
+        currentTurnNumber: row.currentTurnNumber,
+        leaderParticipantId: row.leaderParticipantId,
+        leaderName: row.leaderName,
+        totalTurnCount: row.totalTurnCount,
+        completedTurnCount: row.completedTurnCount,
+        members: [],
+      };
+      groups.set(row.id, group);
+    }
+    if (row.memberId !== null) {
+      group.members.push({
+        id: row.memberId,
+        fullName: row.memberFullName,
+        status: row.memberStatus,
+        isLeader: Number(row.memberId) === Number(row.leaderParticipantId),
+      });
+    }
   }
-  return rows;
+  return [...groups.values()];
 }
 
 export async function getOwnGroup(sessionId, participantId) {
