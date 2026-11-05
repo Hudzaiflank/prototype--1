@@ -6,8 +6,9 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 
 COPY src ./src
+COPY database ./database
 COPY aiven-ca.pem ./aiven-ca.pem
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npm run db:migrate && npm start"]
