@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { classApi } from "../../services/api/classApi";
+import { ListSkeleton } from "../../components/common/ListSkeleton";
 
 export function ClassListPage() {
   const [classes, setClasses] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
     classApi
@@ -13,7 +15,8 @@ export function ClassListPage() {
         setError(
           requestError.response?.data?.message ?? "Kelas belum dapat dimuat.",
         ),
-      );
+      )
+      .finally(() => setIsLoading(false));
   }, []);
   return (
     <section className="space-y-6" aria-labelledby="teacher-classes-title">
@@ -26,7 +29,8 @@ export function ClassListPage() {
         </h1>
       </div>
       {error ? <p className="text-sm text-rose-300">{error}</p> : null}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {isLoading ? <ListSkeleton rows={3} /> : null}
+      {!isLoading ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {classes.map((item) => (
           <Link
             className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5 transition hover:border-amber-300"
@@ -37,8 +41,8 @@ export function ClassListPage() {
             <p className="mt-2 text-sm text-slate-400">{item.status}</p>
           </Link>
         ))}
-      </div>
-      {!classes.length && !error ? (
+      </div> : null}
+      {!isLoading && !classes.length && !error ? (
         <p className="text-sm text-slate-400">
           Belum ada kelas yang di-assign.
         </p>

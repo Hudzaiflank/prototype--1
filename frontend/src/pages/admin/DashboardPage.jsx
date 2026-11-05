@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { dashboardApi } from "../../services/api/dashboardApi";
+import { DashboardDataSkeleton } from "../../components/common/DashboardDataSkeleton";
 
 export function DashboardPage() {
   const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
     dashboardApi
       .admin()
       .then(({ data: response }) => setData(response.data))
-      .catch(() => setError("Dashboard belum dapat dimuat."));
+      .catch(() => setError("Dashboard belum dapat dimuat."))
+      .finally(() => setIsLoading(false));
   }, []);
   return (
     <section className="space-y-8" aria-labelledby="admin-title">
@@ -24,7 +27,11 @@ export function DashboardPage() {
         </p>
       </div>
       {error ? <p className="text-sm text-rose-300">{error}</p> : null}
-      <div className="grid gap-4 sm:grid-cols-4">
+      {isLoading ? (
+        <DashboardDataSkeleton showList={false} />
+      ) : (
+        <>
+          <div className="grid gap-4 sm:grid-cols-4">
         {[
           ["Kelas", data?.classCount],
           ["Guru", data?.teacherCount],
@@ -41,8 +48,8 @@ export function DashboardPage() {
             </p>
           </div>
         ))}
-      </div>
-      <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
+          </div>
+          <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
         <h2 className="text-lg font-semibold">Game terbaru sekolah</h2>
         <div className="mt-4 space-y-3">
           {data?.recentGames?.length ? (
@@ -66,7 +73,9 @@ export function DashboardPage() {
             <p className="text-sm text-slate-400">Belum ada game sekolah.</p>
           )}
         </div>
-      </div>
+          </div>
+        </>
+      )}
     </section>
   );
 }

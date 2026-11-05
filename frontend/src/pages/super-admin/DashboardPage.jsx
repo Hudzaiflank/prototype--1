@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { dashboardApi } from "../../services/api/dashboardApi";
+import { DashboardDataSkeleton } from "../../components/common/DashboardDataSkeleton";
 
 export function DashboardPage() {
   const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
     dashboardApi
       .superAdmin()
       .then(({ data: response }) => setData(response.data))
-      .catch(() => setError("Dashboard belum dapat dimuat."));
+      .catch(() => setError("Dashboard belum dapat dimuat."))
+      .finally(() => setIsLoading(false));
   }, []);
   return (
     <section className="space-y-8" aria-labelledby="super-admin-title">
@@ -24,7 +27,8 @@ export function DashboardPage() {
         </p>
       </div>
       {error ? <p className="text-sm text-rose-300">{error}</p> : null}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      {isLoading ? <DashboardDataSkeleton metricCount={5} showList={false} /> : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {[
           ["Sekolah", data?.totalSchools],
           ["Sekolah aktif", data?.activeSchools],
@@ -43,6 +47,7 @@ export function DashboardPage() {
           </div>
         ))}
       </div>
+      )}
     </section>
   );
 }

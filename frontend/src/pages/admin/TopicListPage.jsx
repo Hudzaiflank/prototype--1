@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { topicApi } from "../../services/api/topicApi";
+import { ListSkeleton } from "../../components/common/ListSkeleton";
 
 export function TopicListPage() {
   const [topics, setTopics] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [editingId, setEditingId] = useState(null);
@@ -15,7 +17,8 @@ export function TopicListPage() {
         setError(
           requestError.response?.data?.message ?? "Topik belum dapat dimuat.",
         ),
-      ),
+      )
+      .finally(() => setIsLoading(false)),
     [],
   );
   useEffect(() => {
@@ -98,7 +101,8 @@ export function TopicListPage() {
         </button>
       </form>
       {error ? <p className="text-sm text-rose-300">{error}</p> : null}
-      <div className="space-y-3">
+      {isLoading ? <ListSkeleton rows={4} /> : null}
+      {!isLoading ? <div className="space-y-3">
         {topics.map((topic) => (
           <div
             className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/50 p-4"
@@ -125,8 +129,8 @@ export function TopicListPage() {
             )}
           </div>
         ))}
-      </div>
-      {!topics.length && !error ? (
+      </div> : null}
+      {!isLoading && !topics.length && !error ? (
         <p className="text-sm text-slate-400">Belum ada topik.</p>
       ) : null}
     </section>

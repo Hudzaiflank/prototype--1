@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { historyApi } from "../../services/api/historyApi";
 import { formatDateTime } from "../../utils/formatters";
+import { ListSkeleton } from "../../components/common/ListSkeleton";
 
 export function RoomHistoryPage() {
   const [history, setHistory] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
     historyApi
@@ -14,7 +16,8 @@ export function RoomHistoryPage() {
         setError(
           requestError.response?.data?.message ?? "History belum dapat dimuat.",
         ),
-      );
+      )
+      .finally(() => setIsLoading(false));
   }, []);
   return (
     <section className="space-y-6" aria-labelledby="history-title">
@@ -27,7 +30,8 @@ export function RoomHistoryPage() {
         </h1>
       </div>
       {error ? <p className="text-sm text-rose-300">{error}</p> : null}
-      <div className="space-y-3">
+      {isLoading ? <ListSkeleton rows={4} /> : null}
+      {!isLoading ? <div className="space-y-3">
         {history.map((item) => (
           <div
             className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/50 p-4"
@@ -50,8 +54,8 @@ export function RoomHistoryPage() {
             </div>
           </div>
         ))}
-      </div>
-      {!history.length && !error ? (
+      </div> : null}
+      {!isLoading && !history.length && !error ? (
         <p className="text-sm text-slate-400">Belum ada history.</p>
       ) : null}
     </section>

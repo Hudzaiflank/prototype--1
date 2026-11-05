@@ -1,43 +1,133 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { StudentLayout } from "../layouts/StudentLayout";
-import { LoginPage } from "../pages/auth/LoginPage";
-import { ChangePasswordPage } from "../pages/auth/ChangePasswordPage";
-import { JoinRoomPage } from "../pages/student/JoinRoomPage";
-import { RulesPage } from "../pages/student/RulesPage";
-import { StudentRoomPage } from "../pages/student/StudentRoomPage";
-import { RoomInputPage } from "../pages/student/RoomInputPage";
-import { RoomWaitingPage } from "../pages/student/RoomWaitingPage";
-import { RoomGamePage } from "../pages/student/RoomGamePage";
-import { RoomResultPage } from "../pages/student/RoomResultPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { RoleRoute } from "./RoleRoute";
 import { SuperAdminLayout } from "../layouts/SuperAdminLayout";
 import { AdminLayout } from "../layouts/AdminLayout";
 import { TeacherLayout } from "../layouts/TeacherLayout";
-import { DashboardPage as SuperAdminDashboardPage } from "../pages/super-admin/DashboardPage";
-import { DashboardPage as AdminDashboardPage } from "../pages/admin/DashboardPage";
-import { DashboardPage as TeacherDashboardPage } from "../pages/teacher/DashboardPage";
-import { RoomMonitorPage } from "../pages/teacher/RoomMonitorPage";
-import { ClassListPage as TeacherClassListPage } from "../pages/teacher/ClassListPage";
-import { ClassDetailPage as TeacherClassDetailPage } from "../pages/teacher/ClassDetailPage";
-import { RoomConfigurePage } from "../pages/teacher/RoomConfigurePage";
-import { RoomHistoryPage } from "../pages/teacher/RoomHistoryPage";
-import { HistoryDetailPage } from "../pages/teacher/HistoryDetailPage";
-import { SchoolListPage } from "../pages/super-admin/SchoolListPage";
-import { ClassListPage } from "../pages/admin/ClassListPage";
-import { TeacherListPage } from "../pages/admin/TeacherListPage";
-import { TeacherFormPage } from "../pages/admin/TeacherFormPage";
-import { TopicListPage } from "../pages/admin/TopicListPage";
-import { ClassFormPage } from "../pages/admin/ClassFormPage";
-import { ClassDetailPage as AdminClassDetailPage } from "../pages/admin/ClassDetailPage";
-import { TeacherDetailPage as AdminTeacherDetailPage } from "../pages/admin/TeacherDetailPage";
-import { SchoolDetailPage } from "../pages/super-admin/SchoolDetailPage";
-import { SchoolFormPage } from "../pages/super-admin/SchoolFormPage";
-import { RequestLogsPage } from "../pages/super-admin/RequestLogsPage";
-import { StudentTrackingPage } from "../pages/admin/StudentTrackingPage";
+import { PageSkeleton } from "../components/common/PageSkeleton";
 import { getRoleHome } from "./roleHome";
+
+const lazyNamed = (loader, exportName) =>
+  lazy(() => loader().then((module) => ({ default: module[exportName] })));
+
+const LoginPage = lazyNamed(() => import("../pages/auth/LoginPage"), "LoginPage");
+const ChangePasswordPage = lazyNamed(
+  () => import("../pages/auth/ChangePasswordPage"),
+  "ChangePasswordPage",
+);
+const JoinRoomPage = lazyNamed(
+  () => import("../pages/student/JoinRoomPage"),
+  "JoinRoomPage",
+);
+const RulesPage = lazyNamed(() => import("../pages/student/RulesPage"), "RulesPage");
+const StudentRoomPage = lazyNamed(
+  () => import("../pages/student/StudentRoomPage"),
+  "StudentRoomPage",
+);
+const RoomInputPage = lazyNamed(
+  () => import("../pages/student/RoomInputPage"),
+  "RoomInputPage",
+);
+const RoomWaitingPage = lazyNamed(
+  () => import("../pages/student/RoomWaitingPage"),
+  "RoomWaitingPage",
+);
+const RoomGamePage = lazyNamed(
+  () => import("../pages/student/RoomGamePage"),
+  "RoomGamePage",
+);
+const RoomResultPage = lazyNamed(
+  () => import("../pages/student/RoomResultPage"),
+  "RoomResultPage",
+);
+const SuperAdminDashboardPage = lazyNamed(
+  () => import("../pages/super-admin/DashboardPage"),
+  "DashboardPage",
+);
+const AdminDashboardPage = lazyNamed(
+  () => import("../pages/admin/DashboardPage"),
+  "DashboardPage",
+);
+const TeacherDashboardPage = lazyNamed(
+  () => import("../pages/teacher/DashboardPage"),
+  "DashboardPage",
+);
+const RoomMonitorPage = lazyNamed(
+  () => import("../pages/teacher/RoomMonitorPage"),
+  "RoomMonitorPage",
+);
+const TeacherClassListPage = lazyNamed(
+  () => import("../pages/teacher/ClassListPage"),
+  "ClassListPage",
+);
+const TeacherClassDetailPage = lazyNamed(
+  () => import("../pages/teacher/ClassDetailPage"),
+  "ClassDetailPage",
+);
+const RoomConfigurePage = lazyNamed(
+  () => import("../pages/teacher/RoomConfigurePage"),
+  "RoomConfigurePage",
+);
+const RoomHistoryPage = lazyNamed(
+  () => import("../pages/teacher/RoomHistoryPage"),
+  "RoomHistoryPage",
+);
+const HistoryDetailPage = lazyNamed(
+  () => import("../pages/teacher/HistoryDetailPage"),
+  "HistoryDetailPage",
+);
+const SchoolListPage = lazyNamed(
+  () => import("../pages/super-admin/SchoolListPage"),
+  "SchoolListPage",
+);
+const ClassListPage = lazyNamed(
+  () => import("../pages/admin/ClassListPage"),
+  "ClassListPage",
+);
+const TeacherListPage = lazyNamed(
+  () => import("../pages/admin/TeacherListPage"),
+  "TeacherListPage",
+);
+const TeacherFormPage = lazyNamed(
+  () => import("../pages/admin/TeacherFormPage"),
+  "TeacherFormPage",
+);
+const TopicListPage = lazyNamed(
+  () => import("../pages/admin/TopicListPage"),
+  "TopicListPage",
+);
+const ClassFormPage = lazyNamed(
+  () => import("../pages/admin/ClassFormPage"),
+  "ClassFormPage",
+);
+const AdminClassDetailPage = lazyNamed(
+  () => import("../pages/admin/ClassDetailPage"),
+  "ClassDetailPage",
+);
+const AdminTeacherDetailPage = lazyNamed(
+  () => import("../pages/admin/TeacherDetailPage"),
+  "TeacherDetailPage",
+);
+const SchoolDetailPage = lazyNamed(
+  () => import("../pages/super-admin/SchoolDetailPage"),
+  "SchoolDetailPage",
+);
+const SchoolFormPage = lazyNamed(
+  () => import("../pages/super-admin/SchoolFormPage"),
+  "SchoolFormPage",
+);
+const RequestLogsPage = lazyNamed(
+  () => import("../pages/super-admin/RequestLogsPage"),
+  "RequestLogsPage",
+);
+const StudentTrackingPage = lazyNamed(
+  () => import("../pages/admin/StudentTrackingPage"),
+  "StudentTrackingPage",
+);
 
 function HomeRedirect() {
   const { user } = useAuthContext();
@@ -47,7 +137,8 @@ function HomeRedirect() {
 export function AppRouter() {
   return (
     <BrowserRouter>
-      <Routes>
+      <Suspense fallback={<PageSkeleton />}>
+        <Routes>
         <Route path="/" element={<HomeRedirect />} />
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
@@ -145,7 +236,8 @@ export function AppRouter() {
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/join" replace />} />
-      </Routes>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

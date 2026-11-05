@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { dashboardApi } from "../../services/api/dashboardApi";
+import { DashboardDataSkeleton } from "../../components/common/DashboardDataSkeleton";
 
 export function DashboardPage() {
   const [dashboard, setDashboard] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -15,7 +17,8 @@ export function DashboardPage() {
           requestError.response?.data?.message ??
             "Dashboard belum dapat dimuat.",
         ),
-      );
+      )
+      .finally(() => setIsLoading(false));
   }, []);
 
   return (
@@ -36,51 +39,57 @@ export function DashboardPage() {
           {error}
         </p>
       ) : null}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Metric label="Kelas" value={dashboard?.classes?.length ?? "-"} />
-        <Metric
-          label="Room aktif"
-          value={dashboard?.activeRooms?.length ?? "-"}
-        />
-        <Metric
-          label="Game dijeda"
-          value={dashboard?.pausedGames?.length ?? "-"}
-        />
-        <Metric
-          label="Room selesai"
-          value={dashboard?.completedRoomCount ?? "-"}
-        />
-      </div>
-      <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
-        <h2 className="text-lg font-semibold">Room aktif</h2>
-        <div className="mt-4 space-y-3">
-          {dashboard?.activeRooms?.length ? (
-            dashboard.activeRooms.map((room) => (
-              <div
-                className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 sm:flex-row sm:items-center sm:justify-between"
-                key={room.id}
-              >
-                <div>
-                  <p className="font-semibold">Room {room.code}</p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Game session: {room.gameSessionId ?? "Belum dibuat"}
-                  </p>
-                </div>
-                {room.gameSessionId ? (
-                  <Link
-                    className="rounded-lg bg-amber-300 px-4 py-2 text-center text-sm font-bold text-slate-950"
-                    to={`/teacher/rooms/${room.id}/monitor?sessionId=${room.gameSessionId}`}
+      {isLoading ? (
+        <DashboardDataSkeleton />
+      ) : (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Metric label="Kelas" value={dashboard?.classes?.length ?? "-"} />
+            <Metric
+              label="Room aktif"
+              value={dashboard?.activeRooms?.length ?? "-"}
+            />
+            <Metric
+              label="Game dijeda"
+              value={dashboard?.pausedGames?.length ?? "-"}
+            />
+            <Metric
+              label="Room selesai"
+              value={dashboard?.completedRoomCount ?? "-"}
+            />
+          </div>
+          <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
+            <h2 className="text-lg font-semibold">Room aktif</h2>
+            <div className="mt-4 space-y-3">
+              {dashboard?.activeRooms?.length ? (
+                dashboard.activeRooms.map((room) => (
+                  <div
+                    className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 sm:flex-row sm:items-center sm:justify-between"
+                    key={room.id}
                   >
-                    Monitor game
-                  </Link>
-                ) : null}
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-slate-400">Belum ada room aktif.</p>
-          )}
-        </div>
-      </div>
+                    <div>
+                      <p className="font-semibold">Room {room.code}</p>
+                      <p className="mt-1 text-xs text-slate-400">
+                        Game session: {room.gameSessionId ?? "Belum dibuat"}
+                      </p>
+                    </div>
+                    {room.gameSessionId ? (
+                      <Link
+                        className="rounded-lg bg-amber-300 px-4 py-2 text-center text-sm font-bold text-slate-950"
+                        to={`/teacher/rooms/${room.id}/monitor?sessionId=${room.gameSessionId}`}
+                      >
+                        Monitor game
+                      </Link>
+                    ) : null}
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-slate-400">Belum ada room aktif.</p>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </section>
   );
 }

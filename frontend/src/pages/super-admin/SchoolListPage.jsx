@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { schoolApi } from "../../services/api/schoolApi";
+import { ListSkeleton } from "../../components/common/ListSkeleton";
 
 export function SchoolListPage() {
   const [schools, setSchools] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [pagination, setPagination] = useState(null);
   const [error, setError] = useState("");
   const [removingId, setRemovingId] = useState(null);
@@ -15,7 +17,8 @@ export function SchoolListPage() {
         setSchools(Array.isArray(result) ? result : (result?.rows ?? []));
         setPagination(Array.isArray(result) ? null : result);
       })
-      .catch(() => setError("Daftar sekolah belum dapat dimuat."));
+      .catch(() => setError("Daftar sekolah belum dapat dimuat."))
+      .finally(() => setIsLoading(false));
   }, []);
   const removeSchool = async (school) => {
     if (!window.confirm(`Hapus permanen sekolah ${school.name} beserta data kelas, guru, topic, room, dan game?`)) return;
@@ -55,7 +58,8 @@ export function SchoolListPage() {
           {pagination.page ? ` · Halaman ${pagination.page}` : ""}
         </p>
       ) : null}
-      <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950/50">
+      {isLoading ? <ListSkeleton rows={5} /> : null}
+      {!isLoading ? <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950/50">
         <table className="w-full min-w-[560px] text-left text-sm">
           <thead className="border-b border-slate-800 text-slate-400">
             <tr>
@@ -94,7 +98,7 @@ export function SchoolListPage() {
         {!schools.length && !error ? (
           <p className="p-5 text-sm text-slate-400">Belum ada sekolah.</p>
         ) : null}
-      </div>
+      </div> : null}
     </section>
   );
 }
