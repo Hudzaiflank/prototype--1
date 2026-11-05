@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import mysql from "mysql2/promise";
 import { fileURLToPath } from "node:url";
@@ -9,13 +10,23 @@ const migrationDirectory = path.resolve(
   currentDirectory,
   "../../database/migrations",
 );
+const aivenCa = readFileSync(
+  new URL("../../aiven-ca.pem", import.meta.url),
+  "utf8",
+);
 
 const connection = await mysql.createConnection({
   host: env.database.host,
   port: env.database.port,
   user: env.database.user,
   password: env.database.password,
-  ...(env.database.ssl ? { ssl: {} } : {}),
+  ...(env.database.ssl
+    ? {
+        ssl: env.database.sslCa
+          ? { ca: env.database.sslCa }
+          : { ca: aivenCa },
+      }
+    : {}),
   multipleStatements: true,
 });
 
