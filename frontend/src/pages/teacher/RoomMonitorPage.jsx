@@ -205,7 +205,7 @@ export function RoomMonitorPage() {
   const handleAction = async (action) => {
     if (actionPending) return;
     setError("");
-    setActionPending(true);
+    setActionPending(action);
     try {
       if (action === "start-game") await gameApi.startGame(sessionId);
       if (action === "pause-game") await gameApi.pauseGame(sessionId);
@@ -230,7 +230,7 @@ export function RoomMonitorPage() {
           "Aksi game gagal.",
       );
     } finally {
-      setActionPending(false);
+      setActionPending("");
     }
   };
 
@@ -395,6 +395,7 @@ export function RoomMonitorPage() {
           gameMode={game?.gameMode}
           onAction={handleAction}
           disabled={!game || actionPending}
+          pendingAction={actionPending}
         />
       </div>
     </section>

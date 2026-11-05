@@ -146,7 +146,7 @@ export function registerGameSocket(namespace) {
       }
     });
 
-    socket.on("reveal-cards", async (payload = {}) => {
+    socket.on("reveal-cards", async (payload = {}, acknowledge) => {
       try {
         const data = parseSocketPayload(turnActionSchema, payload);
         if (Number(payload.gameSessionId) !== Number(socket.data.gameSessionId))
@@ -169,11 +169,18 @@ export function registerGameSocket(namespace) {
         namespace
           .to(`group:${payload.groupId}`)
           .emit(SOCKET_EVENTS.CARDS_REVEALED, result);
+        if (typeof acknowledge === "function")
+          acknowledge({ success: true });
       } catch (error) {
         emitError(socket, error);
+        if (typeof acknowledge === "function")
+          acknowledge({
+            success: false,
+            message: error.message ?? "Kartu belum dapat dibuka.",
+          });
       }
     });
-    socket.on("complete-turn", async (payload = {}) => {
+    socket.on("complete-turn", async (payload = {}, acknowledge) => {
       try {
         const data = parseSocketPayload(turnActionSchema, payload);
         if (Number(payload.gameSessionId) !== Number(socket.data.gameSessionId))
@@ -210,14 +217,23 @@ export function registerGameSocket(namespace) {
           namespace
             .to(gameRoom(socket.data.gameSessionId))
             .emit(SOCKET_EVENTS.GAME_FINISHED, finalState);
+          if (typeof acknowledge === "function")
+            acknowledge({ success: true });
           return;
         }
         if (result.nextTurn)
           namespace
             .to(`group:${payload.groupId}`)
             .emit(SOCKET_EVENTS.TURN_STARTED, result.nextTurn);
+        if (typeof acknowledge === "function")
+          acknowledge({ success: true });
       } catch (error) {
         emitError(socket, error);
+        if (typeof acknowledge === "function")
+          acknowledge({
+            success: false,
+            message: error.message ?? "Turn belum dapat diselesaikan.",
+          });
       }
     });
 

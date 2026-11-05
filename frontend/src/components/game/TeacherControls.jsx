@@ -1,8 +1,11 @@
+import { LoadingSpinner } from "./../common/LoadingSpinner";
+
 export function TeacherControls({
   status,
   gameMode,
   onAction,
   disabled = false,
+  pendingAction = "",
 }) {
   const actions = {
     WAITING: [{ label: "Mulai permainan", action: "start-game" }],
@@ -40,7 +43,11 @@ export function TeacherControls({
           disabled={disabled}
           onClick={() => onAction(item.action)}
         >
-          {item.label}
+          {pendingAction === item.action ? (
+            <LoadingSpinner label={`${item.label}...`} size="sm" />
+          ) : (
+            item.label
+          )}
         </button>
       ))}
     </div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { roomApi } from "../../services/api/roomApi";
 import { isRoomCode } from "../../utils/validation";
+import { LoadingSpinner } from "../../components/common/LoadingSpinner";
 import {
   clearStudentSession,
   getParticipantSession,
@@ -145,7 +146,11 @@ export function JoinRoomPage() {
           type="submit"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Memeriksa..." : "Masuk room"}
+          {isSubmitting ? (
+            <LoadingSpinner label="Memeriksa..." size="sm" />
+          ) : (
+            "Masuk room"
+          )}
         </button>
       </form>
     </section>

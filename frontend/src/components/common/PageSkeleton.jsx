@@ -5,6 +5,9 @@ export function PageSkeleton() {
       aria-busy="true"
       aria-label="Memuat halaman"
     >
+      <p className="sr-only" role="status">
+        Memuat halaman...
+      </p>
       <div className="mx-auto max-w-7xl animate-pulse space-y-6">
         <div className="h-4 w-32 rounded bg-slate-800" />
         <div className="h-10 w-72 rounded bg-slate-800" />

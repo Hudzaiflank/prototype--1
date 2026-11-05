@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import { getRoleHome } from "../../routes/roleHome";
+import { FullPageLoading } from "../../components/common/FullPageLoading";
+import { LoadingSpinner } from "../../components/common/LoadingSpinner";
 
 export function LoginPage() {
   const { user, isLoading, login } = useAuthContext();
@@ -15,6 +17,7 @@ export function LoginPage() {
   if (!isLoading && user) {
     return <Navigate to={getRoleHome(user.role)} replace />;
   }
+  if (isLoading) return <FullPageLoading label="Memeriksa sesi..." />;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -83,7 +86,11 @@ export function LoginPage() {
           type="submit"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Memproses..." : "Masuk"}
+          {isSubmitting ? (
+            <LoadingSpinner label="Memproses..." size="sm" />
+          ) : (
+            "Masuk"
+          )}
         </button>
       </form>
     </section>

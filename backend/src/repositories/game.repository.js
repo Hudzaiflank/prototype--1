@@ -173,7 +173,7 @@ export async function startGame(sessionId, teacherId) {
     }
     if (activeTurnCases.length) {
       await connection.execute(
-        `UPDATE \`groups\` SET active_turn_id = CASE id ${activeTurnCases} END
+        `UPDATE \`groups\` SET active_turn_id = CASE id ${activeTurnCases.join(" ")} END
          WHERE id IN (${groupIds.map(() => "?").join(",")})`,
         [...activeTurnIds, ...groupIds],
       );

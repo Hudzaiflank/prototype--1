@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { classApi } from "../../services/api/classApi";
 import { useAuthContext } from "../../hooks/useAuthContext";
+import { ListSkeleton } from "../../components/common/ListSkeleton";
+import { LoadingSpinner } from "../../components/common/LoadingSpinner";
 
 const nextAcademicYear = (academicYear) =>
   `${Number(academicYear.slice(0, 4)) + 1}/${Number(academicYear.slice(5)) + 1}`;
@@ -13,6 +15,7 @@ export function ClassListPage() {
   const [academicYear, setAcademicYear] = useState("");
   const [gradeLevel, setGradeLevel] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ACTIVE");
+  const [isLoading, setIsLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [confirmation, setConfirmation] = useState(null);
   useEffect(() => {
@@ -28,7 +31,8 @@ export function ClassListPage() {
           .pop();
         setAcademicYear(latestActiveYear ?? "2026/2027");
       })
-      .catch(() => setError("Daftar kelas belum dapat dimuat."));
+      .catch(() => setError("Daftar kelas belum dapat dimuat."))
+      .finally(() => setIsLoading(false));
   }, []);
   const runPromotion = async () => {
     setBusy(true);
@@ -103,13 +107,14 @@ export function ClassListPage() {
         <label className="text-sm">Tahun ajaran aktif
           <input className="ml-2 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2" value={academicYear} onChange={(event) => setAcademicYear(event.target.value)} pattern="[0-9]{4}/[0-9]{4}" />
         </label>
-        <button className="rounded-lg bg-amber-300 px-4 py-2 text-sm font-bold text-slate-950 disabled:opacity-60" type="button" onClick={promote} disabled={busy}>Naikkan seluruh kelas</button>
+        <button className="rounded-lg bg-amber-300 px-4 py-2 text-sm font-bold text-slate-950 disabled:opacity-60" type="button" onClick={promote} disabled={busy}>{busy ? <LoadingSpinner label="Memproses..." size="sm" /> : "Naikkan seluruh kelas"}</button>
         <select className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" value={gradeLevel} onChange={(event) => setGradeLevel(event.target.value)}><option value="ALL">Semua tingkat</option>{gradeOptions.map((level) => <option key={level} value={level}>Kelas {level}</option>)}</select>
         <select className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option value="ACTIVE">Aktif saja</option><option value="ALL">Semua status</option><option value="INACTIVE">Nonaktif saja</option></select>
         <button className="rounded-lg border border-rose-300 px-4 py-2 text-sm text-rose-300 disabled:opacity-60" type="button" onClick={resetLevel} disabled={busy}>Reset seluruh tingkat</button>
       </div>
       {error ? <p className="text-sm text-rose-300">{error}</p> : null}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {isLoading ? <ListSkeleton rows={6} /> : null}
+      {!isLoading ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {visibleClasses.map((item) => (
           <Link
             className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5 transition hover:border-amber-300"
@@ -123,8 +128,8 @@ export function ClassListPage() {
             <p className="mt-4 text-xs text-amber-300">{item.status}</p>
           </Link>
         ))}
-      </div>
-      {!visibleClasses.length && !error ? (
+      </div> : null}
+      {!isLoading && !visibleClasses.length && !error ? (
         <p className="text-sm text-slate-400">Tidak ada kelas yang sesuai filter.</p>
       ) : null}
       {confirmation ? (
@@ -139,7 +144,7 @@ export function ClassListPage() {
             </div>
             <div className="mt-6 flex justify-end gap-3">
               <button className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-300 transition hover:border-slate-400 hover:text-white" type="button" onClick={() => setConfirmation(null)} disabled={busy}>Batal</button>
-              <button className="rounded-lg bg-amber-300 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-60" type="button" onClick={confirmation.action} disabled={busy}>{busy ? "Memproses..." : confirmation.confirmLabel}</button>
+              <button className="rounded-lg bg-amber-300 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-60" type="button" onClick={confirmation.action} disabled={busy}>{busy ? <LoadingSpinner label="Memproses..." size="sm" /> : confirmation.confirmLabel}</button>
             </div>
           </div>
         </div>

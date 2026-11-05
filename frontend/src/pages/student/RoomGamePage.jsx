@@ -7,6 +7,7 @@ import { socketClient } from "../../services/socket/socketClient";
 import { SOCKET_EVENTS } from "../../services/socket/socketEvents";
 import { getParticipantSession, getStudentRoom } from "../../utils/storage";
 import { mergeRealtimeState } from "../../utils/realtimeState";
+import { LoadingSpinner } from "../../components/common/LoadingSpinner";
 
 export function RoomGamePage() {
   const { game, setGame } = useGame();
@@ -14,6 +15,8 @@ export function RoomGamePage() {
   const room = getStudentRoom();
   const participantSessionId = getParticipantSession();
   const [socketConnected, setSocketConnected] = useState(false);
+  const [pendingAction, setPendingAction] = useState("");
+  const [actionError, setActionError] = useState("");
 
   useEffect(() => {
     if (!room?.gameSessionId || !participantSessionId) return undefined;
@@ -40,7 +43,9 @@ export function RoomGamePage() {
       }
       setGame((current) => mergeRealtimeState(current, state));
     };
-    const handleCardsRevealed = (turn) =>
+    const handleCardsRevealed = (turn) => {
+      setPendingAction("");
+      setActionError("");
       setGame((current) => ({
         ...current,
         currentTurn: {
@@ -53,7 +58,12 @@ export function RoomGamePage() {
           problemCardState: turn.problemCardState,
         },
       }));
-    const handleTurnChanged = requestState;
+    };
+    const handleTurnChanged = () => {
+      setPendingAction("");
+      setActionError("");
+      requestState();
+    };
     const handleLeaderChanged = requestState;
     const handleStarted = requestState;
     const handleFinished = (state) => {
@@ -73,6 +83,11 @@ export function RoomGamePage() {
     socket.on(SOCKET_EVENTS.TURN_STARTED, handleTurnChanged);
     socket.on(SOCKET_EVENTS.GROUP_LEADER_CHANGED, handleLeaderChanged);
     socket.on(SOCKET_EVENTS.GAME_FINISHED, handleFinished);
+    const handleServerError = ({ message }) => {
+      setPendingAction("");
+      setActionError(message ?? "Aksi game gagal diproses.");
+    };
+    socket.on(SOCKET_EVENTS.SERVER_ERROR, handleServerError);
     requestState();
     return () => {
       window.clearTimeout(requestStateTimer);
@@ -83,12 +98,34 @@ export function RoomGamePage() {
       socket.off(SOCKET_EVENTS.TURN_STARTED, handleTurnChanged);
       socket.off(SOCKET_EVENTS.GROUP_LEADER_CHANGED, handleLeaderChanged);
       socket.off(SOCKET_EVENTS.GAME_FINISHED, handleFinished);
+      socket.off(SOCKET_EVENTS.SERVER_ERROR, handleServerError);
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
       setSocketConnected(false);
       socketClient.disconnect();
     };
   }, [navigate, participantSessionId, room?.gameSessionId, setGame]);
+
+  const emitTurnAction = (action) => {
+    const socket = socketClient.getSocket();
+    if (!socket || !game?.group?.id || !game?.currentTurn?.id) return;
+    setActionError("");
+    setPendingAction(action);
+    socket.emit(
+      action,
+      {
+        gameSessionId: room.gameSessionId,
+        groupId: game.group.id,
+        turnId: game.currentTurn.id,
+      },
+      (result) => {
+        if (!result?.success) {
+          setPendingAction("");
+          setActionError(result?.message ?? "Aksi game gagal diproses.");
+        }
+      },
+    );
+  };
 
   const cardState =
     game?.currentTurn?.participantCardState === "REVEALED"
@@ -155,6 +192,11 @@ export function RoomGamePage() {
           dilanjutkan.
         </div>
       ) : null}
+      {actionError ? (
+        <p className="rounded-xl border border-rose-300/60 bg-rose-950/30 p-4 text-center font-[Lexend] text-sm text-rose-200" role="alert">
+          {actionError}
+        </p>
+      ) : null}
       <GameBoard
         state={cardState}
         participant={game?.currentTurn?.participantName}
@@ -168,37 +210,35 @@ export function RoomGamePage() {
             className="rounded-xl bg-[#ffd23f] px-5 py-3 font-bold text-[#201a14] disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
             disabled={
+              pendingAction !== "" ||
               game?.status !== "PLAYING" ||
               !socketConnected ||
               game.currentTurn.participantCardState === "REVEALED"
             }
-            onClick={() =>
-              socketClient.getSocket()?.emit("reveal-cards", {
-                gameSessionId: room.gameSessionId,
-                groupId: game.group.id,
-                turnId: game.currentTurn.id,
-              })
-            }
+            onClick={() => emitTurnAction("reveal-cards")}
           >
-            Buka kartu
+            {pendingAction === "reveal-cards" ? (
+              <LoadingSpinner label="Membuka kartu..." size="sm" />
+            ) : (
+              "Buka kartu"
+            )}
           </button>
           <button
             className="rounded-xl border border-[#ffd23f] px-5 py-3 font-bold text-[#ffe98a] disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
             disabled={
+              pendingAction !== "" ||
               game?.status !== "PLAYING" ||
               !socketConnected ||
               game.currentTurn.participantCardState !== "REVEALED"
             }
-            onClick={() =>
-              socketClient.getSocket()?.emit("complete-turn", {
-                gameSessionId: room.gameSessionId,
-                groupId: game.group.id,
-                turnId: game.currentTurn.id,
-              })
-            }
+            onClick={() => emitTurnAction("complete-turn")}
           >
-            Selesaikan turn
+            {pendingAction === "complete-turn" ? (
+              <LoadingSpinner label="Menyelesaikan..." size="sm" />
+            ) : (
+              "Selesaikan turn"
+            )}
           </button>
         </div>
       ) : null}

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getStudentRoom, getParticipantSession } from "../../utils/storage";
 import { socketClient } from "../../services/socket/socketClient";
 import { SOCKET_EVENTS } from "../../services/socket/socketEvents";
+import { LoadingSpinner } from "../../components/common/LoadingSpinner";
 
 export function RoomWaitingPage() {
   const navigate = useNavigate();
@@ -50,6 +51,11 @@ export function RoomWaitingPage() {
       <h2 className="mt-5 font-['Press_Start_2P'] text-sm leading-relaxed text-[#ffe98a] sm:text-base">
         Menunggu permainan
       </h2>
+      <LoadingSpinner
+        className="mt-5 justify-center text-sm text-[#cbb8e0]"
+        label="Menunggu guru memulai..."
+        size="sm"
+      />
       {participantName ? (
         <p className="mt-4 font-[Lexend] text-base font-bold text-[#fdf6e3]">
           {participantName}

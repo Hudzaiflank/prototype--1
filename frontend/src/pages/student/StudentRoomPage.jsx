@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet, useParams } from "react-router-dom";
+import { FullPageLoading } from "../../components/common/FullPageLoading";
 
 export function StudentRoomPage() {
   const { roomCode } = useParams();
@@ -16,13 +17,8 @@ export function StudentRoomPage() {
       aria-labelledby="room-title"
     >
       {isLoading ? (
-        <div className="fixed inset-0 z-50 flex min-h-screen items-center justify-center bg-[#1a0f28] text-center">
-          <div>
-            <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#4f8cf0] border-t-[#ffd23f]" />
-            <p className="mt-5 font-[Lexend] text-sm font-semibold text-[#ffe98a]">
-              Menyiapkan room...
-            </p>
-          </div>
+        <div className="fixed inset-0 z-50">
+          <FullPageLoading label="Menyiapkan room..." />
         </div>
       ) : null}
       <header className="mb-7 flex items-center justify-between border-b border-[#9a7a2a]/50 pb-5">

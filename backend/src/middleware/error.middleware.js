@@ -48,6 +48,20 @@ export function errorMiddleware(error, request, response, _next) {
     return;
   }
 
+  if (
+    error.code === "ER_BAD_FIELD_ERROR" ||
+    error.code === "ER_NO_SUCH_TABLE" ||
+    error.code === "ER_TABLEACCESS_DENIED_ERROR"
+  ) {
+    response.status(503).json({
+      success: false,
+      message:
+        "Schema database belum terbaru. Jalankan migration backend lalu coba mulai game lagi.",
+      error: { code: "DATABASE_SCHEMA_OUTDATED", details: {} },
+    });
+    return;
+  }
+
   const statusCode = error.statusCode ?? 500;
   response.status(statusCode).json({
     success: false,
