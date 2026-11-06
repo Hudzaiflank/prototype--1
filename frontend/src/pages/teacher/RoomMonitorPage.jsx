@@ -224,8 +224,14 @@ export function RoomMonitorPage() {
       await refreshMonitor();
       await refreshCurrentTurn();
     } catch (requestError) {
+      const missingParticipants =
+        requestError.response?.data?.error?.details?.missingParticipants;
       setError(
-        requestError.response?.data?.message ??
+        (missingParticipants?.length
+          ? `${requestError.response?.data?.message} Belum ada jawaban dari: ${missingParticipants
+              .map(({ fullName }) => fullName)
+              .join(", ")}.`
+          : requestError.response?.data?.message) ??
           requestError.message ??
           "Aksi game gagal.",
       );
@@ -290,7 +296,10 @@ export function RoomMonitorPage() {
               Peserta yang sudah bergabung
             </p>
             <span className="text-sm text-slate-400">
-              {game.participants?.length ?? 0} peserta
+              {game.participants?.filter((participant) =>
+                Number(participant.problemSubmitted) === 1,
+              ).length ?? 0}
+              /{game.participants?.length ?? 0} jawaban
             </span>
           </div>
           {game.participants?.length ? (
@@ -300,7 +309,20 @@ export function RoomMonitorPage() {
                   className="rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-3 text-sm text-slate-200"
                   key={participant.id}
                 >
-                  {participant.fullName}
+                  <div className="flex items-center justify-between gap-3">
+                    <span>{participant.fullName}</span>
+                    <span
+                      className={
+                        Number(participant.problemSubmitted) === 1
+                          ? "text-emerald-300"
+                          : "text-rose-300"
+                      }
+                    >
+                      {participant.problemSubmitted
+                        ? "Sudah menjawab"
+                        : "Belum menjawab"}
+                    </span>
+                  </div>
                 </li>
               ))}
             </ul>

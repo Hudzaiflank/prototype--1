@@ -228,6 +228,7 @@ export async function registerParticipant({
   sessionId,
   gameSessionId,
   studentId,
+  content,
 }) {
   const connection = await pool.getConnection();
   try {
@@ -241,7 +242,17 @@ export async function registerParticipant({
       return null;
     }
     const [existing] = await connection.execute(
-      "SELECT id, student_id AS studentId, session_uuid AS sessionId, full_name AS fullName, status FROM participants WHERE game_session_id = ? AND (student_id = ? OR session_uuid = ?) FOR UPDATE",
+      `SELECT p.id, p.student_id AS studentId, p.session_uuid AS sessionId,
+         p.full_name AS fullName, p.status,
+         EXISTS (
+           SELECT 1 FROM problems pr
+           WHERE pr.game_session_id = p.game_session_id
+             AND pr.participant_id = p.id
+             AND pr.status = 'ACTIVE'
+         ) AS problemSubmitted
+       FROM participants p
+       WHERE p.game_session_id = ? AND (p.student_id = ? OR p.session_uuid = ?)
+       FOR UPDATE`,
       [gameSessionId, studentId, sessionId],
     );
     const participant = existing[0];
@@ -257,12 +268,18 @@ export async function registerParticipant({
         "UPDATE participants SET status = 'CONNECTED', connected_at = NOW() WHERE id = ?",
         [participant.id],
       );
+      if (Number(participant.problemSubmitted) !== 1) {
+        await connection.execute(
+          "INSERT INTO problems (game_session_id, participant_id, content, source) VALUES (?, ?, ?, 'STUDENT')",
+          [gameSessionId, participant.id, content],
+        );
+      }
       await connection.execute(
         "UPDATE game_sessions SET state_version = state_version + 1 WHERE id = ?",
         [gameSessionId],
       );
       await connection.commit();
-      return { ...participant, status: "CONNECTED" };
+      return { ...participant, status: "CONNECTED", problemSubmitted: true };
     }
     const [students] = await connection.execute(
       `SELECT s.id, s.full_name AS fullName FROM students s
@@ -285,6 +302,10 @@ export async function registerParticipant({
       return null;
     }
     await connection.execute(
+      "INSERT INTO problems (game_session_id, participant_id, content, source) VALUES (?, ?, ?, 'STUDENT')",
+      [gameSessionId, result.insertId, content],
+    );
+    await connection.execute(
       "UPDATE game_sessions SET state_version = state_version + 1 WHERE id = ?",
       [gameSessionId],
     );
@@ -295,6 +316,7 @@ export async function registerParticipant({
       studentId,
       fullName: students[0].fullName,
       status: "CONNECTED",
+      problemSubmitted: true,
     };
   } catch (error) {
     await connection.rollback();

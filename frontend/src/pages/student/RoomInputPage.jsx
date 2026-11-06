@@ -52,14 +52,11 @@ export function RoomInputPage() {
         {
           sessionId: participantSessionId,
           studentId: Number(studentId),
+          content: content.trim(),
         },
       );
       const registeredSessionId =
         registrationResponse.data?.sessionId ?? participantSessionId;
-      await roomApi.submitProblem(room.gameSessionId, {
-        participantSessionId: registeredSessionId,
-        content: content.trim(),
-      });
       setParticipantSession(registeredSessionId);
       navigate("../waiting", { replace: true });
     } catch (requestError) {

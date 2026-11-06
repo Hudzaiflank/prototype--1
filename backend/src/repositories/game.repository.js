@@ -40,19 +40,41 @@ export async function startGame(sessionId, teacherId) {
         409,
       );
     const [participants] = await connection.execute(
-      "SELECT id FROM participants WHERE game_session_id = ? ORDER BY id",
+      `SELECT p.id
+       FROM participants p
+       WHERE p.game_session_id = ?
+       ORDER BY p.id`,
       [sessionId],
     );
-    const [problems] = await connection.execute(
-      "SELECT id, participant_id FROM problems WHERE game_session_id = ? AND status = 'ACTIVE' ORDER BY id",
+    const [participantsWithoutProblems] = await connection.execute(
+      `SELECT p.id, p.full_name AS fullName
+       FROM participants p
+       LEFT JOIN problems pr
+         ON pr.game_session_id = p.game_session_id
+        AND pr.participant_id = p.id
+        AND pr.status = 'ACTIVE'
+       WHERE p.game_session_id = ? AND pr.id IS NULL
+       ORDER BY p.id`,
       [sessionId],
     );
-    if (problems.length !== participants.length)
+    if (participantsWithoutProblems.length)
       throw new AppError(
         "Semua peserta harus memiliki jawaban sebelum permainan dimulai.",
         "INCOMPLETE_SUBMISSIONS",
         409,
+        {
+          missingParticipants: participantsWithoutProblems.map(
+            ({ id, fullName }) => ({ id, fullName }),
+          ),
+        },
       );
+    const [problems] = await connection.execute(
+      `SELECT id, participant_id
+       FROM problems
+       WHERE game_session_id = ? AND status = 'ACTIVE'
+       ORDER BY id`,
+      [sessionId],
+    );
     const groupCount = session.game_mode === "GROUPS" ? session.group_count : 1;
     if (!groupCount || groupCount > participants.length)
       throw new AppError("Invalid group count", "INVALID_GROUP_COUNT", 409);
@@ -247,8 +269,15 @@ export async function getGameSession(sessionId, teacherId) {
   if (!sessions.length)
     throw new AppError("Game session not found", "GAME_SESSION_NOT_FOUND", 404);
   const [participants] = await pool.execute(
-    `SELECT id, session_uuid AS sessionId, full_name AS fullName, status, joined_at AS joinedAt
-		 FROM participants WHERE game_session_id = ? ORDER BY joined_at`,
+    `SELECT p.id, p.session_uuid AS sessionId, p.full_name AS fullName, p.status,
+       p.joined_at AS joinedAt,
+       EXISTS (
+         SELECT 1 FROM problems pr
+         WHERE pr.game_session_id = p.game_session_id
+           AND pr.participant_id = p.id
+           AND pr.status = 'ACTIVE'
+       ) AS problemSubmitted
+		 FROM participants p WHERE p.game_session_id = ? ORDER BY p.joined_at`,
     [sessionId],
   );
   const [assignments] = await pool.execute(

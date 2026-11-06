@@ -15,6 +15,7 @@ export const participantSchema = z.object({
   body: z.object({
     sessionId: z.string().uuid(),
     studentId: z.coerce.number().int().positive(),
+    content: z.string().trim().min(1).max(500),
   }),
 });
 export const problemSchema = z.object({
