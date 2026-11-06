@@ -9,6 +9,7 @@ const NAVIGATION = {
     { label: "Dashboard", to: "/dashboard" },
     { label: "Sekolah", to: "/schools" },
     { label: "Request Logs", to: "/request-logs" },
+    { label: "WebSocket Logs", to: "/websocket-logs" },
     { label: "Tracking Siswa", to: "/students/tracking" },
   ],
   ADMIN: [

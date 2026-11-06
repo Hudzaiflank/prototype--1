@@ -17,6 +17,7 @@ export function requestLogMiddleware(request, response, next) {
       request.socket.remoteAddress ??
       "unknown";
     const entry = addRequestLog({
+      type: "HTTP",
       timestamp: new Date().toISOString(),
       ip,
       userAgent: request.get("user-agent") ?? "unknown",
@@ -25,6 +26,9 @@ export function requestLogMiddleware(request, response, next) {
       requestId,
       statusCode: response.statusCode,
       durationMs: Date.now() - startedAt,
+      identity: request.user
+        ? { kind: request.user.role, userId: request.user.userId }
+        : { kind: "ANONYMOUS" },
     });
     emitRequestLog(entry);
   });

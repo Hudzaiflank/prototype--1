@@ -72,12 +72,12 @@ export function registerGameSocket(namespace) {
       const result = socketSessionSchema.safeParse(payload.gameSessionId);
       if (!result.success)
         return emitError(socket, new Error("Invalid game session"));
-      joinSession(result.data).catch((error) => emitError(socket, error));
+      return joinSession(result.data).catch((error) => emitError(socket, error));
     });
     socket.on("request-state", () => {
       if (!socket.data.gameSessionId)
         return emitError(socket, new Error("Game session is not joined"));
-      readState(socket.data.gameSessionId).catch((error) =>
+      return readState(socket.data.gameSessionId).catch((error) =>
         emitError(socket, error),
       );
     });

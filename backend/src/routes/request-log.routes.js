@@ -11,5 +11,11 @@ router.get(
   allowRoles(ROLES.SUPER_ADMIN),
   controller.list,
 );
+router.get(
+  "/super-admin/websocket-logs",
+  requireAuth,
+  allowRoles(ROLES.SUPER_ADMIN),
+  controller.listWebsocket,
+);
 
 export default router;

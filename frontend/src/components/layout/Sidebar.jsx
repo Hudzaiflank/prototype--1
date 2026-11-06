@@ -5,6 +5,7 @@ const NAVIGATION = {
     { label: "Dashboard", to: "/dashboard" },
     { label: "Sekolah", to: "/schools" },
     { label: "Request Logs", to: "/request-logs", isAction: true },
+    { label: "WebSocket Logs", to: "/websocket-logs", isAction: true },
     { label: "Tracking Siswa", to: "/students/tracking" },
   ],
   ADMIN: [

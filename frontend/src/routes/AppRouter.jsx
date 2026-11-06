@@ -124,6 +124,10 @@ const RequestLogsPage = lazyNamed(
   () => import("../pages/super-admin/RequestLogsPage"),
   "RequestLogsPage",
 );
+const WebSocketLogsPage = lazyNamed(
+  () => import("../pages/super-admin/RequestLogsPage"),
+  "WebSocketLogsPage",
+);
 const StudentTrackingPage = lazyNamed(
   () => import("../pages/admin/StudentTrackingPage"),
   "StudentTrackingPage",
@@ -161,6 +165,10 @@ export function AppRouter() {
               <Route path="/schools/new" element={<SchoolFormPage />} />
               <Route path="/schools/:schoolId" element={<SchoolDetailPage />} />
               <Route path="/request-logs" element={<RequestLogsPage />} />
+              <Route
+                path="/websocket-logs"
+                element={<WebSocketLogsPage />}
+              />
               <Route
                 path="/students/tracking"
                 element={<StudentTrackingPage />}

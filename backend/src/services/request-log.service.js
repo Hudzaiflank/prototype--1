@@ -12,3 +12,11 @@ export function addRequestLog(log) {
 export function getRequestLogs() {
   return [...requestLogs];
 }
+
+export function getHttpLogs() {
+  return requestLogs.filter((log) => log.type === "HTTP");
+}
+
+export function getWebsocketLogs() {
+  return requestLogs.filter((log) => log.type === "WS");
+}
