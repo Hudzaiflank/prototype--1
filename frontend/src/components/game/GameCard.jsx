@@ -39,7 +39,7 @@ export function GameCard({ type, state, content, onClick }) {
           <span className="game-card__back-diamond" />
           <span className="game-card__back-sheen" />
           <span className="game-card__emblem">✦</span>
-          <span className="game-card__back-label">MINDPLAY</span>
+          <span className="game-card__back-label">PISCALL</span>
         </div>
         <div
           className={`game-card__face game-card__front ${isParticipant ? "" : "is-problem"}`}

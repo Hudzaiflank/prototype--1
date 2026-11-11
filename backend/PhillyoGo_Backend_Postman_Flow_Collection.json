@@ -90,7 +90,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"MindPlay QA {{schoolSuffix}}\",\n  \"domain\": \"mindplayqa{{schoolSuffix}}.school.id\"\n}"
+              "raw": "{\n  \"name\": \"Piscall QA {{schoolSuffix}}\",\n  \"domain\": \"piscallqa{{schoolSuffix}}.school.id\"\n}"
             },
             "url": "{{baseUrl}}{{apiPrefix}}/schools"
           },

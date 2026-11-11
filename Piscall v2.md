@@ -1,6 +1,6 @@
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 Super Administrator Super Admin 
 
@@ -50,7 +50,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -83,7 +83,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -117,7 +117,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -150,7 +150,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -182,7 +182,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -216,7 +216,7 @@ https://prototype--1.pages.dev/request-logs
 
 
 
-|WAKTU|IP|REQUEST<br>MindPlay|STATUS|DURASI|USER-AGENT|
+|WAKTU|IP|REQUEST<br>Piscall|STATUS|DURASI|USER-AGENT|
 |---|---|---|---|---|---|
 |11/4/2026, 1:12:44 PM|114.10.148.138|POST /api/v1/public/game-sessions/3/participants|201|1437<br>ms|Mozilla/5.0 (Linux; Android 10; K) Apple…|
 |11/4/2026, 1:12:39 PM|103.156.164.57|GET /api/v1/game-sessions/3/groups|304|209 ms|Mozilla/5.0 (Windows NT 10.0; Win64; x6…|
@@ -246,7 +246,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -282,7 +282,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -318,7 +318,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -353,7 +353,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -388,7 +388,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -419,7 +419,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -453,7 +453,7 @@ https://prototype--1.pages.dev/request-logs
 
 
 
-|WAKTU|IP|REQUEST<br>MindPlay|STATUS|DURASI|USER-AGENT|
+|WAKTU|IP|REQUEST<br>Piscall|STATUS|DURASI|USER-AGENT|
 |---|---|---|---|---|---|
 |11/4/2026, 11:16:05 AM|103.156.164.57|GET /api/v1/game-sessions/2/groups|200|1085<br>ms|Mozilla/5.0 (Windows NT 10.0; Win64; x6…|
 |11/4/2026, 11:16:03 AM|103.156.164.57|GET /api/v1/game-sessions/2|200|628 ms|Mozilla/5.0 (Windows NT 10.0; Win64; x6…|
@@ -485,7 +485,7 @@ https://prototype--1.pages.dev/request-logs
 
 
 
-|WAKTU|IP|REQUEST<br>MindPlay|STATUS|DURASI|USER-AGENT|
+|WAKTU|IP|REQUEST<br>Piscall|STATUS|DURASI|USER-AGENT|
 |---|---|---|---|---|---|
 |11/4/2026, 11:05:55 AM|103.156.164.57|GET /api/v1/game-sessions/2/groups|200|1048<br>ms|Mozilla/5.0 (Windows NT 10.0; Win64; x6…|
 |11/4/2026, 11:05:54 AM|103.156.164.57|GET /api/v1/game-sessions/2|200|630 ms|Mozilla/5.0 (Windows NT 10.0; Win64; x6…|
@@ -516,7 +516,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -547,7 +547,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -579,7 +579,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -611,7 +611,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -643,7 +643,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -680,7 +680,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -716,7 +716,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -752,7 +752,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -788,7 +788,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -823,7 +823,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 
@@ -858,7 +858,7 @@ https://prototype--1.pages.dev/request-logs
 
 11/4/26, 5:04 PM 
 
-MindPlay 
+Piscall 
 
 
 

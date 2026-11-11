@@ -23,7 +23,7 @@ export function Header({ onMenuClick }) {
         </button>
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-300">
-            MindPlay
+            Piscall
           </p>
           <p className="hidden text-xs text-slate-400 sm:block">
             Ruang bermain dan refleksi

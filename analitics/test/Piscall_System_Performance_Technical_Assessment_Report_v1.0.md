@@ -1,4 +1,4 @@
-# MINDPLAY
+# PISCALL
 
 # SYSTEM PERFORMANCE & TECHNICAL ASSESSMENT REPORT
 
@@ -13,7 +13,7 @@
 | Document ID | MND-TA-2026-10-07-01 |
 | Version | 1.0 |
 | Tanggal | 7 Oktober 2026 |
-| Sumber Data | `MindPlay.pdf` — Request Logs |
+| Sumber Data | `Piscall.pdf` — Request Logs |
 | Jumlah Halaman Sumber | 23 halaman |
 | Jumlah Request Terstruktur | 500 request |
 | Periode Log | Berdasarkan timestamp yang tercatat pada request log |
@@ -23,7 +23,7 @@
 
 # 1. Executive Summary
 
-Assessment ini menganalisis **500 request** yang tercatat pada request log MindPlay dalam **23 halaman sumber**. Log mencakup aktivitas autentikasi, Super Admin, Teacher, room joining, registrasi participant, pengisian problem, start/finish game session, serta pembacaan state permainan.
+Assessment ini menganalisis **500 request** yang tercatat pada request log Piscall dalam **23 halaman sumber**. Log mencakup aktivitas autentikasi, Super Admin, Teacher, room joining, registrasi participant, pengisian problem, start/finish game session, serta pembacaan state permainan.
 
 Secara performa, sistem menunjukkan karakteristik response time yang baik pada sebagian besar request:
 
@@ -54,9 +54,9 @@ Namun, readiness operasional belum dapat dinyatakan penuh.
 
 ### Kesimpulan
 
-MindPlay telah menunjukkan **proof-of-concept multiplayer yang berjalan**, terutama pada Session 101. Baseline application performance juga tergolong baik.
+Piscall telah menunjukkan **proof-of-concept multiplayer yang berjalan**, terutama pada Session 101. Baseline application performance juga tergolong baik.
 
-Namun, reliability pada kondisi burst dan state transition belum konsisten. Sebelum menyatakan MindPlay siap untuk deployment sekolah dengan jumlah siswa yang lebih besar, prioritas utama adalah:
+Namun, reliability pada kondisi burst dan state transition belum konsisten. Sebelum menyatakan Piscall siap untuk deployment sekolah dengan jumlah siswa yang lebih besar, prioritas utama adalah:
 
 1. Investigasi HTTP 429 pada participant.
 2. Investigasi HTTP 409 pada problem.
@@ -87,7 +87,7 @@ Assessment ini bertujuan untuk:
 
 Assessment mencakup:
 
-- 500 request yang direkonstruksi dari 23 halaman `MindPlay.pdf`.
+- 500 request yang direkonstruksi dari 23 halaman `Piscall.pdf`.
 - Timestamp.
 - IP address.
 - Endpoint/request.
@@ -294,7 +294,7 @@ HTTP 200
 
 ### Assessment
 
-**Session 101 merupakan evidence positif bahwa core multiplayer flow MindPlay dapat berjalan.**
+**Session 101 merupakan evidence positif bahwa core multiplayer flow Piscall dapat berjalan.**
 
 Namun, satu session sukses tidak cukup untuk menyatakan sistem sudah scalable.
 
@@ -701,7 +701,7 @@ Setiap layer idealnya memiliki:
 
 # 17. Analysis 11 — Reliability
 
-Reliability MindPlay pada dataset bersifat **scenario-dependent**.
+Reliability Piscall pada dataset bersifat **scenario-dependent**.
 
 ### Scenario Session 101
 
@@ -830,7 +830,7 @@ Backend dapat mengalami state conflict jika operasi tidak dirancang untuk concur
 
 # 20. Analysis 14 — MVP Technical Validation
 
-MindPlay dapat dikategorikan sebagai:
+Piscall dapat dikategorikan sebagai:
 
 > **Operational Proof-of-Concept / MVP**
 
@@ -1040,7 +1040,7 @@ Assessment ini memiliki keterbatasan:
 
 # 27. Conclusion
 
-MindPlay menunjukkan baseline application performance yang baik.
+Piscall menunjukkan baseline application performance yang baik.
 
 Mayoritas request gameplay memiliki latency rendah dan tidak terlihat response HTTP 5xx pada dataset yang dianalisis.
 
@@ -1072,7 +1072,7 @@ Hal ini menunjukkan bahwa sistem belum cukup bukti untuk langsung dinyatakan sca
 
 ## Final Technical Assessment
 
-> **MindPlay sudah layak sebagai MVP untuk controlled pilot, tetapi belum memiliki evidence yang cukup untuk unrestricted production-scale deployment.**
+> **Piscall sudah layak sebagai MVP untuk controlled pilot, tetapi belum memiliki evidence yang cukup untuk unrestricted production-scale deployment.**
 
 Prioritas pengembangan bukan melakukan rewrite arsitektur, melainkan:
 
@@ -1085,7 +1085,7 @@ Prioritas pengembangan bukan melakukan rewrite arsitektur, melainkan:
 7. **Dedicated load/stress test.**
 8. **Security assessment.**
 
-Setelah seluruh gate tersebut terpenuhi, MindPlay dapat dinilai kembali untuk deployment sekolah dengan target jumlah siswa yang lebih tinggi.
+Setelah seluruh gate tersebut terpenuhi, Piscall dapat dinilai kembali untuk deployment sekolah dengan target jumlah siswa yang lebih tinggi.
 
 ---
 

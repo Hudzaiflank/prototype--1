@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-const RULES_ACCEPTED_KEY = "mindplay_rules_accepted";
+const RULES_ACCEPTED_KEY = "piscall_rules_accepted";
 export function RulesPage() {
   const navigate = useNavigate();
   const rulesFrameRef = useRef(null);
@@ -24,17 +24,17 @@ export function RulesPage() {
       };
 
       startButton.addEventListener("click", handleStart, true);
-      frame._mindplayStartHandler = handleStart;
+      frame._piscallStartHandler = handleStart;
     };
 
     frame.addEventListener("load", handleLoad);
     return () => {
       frame.removeEventListener("load", handleLoad);
       const startButton = frame.contentDocument?.querySelector("#startBtn");
-      if (startButton && frame._mindplayStartHandler) {
+      if (startButton && frame._piscallStartHandler) {
         startButton.removeEventListener(
           "click",
-          frame._mindplayStartHandler,
+          frame._piscallStartHandler,
           true,
         );
       }
@@ -45,7 +45,7 @@ export function RulesPage() {
     <iframe
       ref={rulesFrameRef}
       className="block min-h-screen w-full border-0"
-      title="Aturan main MindPlay"
+      title="Aturan main Piscall"
       src="/rules.html"
     />
   );

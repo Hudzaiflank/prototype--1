@@ -17,7 +17,7 @@ export function DashboardPage() {
     <section className="space-y-8" aria-labelledby="super-admin-title">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-300">
-          MindPlay control
+          Piscall control
         </p>
         <h1 className="mt-3 text-3xl font-bold" id="super-admin-title">
           Super Admin

@@ -47,7 +47,7 @@ export function HistoryDetailPage() {
       document.title = previousTitle;
     };
 
-    document.title = `MindPlay-Hasil-Permainan-${datePart}-${schoolPart}-${classPart}`;
+    document.title = `Piscall-Hasil-Permainan-${datePart}-${schoolPart}-${classPart}`;
     window.addEventListener("afterprint", restoreTitle, { once: true });
     window.print();
   };
@@ -131,9 +131,9 @@ export function HistoryDetailPage() {
       </section>
       <section className="print-only print-sheet" aria-label="Export history permainan">
         <header className="print-header">
-          <img src="/logo-round.svg" alt="MindPlay" />
+          <img src="/logo-round.svg" alt="Piscall" />
           <div>
-            <p className="print-brand">MINDPLAY</p>
+            <p className="print-brand">PISCALL</p>
             <h1>Hasil permainan</h1>
           </div>
         </header>

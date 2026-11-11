@@ -24,7 +24,7 @@ export function StudentRoomPage() {
       <header className="mb-7 flex items-center justify-between border-b border-[#9a7a2a]/50 pb-5">
         <div>
           <p className="font-[Lexend] text-xs uppercase tracking-[0.3em] text-[#9a7a2a]">
-            MindPlay
+            Piscall
           </p>
           <h1
             className="mt-2 font-['Press_Start_2P'] text-sm leading-relaxed text-[#ffe98a] sm:text-base"

@@ -1,7 +1,7 @@
 # Rencana Perbaikan Performa Teknis PhillyoGo
 
 Dokumen ini berisi daftar perbaikan teknis berdasarkan hasil monitoring pada
-[MindPlay v2.md](./MindPlay%20v2.md), struktur backend, dan alur frontend saat ini.
+[Piscall v2.md](./Piscall%20v2.md), struktur backend, dan alur frontend saat ini.
 
 ## 1. Kesimpulan diagnosis
 

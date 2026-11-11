@@ -4,7 +4,7 @@
 
 # **Bagian 1\. Gambaran Awal & Rekap Perencanaan MVP** ## **1\. Nama dan Profil Use Case** 
 
-| Nama Use Case/Produk | MindPlay Digitalisasi Board Game Wisuda Warrior | 
+| Nama Use Case/Produk | Piscall Digitalisasi Board Game Wisuda Warrior | 
 
 | :---- | :---- | | **No Kelompok** | 2 | | **Anggota Tim** | Hudzaifah Afif Fadhlurrahman Azka Muhammad Fadilah Ropiatul Mila Pajrina Keisya Ghifari Ai Nurmalasari | | **Link Akses MVP** | [https\://prototype--1.pages.dev/rules] (https://prototype--1.pages.dev/rules)  | | **Tanggal Laporan Hasil Dibuat** | Kamis 15 Okober 2026 | ## **2\. Rekap Hasil Product Validation** 
 
@@ -74,7 +74,7 @@
 
 | :---- | :---- | 
 
-| **Target Jumlah Pengguna** | 30 siswa yang mencoba MindPlay | | **Cara Pengguna Mengakses MVP** | siswa mengakses link MindPlay yang diberikan sebelumnya dan mendapatkan kode untuk memasuki room game serta membaca peraturan sebelum memulai. siswa diarahkan untuk mengisi bagian nama dan permasalahan. kemudian permainan dimulai dan diselesaikan jika semua siswa sudah mendapatkan giliran. | 
+| **Target Jumlah Pengguna** | 30 siswa yang mencoba Piscall | | **Cara Pengguna Mengakses MVP** | siswa mengakses link Piscall yang diberikan sebelumnya dan mendapatkan kode untuk memasuki room game serta membaca peraturan sebelum memulai. siswa diarahkan untuk mengisi bagian nama dan permasalahan. kemudian permainan dimulai dan diselesaikan jika semua siswa sudah mendapatkan giliran. | 
 
 | **Lokasi & Waktu Rencana** | SMP Prawira Lembang : 07 Oktober 2026 | 
 
@@ -90,7 +90,7 @@
 
 # **Lampiran** 
 
-| No. | Jenis Lampiran | Keterangan | Tautan/Letak File | | :---- | :---- | :---- | :---- | | 1 | Tautan MVP | Halaman aturan MindPlay | 
+| No. | Jenis Lampiran | Keterangan | Tautan/Letak File | | :---- | :---- | :---- | :---- | | 1 | Tautan MVP | Halaman aturan Piscall | 
 
 [https\://prototype--1.pages.dev/rules](https://prototype--1.page s.dev/rules)  | | 2 | Repository pengembangan | Source code dan riwayat perubahan | [https\://github.com/Hudzaiflank/prototype--1](https://github.com /Hudzaiflank/prototype--1)  | 
 

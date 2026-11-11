@@ -11,7 +11,7 @@ export function GameBoard(props) {
       >
         <div className="mb-6 text-center">
           <p className="font-[Lexend] text-xs uppercase tracking-[0.3em] text-[#9a7a2a]">
-            MindPlay board
+            Piscall board
           </p>
           <h2 className="mt-3 font-['Press_Start_2P'] text-sm leading-relaxed text-[#ffe98a]">
             Kartu pasangan

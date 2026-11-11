@@ -21,7 +21,7 @@
       <rect class="frame" width="1240" height="760" rx="8"/>
       <rect class="ui-white" x="1" y="1" width="1238" height="62" rx="7"/>
       <rect class="ui-dark" x="0" y="62" width="220" height="698"/>
-      <text x="28" y="36" fill="#fff" font-size="19" font-weight="700">MindPlay</text>
+      <text x="28" y="36" fill="#fff" font-size="19" font-weight="700">Piscall</text>
       <rect x="238" y="18" width="330" height="27" rx="5" fill="#f0f0f0" stroke="#d0d0d0"/>
       <text x="1050" y="29" font-size="12">Nama pengguna</text>
       <text x="1050" y="45" class="small">Admin / Guru</text>
@@ -40,7 +40,7 @@
       <rect class="frame" width="1240" height="760" rx="8"/>
       <rect x="1" y="1" width="1238" height="758" rx="8" fill="#efefef"/>
       <rect x="1" y="1" width="1238" height="62" rx="8" fill="#dedede"/>
-      <text x="34" y="38" font-size="19" font-weight="700">MindPlay</text>
+      <text x="34" y="38" font-size="19" font-weight="700">Piscall</text>
       <text x="1040" y="37" class="copy">Siswa</text>
       <line x1="30" y1="80" x2="1210" y2="80" stroke="#c5c5c5"/>
     </g>
@@ -77,13 +77,13 @@
   </defs>
 
   <rect width="3880" height="9360" fill="#e9e9e9"/>
-  <text x="40" y="38" font-size="25" font-weight="700">MINDPLAY · WIREFRAME DESKTOP</text>
+  <text x="40" y="38" font-size="25" font-weight="700">PISCALL · WIREFRAME DESKTOP</text>
   <text x="40" y="62" font-size="13" fill="#555">32 layar unik dari route frontend · 1240 × 760 px per frame · grayscale wireframe</text>
 
   <g id="screen-login" transform="translate(40 96)">
     <text y="-14" class="label">01 · Login</text><rect class="frame" width="1240" height="760" rx="8"/><rect class="ui-bg" x="1" y="1" width="1238" height="758" rx="8"/>
     <rect class="ui-white" x="390" y="112" width="460" height="530" rx="12"/>
-    <text x="438" y="170" class="small">MINDPLAY</text><text x="438" y="216" class="title">Masuk ke akun</text><text x="438" y="244" class="copy">Gunakan akun Admin, Guru, atau Super Admin.</text>
+    <text x="438" y="170" class="small">PISCALL</text><text x="438" y="216" class="title">Masuk ke akun</text><text x="438" y="244" class="copy">Gunakan akun Admin, Guru, atau Super Admin.</text>
     <text x="438" y="295" class="copy">Email</text><rect class="ui-white" x="438" y="308" width="364" height="48" rx="5"/>
     <text x="438" y="389" class="copy">Password</text><rect class="ui-white" x="438" y="402" width="364" height="48" rx="5"/>
     <rect class="ui-button" x="438" y="484" width="364" height="50" rx="5"/><text x="590" y="515" class="button-text">Masuk</text>
@@ -92,7 +92,7 @@
   <g id="screen-rules" transform="translate(1320 96)">
     <text y="-14" class="label">02 · Aturan main</text><use href="#student-shell"/>
     <rect class="ui-white" x="150" y="112" width="940" height="560" rx="12"/>
-    <text x="205" y="166" class="small">MINDPLAY · PANDUAN</text><text x="205" y="214" class="title">Aturan main</text>
+    <text x="205" y="166" class="small">PISCALL · PANDUAN</text><text x="205" y="214" class="title">Aturan main</text>
     <rect class="ui-soft" x="205" y="246" width="830" height="72" rx="6"/><text x="228" y="276" class="subhead">Bermain dengan aman dan saling menghargai</text><text x="228" y="298" class="copy">Dengarkan, jaga kerahasiaan, dan fokus pada solusi bersama.</text>
     <g class="ui-line"><path d="M230 362h760 M230 386h720 M230 410h735 M230 458h760 M230 482h680 M230 506h750 M230 554h725"/></g>
     <rect class="ui-button" x="804" y="594" width="230" height="48" rx="6"/><text x="864" y="624" class="button-text">Saya siap bermain</text>
@@ -101,7 +101,7 @@
   <g id="screen-join-room" transform="translate(2600 96)">
     <text y="-14" class="label">03 · Masuk room</text><use href="#student-shell"/>
     <rect class="ui-white" x="330" y="160" width="580" height="420" rx="14"/>
-    <text x="390" y="215" class="small">MINDPLAY</text><text x="390" y="262" class="title">Masuk ke room</text><text x="390" y="292" class="copy">Masukkan kode room dari guru untuk mulai bermain.</text>
+    <text x="390" y="215" class="small">PISCALL</text><text x="390" y="262" class="title">Masuk ke room</text><text x="390" y="292" class="copy">Masukkan kode room dari guru untuk mulai bermain.</text>
     <text x="390" y="350" class="copy">Kode room</text><rect class="ui-white" x="390" y="364" width="460" height="62" rx="8"/><text x="568" y="403" font-size="23" font-weight="700">ABC123</text>
     <rect class="ui-button" x="390" y="466" width="460" height="50" rx="6"/><text x="555" y="497" class="button-text">Masuk room</text>
   </g>
@@ -126,7 +126,7 @@
   <g id="screen-student-game" transform="translate(2600 936)">
     <text y="-14" class="label">06 · Permainan siswa</text><use href="#student-shell"/>
     <text x="34" y="122" class="small">PERMAINAN BERJALAN · KELOMPOK 1 · ROOM ABC123</text><text x="34" y="158" class="title">Giliran kamu</text><rect class="ui-soft" x="978" y="106" width="226" height="46" rx="23"/><text x="1040" y="135" class="button-text">Sedang bermain</text>
-    <rect class="ui-white" x="170" y="200" width="900" height="465" rx="14"/><text x="620" y="246" text-anchor="middle" class="small">MINDPLAY BOARD</text><text x="620" y="281" text-anchor="middle" class="subhead">Kartu pasangan</text>
+    <rect class="ui-white" x="170" y="200" width="900" height="465" rx="14"/><text x="620" y="246" text-anchor="middle" class="small">PISCALL BOARD</text><text x="620" y="281" text-anchor="middle" class="subhead">Kartu pasangan</text>
     <rect x="270" y="326" width="295" height="250" rx="12" fill="#e6e6e6" stroke="#777" stroke-width="2"/><rect x="675" y="326" width="295" height="250" rx="12" fill="#e6e6e6" stroke="#777" stroke-width="2"/>
     <text x="418" y="458" text-anchor="middle" class="subhead">Kartu peserta</text><text x="822" y="458" text-anchor="middle" class="subhead">Kartu masalah</text>
     <rect class="ui-button" x="475" y="604" width="290" height="44" rx="6"/><text x="552" y="632" class="button-text">Buka kartu</text>
@@ -134,7 +134,7 @@
 
   <g id="screen-student-result" transform="translate(40 1776)">
     <text y="-14" class="label">07 · Hasil permainan</text><use href="#student-shell"/>
-    <rect class="ui-white" x="260" y="166" width="720" height="440" rx="14"/><text x="620" y="218" text-anchor="middle" class="small">MINDPLAY · ROOM ABC123</text><text x="620" y="274" text-anchor="middle" class="title">Permainan selesai</text>
+    <rect class="ui-white" x="260" y="166" width="720" height="440" rx="14"/><text x="620" y="218" text-anchor="middle" class="small">PISCALL · ROOM ABC123</text><text x="620" y="274" text-anchor="middle" class="title">Permainan selesai</text>
     <text x="620" y="314" text-anchor="middle" class="copy">Terima kasih sudah ikut berbagi dan bermain bersama.</text>
     <rect class="ui-soft" x="330" y="366" width="580" height="68" rx="6"/><text x="354" y="407" class="copy">Status game</text><text x="750" y="407" class="subhead">Selesai</text>
     <rect class="ui-soft" x="330" y="450" width="580" height="68" rx="6"/><text x="354" y="491" class="copy">Nama kamu</text><text x="750" y="491" class="subhead">Nama siswa</text>
@@ -142,7 +142,7 @@
 
   <g id="screen-super-dashboard" transform="translate(1320 1776)">
     <text y="-14" class="label">08 · Super Admin / Dashboard</text><use href="#management-shell"/>
-    <text x="260" y="148" class="small">MINDPLAY CONTROL</text><text x="260" y="184" class="title">Super Admin</text><text x="260" y="210" class="copy">Ringkasan ekosistem sekolah dan pengguna.</text>
+    <text x="260" y="148" class="small">PISCALL CONTROL</text><text x="260" y="184" class="title">Super Admin</text><text x="260" y="210" class="copy">Ringkasan ekosistem sekolah dan pengguna.</text>
     <use href="#metric-card-compact" x="260" y="246"/><use href="#metric-card-compact" x="445" y="246"/><use href="#metric-card-compact" x="630" y="246"/><use href="#metric-card-compact" x="815" y="246"/><use href="#metric-card-compact" x="1000" y="246"/>
     <text x="275" y="283" class="small">Sekolah</text><text x="460" y="283" class="small">Aktif</text><text x="645" y="283" class="small">Guru</text><text x="830" y="283" class="small">Kelas</text><text x="1015" y="283" class="small">Game selesai</text>
     <rect class="ui-white" x="260" y="390" width="930" height="280" rx="7"/><text x="284" y="426" class="subhead">Ringkasan aktivitas</text><path d="M300 620 420 572 540 586 660 500 780 531 900 460 1030 478 1150 438" fill="none" stroke="#888" stroke-width="3"/><path d="M300 630h850 M300 470v160" class="ui-line"/>

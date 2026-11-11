@@ -49,7 +49,7 @@ export function LoginPage() {
       >
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-300">
-            MindPlay
+            Piscall
           </p>
           <h1 className="mt-3 text-3xl font-bold" id="login-title">
             Masuk ke akun

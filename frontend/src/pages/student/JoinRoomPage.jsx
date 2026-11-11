@@ -10,7 +10,7 @@ import {
   setStudentRoom,
 } from "../../utils/storage";
 
-const RULES_ACCEPTED_KEY = "mindplay_rules_accepted";
+const RULES_ACCEPTED_KEY = "piscall_rules_accepted";
 
 const routeForGameStatus = (roomCode, status) => {
   if (status === "WAITING") return `/room/${roomCode}/waiting`;
@@ -114,7 +114,7 @@ export function JoinRoomPage() {
       >
         <div className="text-center">
           <p className="font-[Lexend] text-xs uppercase tracking-[0.3em] text-[#9a7a2a]">
-            MindPlay
+            Piscall
           </p>
           <h1
             className="mt-4 font-['Press_Start_2P'] text-xl leading-relaxed text-[#ffe98a]"
