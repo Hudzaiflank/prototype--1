@@ -12,7 +12,11 @@ export function createApp() {
   const app = express();
   const corsOptions = {
     origin: (requestOrigin, callback) => {
-      if (!requestOrigin || env.frontendUrls.includes(requestOrigin)) {
+      const normalizedOrigin = requestOrigin?.replace(/\/+$/, "");
+      if (
+        !normalizedOrigin ||
+        env.frontendUrls.includes(normalizedOrigin)
+      ) {
         callback(null, true);
         return;
       }

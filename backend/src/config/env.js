@@ -1,18 +1,35 @@
 if (!globalThis.WebSocketPair) await import("dotenv/config");
 
+const DEFAULT_FRONTEND_URLS = [
+  "http://localhost:5173",
+  "https://prototype--1.pages.dev",
+  "https://phillyogo-frontend.pages.dev",
+  "https://piscall.com",
+  "https://www.piscall.com",
+];
+
+function parseFrontendUrls(value) {
+  return [
+    ...new Set(
+      (value ?? "")
+        .split(",")
+        .map((url) => url.trim())
+        .filter(Boolean)
+        .map((url) => url.replace(/\/+$/, "")),
+    ),
+  ];
+}
+
+const configuredFrontendUrls = parseFrontendUrls(
+  process.env.FRONTEND_URLS ?? process.env.FRONTEND_URL,
+);
+
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? "development",
   port: Number(process.env.PORT ?? 3000),
   apiPrefix: process.env.API_PREFIX ?? "/api/v1",
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:5173",
-  frontendUrls: (
-    process.env.FRONTEND_URLS ??
-    process.env.FRONTEND_URL ??
-    "http://localhost:5173"
-  )
-    .split(",")
-    .map((url) => url.trim())
-    .filter(Boolean),
+  frontendUrls: [...new Set([...DEFAULT_FRONTEND_URLS, ...configuredFrontendUrls])],
   refreshCookieName: process.env.REFRESH_COOKIE_NAME ?? "phillyogo_refresh",
   retentionDays: Number(process.env.RETENTION_DAYS ?? 30),
   database: {

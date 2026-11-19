@@ -32,6 +32,6 @@
   ],
   "vars": {
     "NODE_ENV": "production",
-    "FRONTEND_URLS": "https://prototype--1.pages.dev"
+    "FRONTEND_URLS": "https://prototype--1.pages.dev,https://piscall.com,https://www.piscall.com"
   }
 }
