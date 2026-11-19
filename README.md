@@ -113,6 +113,11 @@ Alur utama yang sudah tersedia:
 - Pemulihan permainan saat siswa kembali.
 - Pemantauan dan riwayat permainan.
 
+## Anggaran Tahunan
+
+Estimasi Rencana Anggaran Biaya (RAB) pengembangan dan operasional selama
+12 bulan tersedia di [RAB_PHILLYOGO_1_TAHUN.md](RAB_PHILLYOGO_1_TAHUN.md).
+
 ## Deployment backend
 
 Untuk menjalankan backend di Cloudflare Workers dengan TiDB Cloud melalui Hyperdrive, ikuti [panduan Cloudflare Workers + TiDB](deploy/CLOUDFLARE_WORKERS_TIDB_DEPLOYMENT.md). Worker tidak memerlukan server atau laptop yang terus menyala, tetapi paket gratis tetap memiliki kuota dan bukan SLA uptime.
