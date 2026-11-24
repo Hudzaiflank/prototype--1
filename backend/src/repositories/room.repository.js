@@ -1,5 +1,6 @@
 import { pool } from "../config/database.js";
 import { generateRoomCode } from "../utils/roomCode.js";
+import { hasActiveParticipantSessionConflict } from "../utils/participantSessionPolicy.js";
 
 export async function openRoom({ classId, teacherId }) {
   const connection = await pool.getConnection();
@@ -47,12 +48,83 @@ export async function openRoom({ classId, teacherId }) {
 }
 
 export async function closeRoom(roomId, teacherId) {
-  const [result] = await pool.execute(
-    `UPDATE rooms SET status = 'CLOSED', closed_at = NOW()
-		 WHERE id = ? AND created_by = ? AND status = 'OPEN'`,
-    [roomId, teacherId],
-  );
-  return result.affectedRows > 0;
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const [accessibleRooms] = await connection.execute(
+      "SELECT id FROM rooms WHERE id = ? AND created_by = ? LIMIT 1",
+      [roomId, teacherId],
+    );
+    if (!accessibleRooms.length) {
+      await connection.rollback();
+      return null;
+    }
+
+    // Keep the game-session lock order consistent with starting a game.
+    await connection.execute(
+      `SELECT id FROM game_sessions
+       WHERE room_id = ? AND status IN ('WAITING', 'PLAYING', 'PAUSED')
+       FOR UPDATE`,
+      [roomId],
+    );
+    const [rooms] = await connection.execute(
+      `SELECT id FROM rooms
+       WHERE id = ? AND created_by = ? AND status = 'OPEN'
+       LIMIT 1 FOR UPDATE`,
+      [roomId, teacherId],
+    );
+    if (!rooms.length) {
+      await connection.rollback();
+      return null;
+    }
+
+    // Re-read after locking the room to include any session created meanwhile.
+    const [activeSessions] = await connection.execute(
+      `SELECT gs.id, gs.state_version AS stateVersion,
+         (SELECT COUNT(*) FROM participants p WHERE p.game_session_id = gs.id)
+           AS participantCount
+       FROM game_sessions gs
+       WHERE gs.room_id = ? AND gs.status IN ('WAITING', 'PLAYING', 'PAUSED')
+       FOR UPDATE`,
+      [roomId],
+    );
+    if (activeSessions.length) {
+      const sessionIds = activeSessions.map(({ id }) => id);
+      const placeholders = sessionIds.map(() => "?").join(", ");
+      await connection.execute(
+        `UPDATE game_sessions
+         SET status = 'FINISHED', state_version = state_version + 1,
+             finished_at = COALESCE(finished_at, NOW()),
+             updated_at = CURRENT_TIMESTAMP
+         WHERE id IN (${placeholders})
+           AND status IN ('WAITING', 'PLAYING', 'PAUSED')`,
+        sessionIds,
+      );
+    }
+    await connection.execute(
+      "UPDATE rooms SET status = 'CLOSED', closed_at = NOW() WHERE id = ?",
+      [roomId],
+    );
+    await connection.commit();
+
+    return {
+      id: roomId,
+      status: "CLOSED",
+      finishedSessions: activeSessions.map(
+        ({ id, stateVersion, participantCount }) => ({
+          id,
+          status: "FINISHED",
+          stateVersion: Number(stateVersion) + 1,
+          participantCount: Number(participantCount),
+        }),
+      ),
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 export async function createGameSession({
@@ -234,7 +306,11 @@ export async function registerParticipant({
   try {
     await connection.beginTransaction();
     const [sessions] = await connection.execute(
-      "SELECT id FROM game_sessions WHERE id = ? AND status = 'WAITING' FOR UPDATE",
+      `SELECT gs.id FROM game_sessions gs
+       LEFT JOIN rooms r ON r.id = gs.room_id
+       WHERE gs.id = ? AND gs.status = 'WAITING'
+         AND (gs.room_id IS NULL OR r.status = 'OPEN')
+       FOR UPDATE`,
       [gameSessionId],
     );
     if (!sessions.length) {
@@ -264,9 +340,18 @@ export async function registerParticipant({
         await connection.rollback();
         return null;
       }
+      if (hasActiveParticipantSessionConflict(participant, sessionId)) {
+        await connection.rollback();
+        return { conflict: "PARTICIPANT_ALREADY_CONNECTED" };
+      }
+      const participantSessionId =
+        participant.sessionId === sessionId ? participant.sessionId : sessionId;
       await connection.execute(
-        "UPDATE participants SET status = 'CONNECTED', connected_at = NOW() WHERE id = ?",
-        [participant.id],
+        `UPDATE participants
+         SET session_uuid = ?, status = 'CONNECTED', connected_at = NOW(),
+             disconnected_at = NULL
+         WHERE id = ?`,
+        [participantSessionId, participant.id],
       );
       if (Number(participant.problemSubmitted) !== 1) {
         await connection.execute(
@@ -279,7 +364,12 @@ export async function registerParticipant({
         [gameSessionId],
       );
       await connection.commit();
-      return { ...participant, status: "CONNECTED", problemSubmitted: true };
+      return {
+        ...participant,
+        sessionId: participantSessionId,
+        status: "CONNECTED",
+        problemSubmitted: true,
+      };
     }
     const [students] = await connection.execute(
       `SELECT s.id, s.full_name AS fullName FROM students s

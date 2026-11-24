@@ -19,9 +19,10 @@ export async function openRoom(data) {
   return room;
 }
 export async function closeRoom(roomId, teacherId) {
-  if (!(await repository.closeRoom(roomId, teacherId)))
+  const closedRoom = await repository.closeRoom(roomId, teacherId);
+  if (!closedRoom)
     throw new AppError("Room not found", "ROOM_NOT_FOUND", 404);
-  return { id: roomId, status: "CLOSED" };
+  return closedRoom;
 }
 export async function createGameSession(data) {
   const result = await repository.createGameSession(data);
@@ -75,6 +76,12 @@ export async function joinRoom(code) {
 }
 export async function registerParticipant(data) {
   const participant = await repository.registerParticipant(data);
+  if (participant?.conflict === "PARTICIPANT_ALREADY_CONNECTED")
+    throw new AppError(
+      "Siswa ini sedang aktif di perangkat lain. Gunakan perangkat tersebut atau coba lagi setelah sesi terputus.",
+      "PARTICIPANT_ALREADY_CONNECTED",
+      409,
+    );
   if (!participant)
     throw new AppError(
       "Game session is not accepting participants",

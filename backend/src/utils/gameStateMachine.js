@@ -1,6 +1,7 @@
 const GAME_TRANSITIONS = {
   WAITING: {
     start: "PLAYING",
+    finish: "FINISHED",
   },
   PLAYING: {
     pause: "PAUSED",

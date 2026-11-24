@@ -1687,14 +1687,14 @@ Untuk environment variable Production:
 
 ```text
 VITE_API_URL=https://<WAJIB_DIGANTI: DOMAIN_BACKEND>/api/v1
-VITE_SOCKET_URL=https://<WAJIB_DIGANTI: DOMAIN_BACKEND>
+VITE_SOCKET_URL=https://<WAJIB_DIGANTI: DOMAIN_BACKEND>/game
 ```
 
 Contoh actual:
 
 ```text
 VITE_API_URL=https://api.piscall.com/api/v1
-VITE_SOCKET_URL=https://api.piscall.com
+VITE_SOCKET_URL=https://api.piscall.com/game
 ```
 
 Ambil domain backend dari data actual DNS/Cloudflare, bukan dari contoh.

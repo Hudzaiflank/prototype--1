@@ -1,6 +1,7 @@
 import * as service from "../services/room.service.js";
-import { emitTeacherGameEvent } from "../config/realtime.js";
+import { emitGameEvent, emitTeacherGameEvent } from "../config/realtime.js";
 import { SOCKET_EVENTS } from "../constants/socketEvents.js";
+import { toPublicGameEvent } from "../utils/gameEvent.js";
 
 export async function open(request, response, next) {
   try {
@@ -17,10 +18,20 @@ export async function open(request, response, next) {
 }
 export async function close(request, response, next) {
   try {
+    const data = await service.closeRoom(
+      request.params.roomId,
+      request.user.userId,
+    );
     response.json({
       success: true,
-      data: await service.closeRoom(request.params.roomId, request.user.userId),
+      data,
     });
+    for (const session of data.finishedSessions)
+      emitGameEvent(
+        session.id,
+        SOCKET_EVENTS.GAME_FINISHED,
+        toPublicGameEvent(session),
+      );
   } catch (error) {
     next(error);
   }

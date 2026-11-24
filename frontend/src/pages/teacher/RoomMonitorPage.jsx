@@ -23,6 +23,7 @@ export function RoomMonitorPage() {
   const groupsQuery = useGameGroupsQuery(sessionId);
   const game = stateQuery.data ?? null;
   const [error, setError] = useState("");
+  const [socketError, setSocketError] = useState("");
   const [actionPending, setActionPending] = useState(false);
   const groups = groupsQuery.data ?? [];
   const [selectedGroupId, setSelectedGroupId] = useState("");
@@ -142,9 +143,21 @@ export function RoomMonitorPage() {
       });
     };
     socket.on(SOCKET_EVENTS.GAME_STARTED, refreshGroupsAfterStart);
-    socket.on("connect", () =>
-      socket.emit("join-game", { gameSessionId: Number(sessionId) }),
-    );
+    const handleConnect = () => {
+      setSocketError("");
+      socket.emit("join-game", { gameSessionId: Number(sessionId) });
+    };
+    const handleSocketError = ({ message } = {}) => {
+      setSocketError(message ?? "Koneksi realtime gagal.");
+    };
+    const handleConnectError = (connectError) => {
+      setSocketError(
+        `Koneksi realtime gagal: ${connectError.message ?? "tidak diketahui"}`,
+      );
+    };
+    socket.on("connect", handleConnect);
+    socket.on(SOCKET_EVENTS.SERVER_ERROR, handleSocketError);
+    socket.on("connect_error", handleConnectError);
     return () => {
       events.forEach((event) => socket.off(event, updateState));
       socket.off(SOCKET_EVENTS.PARTICIPANT_JOINED, handleParticipantJoined);
@@ -157,6 +170,9 @@ export function RoomMonitorPage() {
         handleParticipantStatusChanged,
       );
       socket.off(SOCKET_EVENTS.GAME_STARTED, refreshGroupsAfterStart);
+      socket.off("connect", handleConnect);
+      socket.off(SOCKET_EVENTS.SERVER_ERROR, handleSocketError);
+      socket.off("connect_error", handleConnectError);
       socketClient.disconnect();
     };
   }, [queryClient, sessionId]);
@@ -282,9 +298,10 @@ export function RoomMonitorPage() {
         </div>
         <GameStatus status={game?.status ?? "CONNECTING"} />
       </div>
-      {error || loadError ? (
+      {socketError || error || loadError ? (
         <p className="rounded-xl border border-rose-400/50 bg-rose-950/30 p-4 text-sm text-rose-200">
-          {error ||
+          {socketError ||
+            error ||
             loadError.response?.data?.message ||
             "Game belum dapat dimuat."}
         </p>

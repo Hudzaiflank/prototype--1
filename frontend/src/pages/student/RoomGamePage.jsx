@@ -45,6 +45,8 @@ export function RoomGamePage() {
         return;
       }
       setGame((current) => mergeRealtimeState(current, state));
+      if (state.status === "FINISHED")
+        navigate("../result", { replace: true });
     };
     const handleCardsRevealed = (turn) => {
       setPendingAction("");
@@ -69,10 +71,7 @@ export function RoomGamePage() {
     };
     const handleLeaderChanged = requestState;
     const handleStarted = requestState;
-    const handleFinished = (state) => {
-      updateState(state);
-      navigate("../result", { replace: true });
-    };
+    const handleFinished = updateState;
     const events = [
       SOCKET_EVENTS.STATE_SNAPSHOT,
       SOCKET_EVENTS.GAME_STARTED,
@@ -86,11 +85,18 @@ export function RoomGamePage() {
     socket.on(SOCKET_EVENTS.TURN_STARTED, handleTurnChanged);
     socket.on(SOCKET_EVENTS.GROUP_LEADER_CHANGED, handleLeaderChanged);
     socket.on(SOCKET_EVENTS.GAME_FINISHED, handleFinished);
-    const handleServerError = ({ message }) => {
+    const handleServerError = ({ code, message }) => {
       setPendingAction("");
       setActionError(message ?? "Aksi game gagal diproses.");
+      if (code === "PARTICIPANT_ALREADY_CONNECTED")
+        socketClient.disconnect();
+    };
+    const handleConnectError = (error) => {
+      setSocketConnected(false);
+      setActionError(error.message ?? "Koneksi realtime gagal.");
     };
     socket.on(SOCKET_EVENTS.SERVER_ERROR, handleServerError);
+    socket.on("connect_error", handleConnectError);
     return () => {
       window.clearTimeout(requestStateTimer);
       events.forEach((event) => socket.off(event, updateState));
@@ -101,6 +107,7 @@ export function RoomGamePage() {
       socket.off(SOCKET_EVENTS.GROUP_LEADER_CHANGED, handleLeaderChanged);
       socket.off(SOCKET_EVENTS.GAME_FINISHED, handleFinished);
       socket.off(SOCKET_EVENTS.SERVER_ERROR, handleServerError);
+      socket.off("connect_error", handleConnectError);
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
       setSocketConnected(false);

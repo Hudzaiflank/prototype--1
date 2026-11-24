@@ -243,7 +243,7 @@ export const finishGame = (sessionId, teacherId) =>
   transition(
     sessionId,
     teacherId,
-    ["PLAYING", "PAUSED"],
+    ["WAITING", "PLAYING", "PAUSED"],
     "FINISHED",
     "finished_at",
   ).then(async (state) => {

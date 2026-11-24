@@ -16,9 +16,21 @@ test("public game events do not expose assignments or problem authors", () => {
     assignments: [{ problemAuthorId: 99, content: "private" }],
   });
   assert.equal(event.stateVersion, 3);
+  assert.equal(event.participantCount, 1);
   assert.equal("assignments" in event, false);
   assert.equal("problemAuthorId" in event, false);
   assert.match(event.eventId, /^[0-9a-f-]{36}$/);
+});
+
+test("public game events preserve a supplied participant count", () => {
+  const event = toPublicGameEvent({
+    id: 11,
+    status: "FINISHED",
+    stateVersion: 4,
+    participantCount: 6,
+  });
+
+  assert.equal(event.participantCount, 6);
 });
 
 test("rate limiter rejects requests over its configured limit", () => {
@@ -45,6 +57,10 @@ test("state machine allows valid transitions and blocks invalid ones", () => {
   assert.deepEqual(validateGameTransition("WAITING", "start"), {
     ok: true,
     nextStatus: "PLAYING",
+  });
+  assert.deepEqual(validateGameTransition("WAITING", "finish"), {
+    ok: true,
+    nextStatus: "FINISHED",
   });
   assert.deepEqual(validateGameTransition("PLAYING", "pause"), {
     ok: true,

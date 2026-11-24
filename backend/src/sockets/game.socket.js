@@ -7,8 +7,10 @@ import { z } from "zod";
 import { turnActionSchema } from "../validators/game.validator.js";
 import { problemSchema } from "../validators/room.validator.js";
 import { socketErrorPayload } from "./socketErrors.js";
+import { createActiveStudentSocketRegistry } from "./activeStudentSocketRegistry.js";
 
 const socketSessionSchema = z.coerce.number().int().positive();
+const activeStudentSockets = createActiveStudentSocketRegistry();
 const parseSocketPayload = (schema, payload) => {
   const result = schema.safeParse({ body: payload });
   if (!result.success) throw new Error("Invalid socket payload");
@@ -23,6 +25,18 @@ const emitError = (socket, error) =>
 export function registerGameSocket(namespace) {
   namespace.on("connection", (socket) => {
     const identity = socket.data.identity;
+    if (
+      identity.kind === "STUDENT" &&
+      !activeStudentSockets.claim(identity.participant.id, socket)
+    ) {
+      const error = new Error(
+        "Siswa ini sudah terhubung di perangkat lain.",
+      );
+      error.code = "PARTICIPANT_ALREADY_CONNECTED";
+      emitError(socket, error);
+      setTimeout(() => socket.disconnect(true), 100);
+      return;
+    }
     const initialSessionId =
       identity.kind === "STUDENT" ? identity.participant.gameSessionId : null;
 
@@ -250,7 +264,10 @@ export function registerGameSocket(namespace) {
               .to(`teacher-game:${leaderChange.gameSessionId}`)
               .emit(SOCKET_EVENTS.GROUP_LEADER_CHANGED, leaderChange);
           })
-          .catch(() => {});
+          .catch(() => {})
+          .finally(() =>
+            activeStudentSockets.release(identity.participant.id, socket),
+          );
         namespace
           .to(`teacher-game:${identity.participant.gameSessionId}`)
           .emit(SOCKET_EVENTS.PARTICIPANT_STATUS_CHANGED, {

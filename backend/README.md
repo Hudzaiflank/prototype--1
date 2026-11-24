@@ -159,7 +159,7 @@ Base path:
 
 ### Rooms and sessions
 
-- `POST /rooms/:roomId/close`
+- `POST /rooms/:roomId/close` (closes the room and ends any active game session)
 - `POST /rooms/:roomId/game-sessions`
 - `GET /rooms/:roomId`
 

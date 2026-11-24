@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { roomApi } from "../../services/api/roomApi";
-import { getStudentRoom, setParticipantSession } from "../../utils/storage";
+import {
+  getParticipantSession,
+  getStudentRoom,
+  setParticipantSession,
+} from "../../utils/storage";
 
 export function RoomInputPage() {
   const navigate = useNavigate();
@@ -46,7 +50,9 @@ export function RoomInputPage() {
     setError("");
     setIsSubmitting(true);
     try {
-      const participantSessionId = crypto.randomUUID();
+      const participantSessionId =
+        getParticipantSession() ?? crypto.randomUUID();
+      setParticipantSession(participantSessionId);
       const { data: registrationResponse } = await roomApi.registerParticipant(
         room.gameSessionId,
         {

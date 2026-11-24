@@ -11,6 +11,7 @@ export function ClassDetailPage() {
   const { user } = useAuthContext();
   const [classData, setClassData] = useState(null);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [closing, setClosing] = useState(false);
   const [roomQr, setRoomQr] = useState("");
   useEffect(() => {
@@ -39,10 +40,14 @@ export function ClassDetailPage() {
     if (!classData?.currentRoom) return;
     setClosing(true);
     setError("");
+    setNotice("");
     try {
       await roomApi.close(classData.currentRoom.id);
       const { data } = await classApi.detailAssigned(classId);
       setClassData(data.data);
+      setNotice(
+        "Room ditutup dan sesi game diakhiri. Kelas tetap aktif.",
+      );
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ?? "Room belum dapat ditutup.",
@@ -62,10 +67,19 @@ export function ClassDetailPage() {
         </h1>
       </div>
       {error ? <p className="text-sm text-rose-300">{error}</p> : null}
+      {notice ? (
+        <p className="text-sm text-emerald-300" role="status">
+          {notice}
+        </p>
+      ) : null}
       <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-6">
         <p className="text-sm text-slate-400">Status kelas</p>
         <p className="mt-2 text-xl font-semibold">
           {classData?.status ?? "Memuat..."}
+        </p>
+        <p className="mt-2 text-sm text-slate-400">
+          Menutup room juga mengakhiri sesi game aktif; status kelas tetap
+          aktif.
         </p>
         {classData?.currentRoom ? (
           <div className="mt-6 flex flex-wrap items-center gap-3">

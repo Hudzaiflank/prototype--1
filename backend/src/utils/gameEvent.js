@@ -11,6 +11,7 @@ export function toPublicGameEvent(state) {
     stateVersion: state.stateVersion ?? null,
     gameMode: state.gameMode,
     groupCount: state.groupCount,
-    participantCount: state.participants?.length ?? 0,
+    participantCount:
+      state.participantCount ?? state.participants?.length ?? 0,
   };
 }
