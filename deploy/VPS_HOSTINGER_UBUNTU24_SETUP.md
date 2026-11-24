@@ -2233,8 +2233,8 @@ Pembaruan backend:
 ```bash
 cd /opt/phillyogo/app
 git fetch --prune origin
-git switch production
-git pull --ff-only origin production
+git switch main
+git pull --ff-only origin main
 git status --short
 git rev-parse HEAD
 ```
@@ -2252,7 +2252,7 @@ docker compose --env-file /opt/phillyogo/.env logs --tail=200 backend
 curl -i https://<WAJIB_DIGANTI: DOMAIN_BACKEND>/health/ready
 ```
 
-Gunakan branch production yang benar. Jangan melakukan update saat ada sesi kelas aktif.
+Branch utama repository adalah `main`. Jika `git status --short` menunjukkan perubahan lokal yang tidak dikenal, berhenti dan periksa sebelum berpindah branch atau menarik update. Jangan melakukan update saat ada sesi kelas aktif.
 
 ## 24. Rollback
 
