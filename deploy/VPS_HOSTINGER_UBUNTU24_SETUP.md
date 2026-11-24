@@ -2393,3 +2393,480 @@ Bulanan:
 - [ ] Rollback plan ditinjau.
 
 **Stop point:** Jika item checklist go-live belum lengkap atau domain/secret/backup belum terisi, jangan menutup Aiven atau Back4App.
+
+## 27. Runbook rutin VPS: harian, mingguan, bulanan
+
+Gunakan checklist ini setelah sistem produksi stabil. Perintah Linux dijalankan di VPS sebagai user `phillyogo`; gunakan `sudo` hanya seperti contoh. Perintah PowerShell dijalankan di komputer Windows.
+
+### Aturan keselamatan
+
+- Jangan menjalankan update OS, reboot, rebuild backend, atau restart container saat ada game/kelas aktif.
+- Sebelum perubahan atau maintenance: pastikan backup terakhir valid dan umumkan waktu maintenance.
+- Jangan menampilkan, menyalin ke chat, atau mengirim isi `/opt/phillyogo/.env`.
+- Jangan menjalankan `docker compose down`, `docker system prune -a`, atau menghapus Docker volume untuk pemeliharaan rutin.
+- Jangan menjalankan migration database untuk rutinitas harian/mingguan/bulanan. Migration hanya untuk release yang memang menyertakan migration.
+- Jika satu pemeriksaan gagal, hentikan langkah yang mengubah sistem. Simpan pesan error tanpa membagikan token/password.
+
+### Setiap hari (sekitar 5-10 menit)
+
+#### 1. Periksa frontend, API, dan koneksi database
+
+```bash
+date '+%Y-%m-%d %H:%M:%S %Z'
+curl --fail --silent --show-error --location --max-time 15 \
+  --output /dev/null --write-out 'Frontend HTTP %{http_code}\n' \
+  https://piscall.com/
+curl --fail --silent --show-error --max-time 15 https://api.piscall.com/health
+printf '\n'
+curl --fail --silent --show-error --max-time 15 https://api.piscall.com/health/ready
+printf '\n'
+```
+
+Harapkan frontend HTTP 200, health API sukses, dan `/health/ready` melaporkan `ready`. Jika gagal, jangan restart dulu; lanjutkan dengan pemeriksaan container dan log di bawah.
+
+#### 2. Periksa layanan dan container
+
+```bash
+cd /opt/phillyogo
+sudo systemctl is-active docker nginx cron
+sudo docker compose --env-file /opt/phillyogo/.env ps
+```
+
+Harapkan `docker`, `nginx`, dan `cron` berstatus `active`; container backend dan MySQL berstatus `healthy`.
+
+#### 3. Periksa resource
+
+```bash
+df -h /
+df -i /
+free -h
+sudo docker stats --no-stream
+```
+
+Perhatikan disk/inode yang mendekati 80%, RAM yang terus mendekati penuh, swap yang terus bertambah, atau container yang memakai CPU/memori jauh di atas biasanya. Jangan menghapus file atau volume sebelum mengetahui penyebabnya.
+
+#### 4. Pastikan backup harian selesai dan checksum valid
+
+Backup otomatis dijadwalkan pukul 02.30 WIB. Jika pemeriksaan dilakukan sebelum jam tersebut, file terbaru dari hari sebelumnya masih normal.
+
+```bash
+sudo tail -n 50 /var/log/phillyogo/backup.log
+
+BACKUP_DIR="$(sudo sed -n 's/^BACKUP_DIR="\([^"]*\)".*/\1/p' /opt/phillyogo/backup-mysql.sh)"
+if [ -z "$BACKUP_DIR" ] || [ ! -d "$BACKUP_DIR" ]; then
+  echo "BACKUP_DIR tidak ditemukan; periksa backup-mysql.sh."
+  exit 1
+fi
+
+LATEST_BACKUP="$(sudo find "$BACKUP_DIR" -maxdepth 1 -type f \
+  -name 'phillyogo-*.sql' -printf '%T@ %p\n' |
+  sort -nr | head -n 1 | cut -d' ' -f2-)"
+if [ -z "$LATEST_BACKUP" ]; then
+  echo "File backup SQL tidak ditemukan."
+  exit 1
+fi
+
+sudo stat -c 'Backup: %n | ukuran: %s bytes | waktu: %y' "$LATEST_BACKUP"
+sudo sha256sum -c "${LATEST_BACKUP}.sha256"
+```
+
+Harapkan checksum berakhir dengan `OK`. Jika file hari ini tidak ada setelah pukul 02.30 WIB, atau checksum gagal, jangan menganggap backup itu valid. Periksa cron dan log sebelum melakukan perubahan lain.
+
+### Setiap minggu (sekitar 20-30 menit)
+
+#### 1. Tinjau log error
+
+```bash
+cd /opt/phillyogo
+sudo docker compose --env-file /opt/phillyogo/.env \
+  logs --since=168h --tail=500 backend mysql
+sudo tail -n 200 /var/log/nginx/error.log
+sudo journalctl -u nginx --since "7 days ago" -p err --no-pager
+sudo journalctl -u docker --since "7 days ago" -p err --no-pager
+```
+
+Cari error berulang, restart berulang, koneksi database gagal, atau kenaikan error 5xx. Tinjau log langsung di VPS; jangan mengirim log mentah karena dapat berisi data pengguna.
+
+#### 2. Pastikan jadwal backup masih aktif
+
+```bash
+sudo crontab -l
+sudo systemctl is-active cron
+sudo tail -n 100 /var/log/phillyogo/backup.log
+```
+
+Pastikan ada jadwal `CRON_TZ=Asia/Jakarta` dan `30 2 * * * /opt/phillyogo/backup-mysql.sh ...`. Jangan mengedit cron jika jadwalnya sudah benar.
+
+#### 3. Tinjau SSH, firewall, dan hak akses secret
+
+```bash
+sudo journalctl -u ssh --since "7 days ago" --no-pager |
+  grep -Ei 'Failed password|Invalid user|Accepted publickey' |
+  tail -n 100
+sudo ufw status verbose
+sudo ss -lntp
+sudo stat -c '%a %U:%G %n' /opt/phillyogo/.env
+```
+
+Pastikan `/opt/phillyogo/.env` tetap `600 root:root`, port 22/80/443 sesuai aturan firewall, dan backend 3000/MySQL 3306 tidak dibuka ke internet. Baris log SSH yang tidak cocok dengan aktivitasmu perlu ditinjau; jangan menghapus log.
+
+#### 4. Simpan satu backup di luar VPS
+
+Jalankan bagian ini di VPS untuk membuat salinan sementara yang dapat dibaca user SSH. Perintah hanya menyalin satu backup SQL terbaru dan checksum-nya ke `/home/phillyogo`.
+
+```bash
+BACKUP_DIR="$(sudo sed -n 's/^BACKUP_DIR="\([^"]*\)".*/\1/p' /opt/phillyogo/backup-mysql.sh)"
+LATEST_BACKUP="$(sudo find "$BACKUP_DIR" -maxdepth 1 -type f \
+  -name 'phillyogo-*.sql' -printf '%T@ %p\n' |
+  sort -nr | head -n 1 | cut -d' ' -f2-)"
+if [ -z "$LATEST_BACKUP" ]; then
+  echo "File backup SQL tidak ditemukan."
+  exit 1
+fi
+BACKUP_NAME="$(basename "$LATEST_BACKUP")"
+case "$BACKUP_NAME" in
+  phillyogo-*.sql) ;;
+  *) echo "Nama file tidak dikenali; berhenti."; exit 1 ;;
+esac
+sudo sha256sum -c "${LATEST_BACKUP}.sha256"
+sudo install -o phillyogo -g phillyogo -m 600 \
+  "$LATEST_BACKUP" "/home/phillyogo/${BACKUP_NAME}"
+sudo install -o phillyogo -g phillyogo -m 600 \
+  "${LATEST_BACKUP}.sha256" "/home/phillyogo/${BACKUP_NAME}.sha256"
+printf 'Salinan sementara siap: /home/phillyogo/%s\n' "$BACKUP_NAME"
+```
+
+Kemudian jalankan di Windows PowerShell. Masukkan IP VPS atau SSH alias yang biasa dipakai:
+
+```powershell
+$VpsHost = Read-Host "IP VPS atau SSH alias"
+$BackupName = Read-Host "Nama file SQL, contoh phillyogo-2026-11-24-023000.sql"
+$LocalDir = Join-Path $env:USERPROFILE "Downloads\PhillyoGo-backups"
+New-Item -ItemType Directory -Force -Path $LocalDir | Out-Null
+
+scp "phillyogo@${VpsHost}:/home/phillyogo/${BackupName}" $LocalDir
+scp "phillyogo@${VpsHost}:/home/phillyogo/${BackupName}.sha256" $LocalDir
+
+$LocalSql = Join-Path $LocalDir $BackupName
+$ExpectedHash = ((Get-Content "$LocalSql.sha256" -Raw) -split '\s+')[0].ToLowerInvariant()
+$ActualHash = (Get-FileHash -LiteralPath $LocalSql -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($ActualHash -ne $ExpectedHash) {
+  throw "Checksum tidak cocok. Jangan gunakan file backup ini."
+}
+Write-Host "Backup berhasil diunduh dan checksum cocok: $LocalSql"
+```
+
+Setelah checksum cocok, kembali ke terminal VPS yang sama dan hapus hanya salinan sementara tersebut:
+
+```bash
+sudo rm -i -- "/home/phillyogo/${BACKUP_NAME}" "/home/phillyogo/${BACKUP_NAME}.sha256"
+```
+
+Ketik `y` untuk kedua file yang namanya sesuai. File backup utama di `$BACKUP_DIR` tidak dihapus. Simpan salinan Windows di lokasi terpisah dan terlindungi.
+
+### Setiap bulan (sekitar 45-90 menit)
+
+#### 1. Uji restore ke database staging, bukan production
+
+Lakukan saat tidak ada game aktif dan setelah memastikan disk masih cukup. Perintah di bawah membuat database baru dengan nama berawalan `phillyogo_restore_test_`; tidak menyentuh database `phillyogo`.
+
+```bash
+(
+  set -euo pipefail
+  cd /opt/phillyogo
+
+  BACKUP_DIR="$(sudo sed -n 's/^BACKUP_DIR="\([^"]*\)".*/\1/p' /opt/phillyogo/backup-mysql.sh)"
+  LATEST_BACKUP="$(sudo find "$BACKUP_DIR" -maxdepth 1 -type f \
+    -name 'phillyogo-*.sql' -printf '%T@ %p\n' |
+    sort -nr | head -n 1 | cut -d' ' -f2-)"
+  if [ -z "$LATEST_BACKUP" ]; then
+    echo "File backup SQL tidak ditemukan."
+    exit 1
+  fi
+  sudo sha256sum -c "${LATEST_BACKUP}.sha256"
+
+  RESTORE_DB="phillyogo_restore_test_$(date +%Y%m%d%H%M%S)"
+  case "$RESTORE_DB" in
+    phillyogo_restore_test_*) ;;
+    *) echo "Nama staging tidak aman; berhenti."; exit 1 ;;
+  esac
+
+  sudo docker compose --env-file /opt/phillyogo/.env exec -T mysql sh -c \
+    "MYSQL_PWD=\"\$MYSQL_ROOT_PASSWORD\" mysql -uroot -e 'CREATE DATABASE ${RESTORE_DB} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'"
+
+  sudo cat "$LATEST_BACKUP" |
+    sudo docker compose --env-file /opt/phillyogo/.env exec -T mysql sh -c \
+      "MYSQL_PWD=\"\$MYSQL_ROOT_PASSWORD\" mysql -uroot ${RESTORE_DB}"
+
+  sudo docker compose --env-file /opt/phillyogo/.env exec -T mysql sh -c \
+    "MYSQL_PWD=\"\$MYSQL_ROOT_PASSWORD\" mysql -uroot -N ${RESTORE_DB} -e \"SELECT 'users', COUNT(*) FROM users UNION ALL SELECT 'schools', COUNT(*) FROM schools UNION ALL SELECT 'game_sessions', COUNT(*) FROM game_sessions;\""
+
+  printf '\nDatabase staging dibuat: %s\n' "$RESTORE_DB"
+  printf 'Periksa tabel dan jumlah record di atas sebelum menghapus staging.\n'
+  read -r -p "Ketik nama staging persis untuk menghapusnya, atau tekan Enter untuk membiarkannya: " CONFIRM
+  if [ "$CONFIRM" = "$RESTORE_DB" ]; then
+    sudo docker compose --env-file /opt/phillyogo/.env exec -T mysql sh -c \
+      "MYSQL_PWD=\"\$MYSQL_ROOT_PASSWORD\" mysql -uroot -e 'DROP DATABASE ${RESTORE_DB};'"
+    echo "Database staging dihapus."
+  else
+    echo "Database staging tidak dihapus. Hapus hanya setelah memastikan nama database tepat."
+  fi
+)
+```
+
+Pastikan restore selesai tanpa error dan tabel utama muncul. Jangan pernah mengganti nilai `RESTORE_DB` menjadi `phillyogo`. Jika restore gagal, jangan menghapus file backup; simpan error dan periksa sebelum mengulang.
+
+#### 2. Tinjau update Ubuntu dan jadwalkan maintenance
+
+Pemeriksaan ini tidak memasang update:
+
+```bash
+sudo apt update
+apt list --upgradable
+```
+
+Jika ada update, jadwalkan maintenance saat tidak ada game aktif, pastikan backup terakhir valid, lalu tinjau dan pasang update secara interaktif:
+
+```bash
+sudo apt upgrade
+```
+
+Jangan memakai `-y` untuk update rutin agar perubahan dapat ditinjau. Setelah selesai:
+
+```bash
+if [ -f /var/run/reboot-required ]; then
+  cat /var/run/reboot-required
+  echo "Reboot diperlukan; jadwalkan maintenance dan beri tahu pengguna dahulu."
+else
+  echo "Tidak ada permintaan reboot."
+fi
+sudo systemctl is-active docker nginx cron
+cd /opt/phillyogo
+sudo docker compose --env-file /opt/phillyogo/.env ps
+curl --fail --silent --show-error https://api.piscall.com/health/ready
+printf '\n'
+```
+
+Jika reboot diperlukan, lakukan hanya pada jadwal maintenance. Setelah reboot, SSH kembali, ulangi pemeriksaan service/container dan health check. Jangan reboot mendadak ketika pengguna sedang bermain.
+
+#### 3. Tinjau sertifikat, konfigurasi, dan biaya
+
+```bash
+sudo certbot certificates
+sudo systemctl list-timers --all | grep -i certbot
+sudo stat -c '%a %U:%G %n' /opt/phillyogo/.env
+sudo ufw status verbose
+df -h /
+df -i /
+```
+
+Pastikan sertifikat masih berlaku dan pembaruan otomatis terjadwal, `.env` tetap `600 root:root`, serta firewall tetap hanya membuka port yang diperlukan. Di panel Hostinger/Cloudflare, tinjau renewal domain, billing, backup/snapshot Hostinger, dan status alert.
+
+Periksa juga GitHub security/dependency alerts untuk repository aplikasi. Jangan menjalankan `npm update` atau melakukan perubahan kode langsung di VPS; dependency update harus menjadi release yang ditinjau, dites, lalu dideploy melalui proses release.
+
+Rotasi password, SSH key, atau JWT secret dilakukan jika ada indikasi bocor, personel tidak lagi berwenang, atau kebijakan rotasi mengharuskannya. Jangan melakukan rotasi spontan karena dapat membuat aplikasi atau pengguna tidak bisa login.
+
+### Catatan hasil pemeriksaan
+
+- Jika semua pemeriksaan lulus, tidak perlu restart atau mengubah VPS.
+- Jika health gagal atau container `unhealthy`, simpan waktu kejadian dan periksa log sebelum restart.
+- Jika checksum backup gagal, jangan gunakan backup tersebut; jalankan backup baru setelah memeriksa log.
+- Jangan mengirim isi `.env`, private key, token, SQL dump, atau log mentah ke chat.
+
+## 28. Step-by-step release update backend dan frontend
+
+Gunakan alur ini setiap kali ada perubahan aplikasi. Frontend dipublikasikan melalui Cloudflare Pages, sedangkan backend diperbarui manual di VPS. Jangan menjalankan update saat ada kelas/game aktif.
+
+### Sebelum mulai
+
+- Pastikan semua perubahan yang akan dirilis sudah dites dan memang ingin dipublikasikan.
+- Catat commit backend yang sedang aktif di VPS sebelum mengubahnya.
+- Pastikan backup database terbaru valid sebelum menjalankan release backend.
+- Jangan gunakan `git add .` jika ada perubahan lain di working tree. Stage hanya file yang memang termasuk release.
+- Push/merge ke `main` akan memicu deployment frontend otomatis jika Cloudflare Pages terhubung ke GitHub. Perubahan API harus tetap kompatibel selama frontend dan backend sedang berada pada versi yang berbeda.
+
+Jika perubahan backend merusak kompatibilitas API lama, jangan rilis frontend dan backend sekaligus. Rilis backend yang tetap kompatibel terlebih dahulu, verifikasi, lalu rilis frontend yang memakai API baru pada release terpisah.
+
+### 1. Tes perubahan di komputer sebelum push
+
+Jalankan di PowerShell dari folder utama repository:
+
+```powershell
+git status --short --branch
+git diff --check
+
+Push-Location backend
+npm test
+Pop-Location
+
+Push-Location frontend
+npm run lint
+npm run build
+Pop-Location
+```
+
+Jika test, lint, atau build gagal, berhenti dan perbaiki dahulu. Jangan push release yang gagal validasi.
+
+### 2. Commit perubahan yang memang akan dirilis
+
+Periksa branch dan perubahan:
+
+```powershell
+git branch --show-current
+git status --short
+```
+
+Stage hanya file perubahan release. Ganti contoh path berikut dengan path file yang benar:
+
+```powershell
+git add -- "backend/src/path/file-yang-diubah.js" "frontend/src/path/file-yang-diubah.jsx"
+git diff --cached --check
+git diff --cached --stat
+git diff --cached
+```
+
+Pastikan daftar perubahan staged hanya berisi file release. Lalu commit:
+
+```powershell
+git commit -m "Ringkasan perubahan yang dirilis"
+```
+
+Jika repository memakai pull request, push branch kerja:
+
+```powershell
+git push -u origin HEAD
+```
+
+Lalu review dan merge PR ke `main`. Jika perubahan sudah berada di branch `main` dan memang boleh dirilis langsung:
+
+```powershell
+git push origin main
+```
+
+Jangan lanjut ke VPS sebelum commit release sudah tersedia di GitHub pada branch `main`.
+
+### 3. Tunggu dan verifikasi deployment frontend Cloudflare
+
+Di Cloudflare Dashboard:
+
+1. Buka **Workers & Pages** lalu pilih project frontend.
+2. Buka **Deployments** dan tunggu deployment dari commit release berstatus **Successful**.
+3. Pastikan deployment berasal dari branch `main` dan commit SHA yang baru dirilis.
+4. Buka `https://piscall.com` dan pastikan halaman utama serta login bisa dibuka.
+
+Pastikan Production environment variables tetap mengarah ke API/socket produksi:
+
+```text
+VITE_API_URL=https://api.piscall.com/api/v1
+VITE_SOCKET_URL=https://api.piscall.com/game
+```
+
+Jangan menambahkan password database, JWT secret, atau private key ke Cloudflare Pages variables. Jika deployment Cloudflare gagal, jangan lanjutkan release frontend; buka build log di Cloudflare dan perbaiki penyebabnya. Untuk perubahan backend saja, Cloudflare tidak perlu membangun ulang kecuali repository/project memang mengatur demikian.
+
+### 4. Masuk ke VPS dan pastikan repository aman untuk diperbarui
+
+SSH ke VPS sebagai `phillyogo`, lalu jalankan:
+
+```bash
+cd /opt/phillyogo/app
+git status --short --branch
+git rev-parse --short HEAD
+```
+
+Jika ada perubahan lokal, file untracked, atau branch bukan `main`, **berhenti**. Periksa penyebabnya terlebih dahulu. Jangan menjalankan `reset`, `clean`, atau `checkout` untuk menghapus perubahan yang belum dipahami.
+
+Setelah memastikan working tree bersih dan tidak ada kelas/game aktif, periksa release yang akan ditarik:
+
+```bash
+git fetch origin
+git log --oneline HEAD..origin/main
+```
+
+Pastikan commit yang tampil adalah commit release yang dimaksud.
+
+### 5. Backup database, lalu perbarui source VPS
+
+Buat backup sebelum update backend atau migration:
+
+```bash
+sudo /opt/phillyogo/backup-mysql.sh
+
+BACKUP_DIR="$(sudo sed -n 's/^BACKUP_DIR="\([^"]*\)".*/\1/p' /opt/phillyogo/backup-mysql.sh)"
+LATEST_BACKUP="$(sudo find "$BACKUP_DIR" -maxdepth 1 -type f \
+  -name 'phillyogo-*.sql' -printf '%T@ %p\n' |
+  sort -nr | head -n 1 | cut -d' ' -f2-)"
+if [ -z "$LATEST_BACKUP" ]; then
+  echo "Backup tidak ditemukan; hentikan release."
+  exit 1
+fi
+sudo sha256sum -c "${LATEST_BACKUP}.sha256"
+```
+
+Lanjutkan hanya jika backup berhasil dibuat dan checksum berakhir `OK`:
+
+```bash
+cd /opt/phillyogo/app
+git switch main
+git pull --ff-only origin main
+git rev-parse --short HEAD
+```
+
+Pastikan SHA yang tampil cocok dengan commit release yang sudah diverifikasi di GitHub.
+
+### 6. Build dan jalankan backend
+
+Jalankan dari folder Compose `/opt/phillyogo`:
+
+```bash
+cd /opt/phillyogo
+sudo docker compose --env-file /opt/phillyogo/.env build backend
+```
+
+Jika build gagal, jangan jalankan migration atau mengganti container. Periksa pesan build dan perbaiki penyebabnya.
+
+Setelah build berhasil, jalankan migration. Perintah ini menerapkan migration yang belum tercatat; jangan menjalankan `db:seed` pada database produksi:
+
+```bash
+sudo docker compose --env-file /opt/phillyogo/.env \
+  run --rm backend npm run db:migrate
+```
+
+Jika migration gagal, **berhenti** dan jangan restart backend atau mencoba restore database secara spontan. Simpan error dan ikuti prosedur rollback.
+
+Jika migration sukses, perbarui backend:
+
+```bash
+sudo docker compose --env-file /opt/phillyogo/.env \
+  up -d --no-deps backend
+sudo docker compose --env-file /opt/phillyogo/.env ps
+sudo docker compose --env-file /opt/phillyogo/.env \
+  logs --tail=100 backend
+```
+
+Pastikan backend dan MySQL `healthy`, lalu periksa endpoint:
+
+```bash
+curl --fail --silent --show-error --max-time 15 \
+  https://api.piscall.com/health/ready
+printf '\n'
+```
+
+Jika health check gagal atau backend terus restart, jangan mengulang build/restart berkali-kali. Simpan log, periksa rollback source pada bagian 24, dan jangan restore database kecuali memang diperlukan dan restore tersebut sudah direncanakan.
+
+### 7. Smoke test setelah kedua deployment
+
+Di browser, uji dengan akun test:
+
+- [ ] Frontend `https://piscall.com` terbuka dan login berfungsi.
+- [ ] Teacher dapat membuka kelas/room.
+- [ ] Student dapat bergabung dan perubahan realtime terlihat.
+- [ ] Tutup room mengakhiri sesi game seperti yang diharapkan.
+- [ ] Tidak ada error baru yang terlihat pada log backend atau deployment Cloudflare.
+
+Pastikan monitor uptime kembali normal. Catat tanggal, commit SHA, hasil backup, status Cloudflare, dan hasil health check tanpa menyimpan secret.
+
+### Jika hanya salah satu bagian yang berubah
+
+- **Frontend saja:** jalankan test/lint/build frontend, push/merge ke `main`, lalu verifikasi Cloudflare. Tidak perlu SSH, backup database, atau build backend.
+- **Backend saja:** jalankan test backend, push/merge ke `main`, lalu lakukan langkah backup dan update VPS di atas. Pastikan deployment Cloudflare tidak gagal bila project otomatis ikut membangun.
+- **Backend dan frontend:** ikuti seluruh urutan. Untuk perubahan API yang tidak kompatibel, pecah menjadi release backend-kompatibel dahulu lalu frontend, bukan satu release bersamaan.
