@@ -2870,3 +2870,120 @@ Pastikan monitor uptime kembali normal. Catat tanggal, commit SHA, hasil backup,
 - **Frontend saja:** jalankan test/lint/build frontend, push/merge ke `main`, lalu verifikasi Cloudflare. Tidak perlu SSH, backup database, atau build backend.
 - **Backend saja:** jalankan test backend, push/merge ke `main`, lalu lakukan langkah backup dan update VPS di atas. Pastikan deployment Cloudflare tidak gagal bila project otomatis ikut membangun.
 - **Backend dan frontend:** ikuti seluruh urutan. Untuk perubahan API yang tidak kompatibel, pecah menjadi release backend-kompatibel dahulu lalu frontend, bukan satu release bersamaan.
+
+## 29. Menambahkan komputer Windows baru untuk SSH
+
+Setiap komputer harus memiliki pasangan SSH key sendiri. Jangan menyalin private key komputer lama atau key `phillyogo-deploy` yang dipakai VPS untuk mengakses GitHub. Bagian ini menambahkan akses baru tanpa menghapus akses komputer yang sudah berfungsi.
+
+### 1. Buat key baru di komputer Windows kedua
+
+Buka PowerShell pada komputer baru:
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.ssh" | Out-Null
+ssh-keygen -t ed25519 -a 100 `
+  -f "$env:USERPROFILE\.ssh\phillyogo-vps-pc2" `
+  -C "phillyogo-pc2"
+```
+
+Masukkan passphrase yang kuat saat diminta. Simpan passphrase di password manager.
+
+File yang dibuat:
+
+- `phillyogo-vps-pc2` adalah **private key**. Jangan dibagikan, diunggah, atau disalin ke VPS.
+- `phillyogo-vps-pc2.pub` adalah **public key** yang akan ditambahkan ke VPS.
+
+Salin public key ke clipboard:
+
+```powershell
+Get-Content "$env:USERPROFILE\.ssh\phillyogo-vps-pc2.pub" | Set-Clipboard
+```
+
+### 2. Tambahkan public key ke akun VPS
+
+Pertahankan sesi SSH komputer lama tetap terbuka. Dari komputer baru, buka **Hostinger → VPS → Console** sebagai `phillyogo` atau root. Console Hostinger juga dapat digunakan jika komputer lama tidak sedang tersedia.
+
+Di terminal VPS, buka daftar key user `phillyogo`:
+
+```bash
+sudo install -d -o phillyogo -g phillyogo -m 700 /home/phillyogo/.ssh
+sudo nano /home/phillyogo/.ssh/authorized_keys
+```
+
+Di `nano`, pergi ke baris terakhir, buat baris baru, lalu tempel public key dari clipboard komputer baru. Pastikan seluruh key `ssh-ed25519 ... phillyogo-pc2` berada pada **satu baris tersendiri**. Jangan mengubah atau menghapus baris key lama. Simpan dengan `Ctrl+O`, tekan `Enter`, lalu keluar dengan `Ctrl+X`.
+
+Atur kembali pemilik dan permission:
+
+```bash
+sudo chown phillyogo:phillyogo /home/phillyogo/.ssh
+sudo chmod 700 /home/phillyogo/.ssh
+sudo chown phillyogo:phillyogo /home/phillyogo/.ssh/authorized_keys
+sudo chmod 600 /home/phillyogo/.ssh/authorized_keys
+```
+
+### 3. Atur nama koneksi SSH di komputer baru
+
+Di PowerShell komputer baru, buat file config jika belum ada lalu buka dengan Notepad:
+
+```powershell
+$SshDir = Join-Path $env:USERPROFILE ".ssh"
+$SshConfig = Join-Path $SshDir "config"
+if (-not (Test-Path $SshConfig)) {
+  New-Item -ItemType File -Path $SshConfig | Out-Null
+}
+notepad $SshConfig
+```
+
+Tambahkan blok berikut di bagian bawah. Ganti `<IP_IPV4_VPS>` dengan IP dari panel Hostinger. Jika file sudah memiliki blok `Host`, jangan menghapus atau menimpa isi yang ada.
+
+```text
+Host phillyogo-vps-pc2
+    HostName <IP_IPV4_VPS>
+    User phillyogo
+    IdentityFile ~/.ssh/phillyogo-vps-pc2
+    IdentitiesOnly yes
+```
+
+Simpan Notepad. Private key tetap berada di komputer baru.
+
+### 4. Uji login sebelum menutup sesi lama
+
+Di terminal Hostinger Console atau sesi SSH yang sudah dipercaya, tampilkan fingerprint host VPS:
+
+```bash
+sudo ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
+```
+
+Kemudian, di PowerShell komputer baru:
+
+```powershell
+ssh phillyogo-vps-pc2
+```
+
+Saat pertama kali terhubung, bandingkan fingerprint `ED25519` yang ditampilkan SSH dengan fingerprint dari Console Hostinger. Ketik `yes` hanya jika keduanya cocok. Masukkan passphrase private key jika diminta.
+
+Setelah berhasil masuk ke VPS, pastikan hak sudo bekerja:
+
+```bash
+sudo whoami
+```
+
+Hasil yang diharapkan adalah `root`. Biarkan sesi komputer lama tetap terbuka sampai login baru dan sudo sudah berhasil diuji.
+
+### Jika koneksi komputer baru gagal
+
+- Jangan menghapus key lama atau menutup satu-satunya sesi SSH yang masih berfungsi.
+- Pastikan IP di blok SSH config benar, nama file `IdentityFile` sesuai, dan public key komputer baru sudah ditambahkan sebagai satu baris utuh.
+- Pastikan permission `.ssh` adalah `700` dan `authorized_keys` adalah `600`, dengan pemilik `phillyogo`.
+- Jika firewall Hostinger/UFW membatasi SSH ke IP sumber tertentu, tambahkan IP publik komputer/jaringan baru sebagai sumber yang diizinkan tanpa menghapus aturan lama. Uji koneksi sebelum mengubah aturan lainnya.
+- Jangan mengaktifkan password SSH atau root login hanya untuk mengatasi kegagalan key.
+
+### Jika komputer hilang atau key perlu dicabut
+
+Gunakan komputer lain yang masih dapat mengakses VPS atau Hostinger Console. Edit file berikut dan hapus **hanya baris key** dengan komentar `phillyogo-pc2`:
+
+```bash
+sudo nano /home/phillyogo/.ssh/authorized_keys
+```
+
+Simpan file, pastikan permission tetap benar, lalu coba login dari komputer yang masih dipercaya. Jangan hapus seluruh file `authorized_keys`, karena tindakan itu dapat mengunci semua akses SSH berbasis key.
