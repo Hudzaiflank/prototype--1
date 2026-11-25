@@ -10,6 +10,9 @@ export function useTeacherGameQuery(sessionId) {
     },
     enabled: Boolean(sessionId),
     staleTime: 5000,
+    refetchInterval: (query) =>
+      query.state.data?.status === "WAITING" ? 2000 : false,
+    refetchIntervalInBackground: true,
   });
 }
 

@@ -62,16 +62,19 @@ export function RoomMonitorPage() {
       token: getAccessToken(),
       gameSessionId: Number(sessionId),
     });
+    const gameQueryKey = ["game-session", "teacher", String(sessionId)];
+    const refreshGameState = () =>
+      queryClient.invalidateQueries({ queryKey: gameQueryKey });
     const updateState = (state) => {
       if (Number(state?.id) !== Number(sessionId)) return;
       queryClient.setQueryData(
-        ["game-session", "teacher", String(sessionId)],
+        gameQueryKey,
         (current) => mergeRealtimeState(current, state),
       );
     };
     const handleParticipantJoined = (participant) => {
       queryClient.setQueryData(
-        ["game-session", "teacher", String(sessionId)],
+        gameQueryKey,
         (current) => {
           if (!current || Number(current.id) !== Number(sessionId))
             return current;
@@ -84,24 +87,59 @@ export function RoomMonitorPage() {
             participants: exists
               ? participants.map((item) =>
                   Number(item.id) === Number(participant.participantId)
-                    ? { ...item, status: participant.status }
+                    ? {
+                        ...item,
+                        status: participant.status,
+                        ...(participant.problemSubmitted !== undefined && {
+                          problemSubmitted: Boolean(
+                            participant.problemSubmitted,
+                          ),
+                        }),
+                      }
                     : item,
                 )
               : [
                   ...participants,
                   {
                     id: participant.participantId,
+                    sessionId: participant.sessionId,
                     fullName: participant.displayName,
                     status: participant.status,
+                    problemSubmitted: Boolean(participant.problemSubmitted),
                   },
                 ],
           };
         },
       );
+      refreshGameState();
+    };
+    const handleProblemSubmitted = ({
+      participantId,
+      participantSessionId,
+    } = {}) => {
+      queryClient.setQueryData(
+        gameQueryKey,
+        (current) =>
+          current
+            ? {
+                ...current,
+                participants: (current.participants ?? []).map(
+                  (participant) =>
+                    (participantId != null &&
+                      Number(participant.id) === Number(participantId)) ||
+                    (participantSessionId != null &&
+                      participant.sessionId === participantSessionId)
+                      ? { ...participant, problemSubmitted: true }
+                      : participant,
+                ),
+              }
+            : current,
+      );
+      refreshGameState();
     };
     const handleParticipantStatusChanged = ({ participantId, status }) => {
       queryClient.setQueryData(
-        ["game-session", "teacher", String(sessionId)],
+        gameQueryKey,
         (current) =>
           current
             ? {
@@ -124,6 +162,7 @@ export function RoomMonitorPage() {
     ];
     events.forEach((event) => socket.on(event, updateState));
     socket.on(SOCKET_EVENTS.PARTICIPANT_JOINED, handleParticipantJoined);
+    socket.on(SOCKET_EVENTS.PROBLEM_SUBMITTED, handleProblemSubmitted);
     const refreshGroupsAfterLeaderChange = () => {
       queryClient.invalidateQueries({
         queryKey: ["game-groups", String(sessionId)],
@@ -161,6 +200,7 @@ export function RoomMonitorPage() {
     return () => {
       events.forEach((event) => socket.off(event, updateState));
       socket.off(SOCKET_EVENTS.PARTICIPANT_JOINED, handleParticipantJoined);
+      socket.off(SOCKET_EVENTS.PROBLEM_SUBMITTED, handleProblemSubmitted);
       socket.off(
         SOCKET_EVENTS.GROUP_LEADER_CHANGED,
         refreshGroupsAfterLeaderChange,
@@ -335,7 +375,7 @@ export function RoomMonitorPage() {
                           : "text-rose-300"
                       }
                     >
-                      {participant.problemSubmitted
+                      {Number(participant.problemSubmitted) === 1
                         ? "Sudah menjawab"
                         : "Belum menjawab"}
                     </span>

@@ -126,8 +126,22 @@ export async function getRoomStatus(roomId, teacherId) {
   return room;
 }
 
-export const markParticipantDisconnected = (participantId) =>
-  repository.markParticipantDisconnected(participantId);
+export const markParticipantDisconnected = (
+  gameSessionId,
+  participantId,
+  sessionId,
+) =>
+  repository.markParticipantDisconnected(
+    gameSessionId,
+    participantId,
+    sessionId,
+  );
+export const markParticipantConnected = (
+  gameSessionId,
+  participantId,
+  sessionId,
+) =>
+  repository.markParticipantConnected(gameSessionId, participantId, sessionId);
 
 export async function registerTeacherParticipant(data) {
   const participant = await repository.registerTeacherParticipant(data);

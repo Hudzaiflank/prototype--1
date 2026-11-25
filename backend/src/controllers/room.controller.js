@@ -103,8 +103,10 @@ export async function registerParticipant(request, response, next) {
       SOCKET_EVENTS.PARTICIPANT_JOINED,
       {
         participantId: data.id,
+        sessionId: data.sessionId,
         displayName: data.fullName,
         status: data.status,
+        problemSubmitted: Boolean(data.problemSubmitted),
       },
     );
   } catch (error) {

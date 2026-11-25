@@ -604,25 +604,100 @@ export async function findParticipantGroup(participantId, gameSessionId) {
   return rows[0] ?? null;
 }
 
-export async function markParticipantDisconnected(participantId) {
-  const [participantRows] = await pool.execute(
-    "SELECT game_session_id AS gameSessionId FROM participants WHERE id = ? LIMIT 1",
-    [participantId],
-  );
-  if (!participantRows.length) return null;
-  await pool.execute(
-    `UPDATE participants p JOIN game_sessions gs ON gs.id = p.game_session_id
-     SET p.status = 'DISCONNECTED', p.disconnected_at = NOW(), gs.state_version = gs.state_version + 1
-     WHERE p.id = ?`,
-    [participantId],
-  );
+export async function markParticipantConnected(
+  gameSessionId,
+  participantId,
+  sessionId,
+) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const [sessions] = await connection.execute(
+      "SELECT id FROM game_sessions WHERE id = ? LIMIT 1 FOR UPDATE",
+      [gameSessionId],
+    );
+    if (!sessions.length) {
+      await connection.rollback();
+      return false;
+    }
+    const [result] = await connection.execute(
+      `UPDATE participants
+       SET status = 'CONNECTED', connected_at = NOW(), disconnected_at = NULL
+       WHERE id = ? AND game_session_id = ? AND session_uuid = ?
+         AND (status <> 'CONNECTED' OR disconnected_at IS NOT NULL)`,
+      [participantId, gameSessionId, sessionId],
+    );
+    if (result.affectedRows)
+      await connection.execute(
+        "UPDATE game_sessions SET state_version = state_version + 1 WHERE id = ?",
+        [gameSessionId],
+      );
+    const [participants] = await connection.execute(
+      `SELECT id FROM participants
+       WHERE id = ? AND game_session_id = ? AND session_uuid = ? LIMIT 1`,
+      [participantId, gameSessionId, sessionId],
+    );
+    await connection.commit();
+    return participants.length > 0;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function markParticipantDisconnected(
+  gameSessionId,
+  participantId,
+  sessionId,
+) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const [sessions] = await connection.execute(
+      "SELECT id FROM game_sessions WHERE id = ? LIMIT 1 FOR UPDATE",
+      [gameSessionId],
+    );
+    if (!sessions.length) {
+      await connection.rollback();
+      return null;
+    }
+    const [result] = await connection.execute(
+      `UPDATE participants
+       SET status = 'DISCONNECTED', disconnected_at = NOW()
+       WHERE id = ? AND game_session_id = ? AND session_uuid = ?
+         AND status <> 'DISCONNECTED'`,
+      [participantId, gameSessionId, sessionId],
+    );
+    if (result.affectedRows)
+      await connection.execute(
+        "UPDATE game_sessions SET state_version = state_version + 1 WHERE id = ?",
+        [gameSessionId],
+      );
+    const [participants] = await connection.execute(
+      `SELECT id FROM participants
+       WHERE id = ? AND game_session_id = ? AND session_uuid = ? LIMIT 1`,
+      [participantId, gameSessionId, sessionId],
+    );
+    if (!participants.length) {
+      await connection.rollback();
+      return null;
+    }
+    await connection.commit();
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
   const [groups] = await pool.execute(
     `SELECT id, game_session_id AS gameSessionId
      FROM \`groups\` WHERE leader_participant_id = ? LIMIT 1`,
     [participantId],
   );
   if (!groups.length)
-    return { gameSessionId: participantRows[0].gameSessionId };
+    return { gameSessionId };
   const [replacement] = await pool.execute(
     `SELECT p.id, p.full_name AS fullName
      FROM group_members gm JOIN participants p ON p.id = gm.participant_id
@@ -630,13 +705,13 @@ export async function markParticipantDisconnected(participantId) {
      ORDER BY gm.assigned_at, gm.id LIMIT 1`,
     [groups[0].id, participantId],
   );
-  if (!replacement.length) return { gameSessionId: groups[0].gameSessionId };
+  if (!replacement.length) return { gameSessionId };
   await pool.execute(
     "UPDATE `groups` SET leader_participant_id = ? WHERE id = ?",
     [replacement[0].id, groups[0].id],
   );
   return {
-    gameSessionId: groups[0].gameSessionId,
+    gameSessionId,
     groupId: groups[0].id,
     leaderParticipantId: replacement[0].id,
     leaderName: replacement[0].fullName,

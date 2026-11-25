@@ -53,6 +53,24 @@ export function registerGameSocket(namespace) {
     };
 
     const joinSession = async (sessionId) => {
+      if (identity.kind === "STUDENT") {
+        const connected = await roomService.markParticipantConnected(
+          sessionId,
+          identity.participant.id,
+          identity.participant.sessionId,
+        );
+        if (!connected) {
+          const error = new Error("Participant session is no longer active");
+          error.code = "PARTICIPANT_SESSION_NOT_FOUND";
+          throw error;
+        }
+        namespace
+          .to(`teacher-game:${sessionId}`)
+          .emit(SOCKET_EVENTS.PARTICIPANT_STATUS_CHANGED, {
+            participantId: identity.participant.id,
+            status: "CONNECTED",
+          });
+      }
       socket.data.gameSessionId = sessionId;
       if (identity.kind === "TEACHER")
         await gameService.getGameSession(sessionId, identity.user.userId);
@@ -254,8 +272,19 @@ export function registerGameSocket(namespace) {
     socket.on("disconnect", () => {
       if (identity.kind === "STUDENT") {
         roomService
-          .markParticipantDisconnected(identity.participant.id)
+          .markParticipantDisconnected(
+            identity.participant.gameSessionId,
+            identity.participant.id,
+            identity.participant.sessionId,
+          )
           .then((leaderChange) => {
+            if (!leaderChange) return;
+            namespace
+              .to(`teacher-game:${identity.participant.gameSessionId}`)
+              .emit(SOCKET_EVENTS.PARTICIPANT_STATUS_CHANGED, {
+                participantId: identity.participant.id,
+                status: "DISCONNECTED",
+              });
             if (!leaderChange?.leaderParticipantId) return;
             namespace
               .to(`group:${leaderChange.groupId}`)
@@ -268,12 +297,6 @@ export function registerGameSocket(namespace) {
           .finally(() =>
             activeStudentSockets.release(identity.participant.id, socket),
           );
-        namespace
-          .to(`teacher-game:${identity.participant.gameSessionId}`)
-          .emit(SOCKET_EVENTS.PARTICIPANT_STATUS_CHANGED, {
-            participantId: identity.participant.id,
-            status: "DISCONNECTED",
-          });
       }
     });
   });
