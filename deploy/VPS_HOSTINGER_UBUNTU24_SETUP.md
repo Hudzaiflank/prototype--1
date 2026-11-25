@@ -2877,22 +2877,21 @@ Cara singkat: buat SSH key di komputer baru, tambahkan public key ke VPS, lalu t
 
 ### 1. Buat key di komputer baru
 
-Buka PowerShell pada komputer baru:
+Buka PowerShell pada komputer baru dan jalankan satu perintah:
 
 ```powershell
-New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.ssh" | Out-Null
-ssh-keygen -t ed25519 -f "$env:USERPROFILE\.ssh\phillyogo-pc2" -C "pc2"
+ssh-keygen -t ed25519
 ```
 
-Masukkan passphrase saat diminta. Simpan passphrase dengan aman.
+Tekan `Enter` untuk lokasi default, lalu buat passphrase. Jika ditanya apakah ingin menimpa key lama, ketik `n` dan jangan lanjutkan sebelum memeriksa key yang sudah ada.
 
 Salin **public key** ke clipboard:
 
 ```powershell
-Get-Content "$env:USERPROFILE\.ssh\phillyogo-pc2.pub" | Set-Clipboard
+Get-Content "$env:USERPROFILE\.ssh\id_ed25519.pub" | Set-Clipboard
 ```
 
-Private key `phillyogo-pc2` jangan dibagikan atau disalin ke VPS. Yang ditambahkan hanya file `.pub`.
+Yang ditambahkan ke VPS hanya file `id_ed25519.pub`. Jangan bagikan atau salin file private key `id_ed25519`.
 
 ### 2. Tambahkan public key ke VPS
 
@@ -2917,7 +2916,7 @@ sudo chmod 600 /home/phillyogo/.ssh/authorized_keys
 Ganti `<IP_VPS>` dengan IP VPS dari Hostinger. Di PowerShell komputer baru:
 
 ```powershell
-ssh -i "$env:USERPROFILE\.ssh\phillyogo-pc2" phillyogo@<IP_VPS>
+ssh phillyogo@<IP_VPS>
 ```
 
 Saat pertama kali, bandingkan fingerprint yang ditampilkan SSH dengan hasil perintah ini di Hostinger Console; ketik `yes` hanya jika sama:
@@ -2934,7 +2933,7 @@ sudo whoami
 
 Hasilnya harus `root`. Jangan tutup sesi komputer lama sampai login baru berhasil. Jika gagal, pastikan key dan IP benar; jangan hapus key lama atau mengaktifkan login password.
 
-Jika komputer baru hilang, dari Console Hostinger atau komputer lama buka file ini dan hapus hanya baris yang berakhir dengan komentar `pc2`:
+Jika komputer baru hilang, dari Console Hostinger atau komputer lama buka file ini dan hapus hanya baris public key komputer tersebut:
 
 ```bash
 sudo nano /home/phillyogo/.ssh/authorized_keys
